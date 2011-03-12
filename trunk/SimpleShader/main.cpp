@@ -183,8 +183,9 @@ void initApp(void){
 	xbr1 = new Branch(NULL, 0, *cs, 2, 0.1,0.1,10,1,0.3326, 0.398924);
 	xbr1->setBending(1,0);
 	
-	xcs.origin.t = varC*xbr1->L;
-	xbr2 = new Branch(xbr1, varC, xcs, 2, 0.1,0.1,2,4,0.3326, 0.398924);
+	xcs.origin.t = xbr1->L;
+	xcs.origin.r -= 0.3;
+	xbr2 = new Branch(xbr1, 1.0, xcs, 2, 0.1,0.1,2,4,0.3326, 0.398924);
 	xbr2->setBending(0.1,0);
 	
 	tree = new Tree();

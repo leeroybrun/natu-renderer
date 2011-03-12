@@ -61,7 +61,7 @@ class Branch
 		float			As;
 		void			setId(int id);
 		int				id;
-		
+		float			r1, r2;
 		float			c2, c4;
 private:
 	Vertex			bendVertex(Vertex &v);
