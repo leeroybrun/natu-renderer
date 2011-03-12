@@ -63,7 +63,7 @@ void bendCoordSystem( in float bx, in float bPid, in float bC2, in float bC4, in
 	// calculate output:
 
 	//CS origin
-	vO = bO + bR*vO.x + bS*vO.y + bT*vO.z - (bT * dxr - bR * uxr)/sxr - (bT * dxs - bS * uxs)/sxs;
+	vO = bO + r2*vO.x + s2*vO.y + bT*vO.z - (bT * dxr - bR * uxr)/sxr - (bT * dxs - bS * uxs)/sxs;
 	
 	//CS base vectors
 	//vR = normalize(r2*rr + s2*rs + t2*rt);
@@ -141,9 +141,7 @@ void main()
 	bendCoordSystem( bx, ppid, pc2, pc4, pL, pmv, po, pr, ps, pt, vx, vo, vr, vs, vt);
 
 	vertex = vec4(vo,1.0);
-
-	//float k = sin(time);
-	//vertex = vertex + vec4(br[0], 0.0, 0.0, 1.0);
+	// construct output
 	gl_FrontColor = gl_Color; 
 	gl_Position = gl_ModelViewProjectionMatrix * vertex;
 }

@@ -11,15 +11,17 @@ Branch::Branch(Branch * _parent, float _xval, CoordSystem & _cs, float length, f
 	if (_parent!=NULL) {
 		_parent->addChildBranch(this, _xval);
 	}
-	L = length;
-	//vertices = new float[(divT+2)*divR*3];
-	//normals  = new float[(divT+2)*divR*3];
-	//indices  = new int [4*(divR)*(divT+1)];
-	//textureCoords = new float [(divT+2)*divR*2];
-	vertices = new float[(divT+2)*3];
+	L  = length;
+	r1 = radiusAtBegin;
+	r2 = radiusAtEnd;
+	vertices = new float[(divT+2)*divR*3];
+	normals  = new float[(divT+2)*divR*3];
+	indices  = new int [4*(divR)*(divT+1)];
+	textureCoords = new float [(divT+2)*divR*2];
+	/*vertices = new float[(divT+2)*3];
 	normals  = new float[(divT+2)*3];
 	indices  = new int [(divT+1)];
-	textureCoords = new float [(divT+2)*2];
+	textureCoords = new float [(divT+2)*2];*/
 	// generate vertices
 	init();
 };
@@ -38,12 +40,12 @@ void Branch::init(){
 		// position along the branch
 		t = i*stepL;
 		// interpolate radius along the branch
-//		R = (1-t/L)*(radiusAtBegin - radiusAtEnd)+radiusAtEnd;
-R=0;
+		R = (1-t/L)*(r1 - r2)+r2;
+
 		// each vertex on ring:
-//		for (j=0; j<divR; j++){
+		for (j=0; j<divR; j++){
 		
-		angle = TWO_PI/divR;
+		angle = TWO_PI/divR * j;
 		v3 pos, oTangent, oNormal;
 		r = R*cos(angle);
 		s = R*sin(angle);
@@ -78,13 +80,9 @@ R=0;
 		vi++;
 		indices[ii] = ii; 
 		ii++;	
-	}
+	} // for j
 	indicesCount = ii;
-	/*
-	for (int v=0; v<vi; v+=3){
-		printf("V%02i[%f, %f, %f]\n",v/3, vertices[v], vertices[v+1],vertices[v+2]);
-	}
-	*/
+	} // for i
 }
 
 void Branch::draw(){
@@ -213,7 +211,7 @@ CoordSystem Branch::bendCoordSystem(const CoordSystem &cs2bend, float inX, bool 
 
 	CoordSystem out(cs);
 	//out.origin	= cs.origin + cs.t*cs2bend.origin.t - (cs.t * dxr - cs.r * uxr)/sxr - (cs.t * dxs - cs.s * uxs)/sxs;
-	out.origin	= cs.origin + cs.r*cs2bend.origin.r + cs.s*cs2bend.origin.s + cs.t*cs2bend.origin.t - (cs.t * dxr - cs.r * uxr)/sxr - (cs.t * dxs - cs.s * uxs)/sxs;
+	out.origin	= cs.origin + r2*cs2bend.origin.r + s2*cs2bend.origin.s + cs.t*cs2bend.origin.t - (cs.t * dxr - cs.r * uxr)/sxr - (cs.t * dxs - cs.s * uxs)/sxs;
 	
 	out.r = r2*rr + s2*rs + t2*rt;
 	out.s = r2*sr + s2*ss + t2*st;
