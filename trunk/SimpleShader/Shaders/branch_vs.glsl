@@ -3,6 +3,7 @@ uniform sampler2DRect	data_tex;
 uniform vec2			dataTexture_steps;
 uniform vec2			A;
 uniform float			time;
+attribute vec3			binormal;
 
 vec4 RED = vec4(1.0, 0.0, 0.0, 1.0);
 vec4 GREEN = vec4(0.0, 1.0, 0.0, 1.0);
@@ -34,7 +35,7 @@ float readParentIndex(in float index){
 void bendCoordSystem( in float bx, in float bPid, in float bC2, in float bC4, in float bL, in vec2 bA, in vec3 bO, in vec3 bR, in vec3 bS, in vec3 bT, in float vx, inout vec3 vO, inout vec3 R, inout vec3 S, inout vec3 T ){
 	//float rr,rs,rt,sr,ss,st,tr,ts,tt;
 	float Ar, As;
-	Ar = sin(time*bA.x);
+	Ar = bA.x*sin(time);
 	As = 0.0;//bA.y * sin(time);
 
 	// tranform branch coord system
@@ -84,7 +85,7 @@ void main()
 	vec4 vertex = gl_Vertex;
 	//vec4 values = texture2DRect( data_tex, gl_MultiTexCoord0.xy );
 	
-	float vx = gl_MultiTexCoord0.x;
+	float vx = gl_MultiTexCoord2.x;
 	// actual branch data
 	vec3 bo, br, bs, bt;
 	float bx , bpid, blevel;
@@ -107,7 +108,7 @@ void main()
 	// extract hierarchy data 
 	const int HIER_DEPTH = 5;
 	float indices[HIER_DEPTH];
-	indices[0] = gl_MultiTexCoord0.y+0.5;
+	indices[0] = gl_MultiTexCoord2.y+0.5;
 	int i,j;
 	for (i=1; i<HIER_DEPTH; i++){
 		indices[i] = readParentIndex(indices[i-1]);
@@ -121,7 +122,6 @@ void main()
 	}
 	// read trunk data as 1st parent
 	readBranchData(indices[i], po, pr, ps, pt, pmv, px, ppid, plevel, pc2, pc4, pL);
-
 	// hierarchical transform	
 	for (j=i-1; j>=0; j--){
 		// read actual coord system (CS)
@@ -138,13 +138,13 @@ void main()
 		pc4	= bc4;
 		pL	= bL;
 		pmv	= bmv;
-		
+		// has parent
 	} 
 	// bend given vertex CS in final CS
 	bendCoordSystem( bx, ppid, pc2, pc4, pL, pmv, po, pr, ps, pt, vx, vo, vr, vs, vt);
 
 	vertex = vec4(vo,1.0);
 	// construct output
-	gl_FrontColor = gl_Color; 
+	gl_FrontColor = vec4(binormal.y,0.0,0.0,1.0);
 	gl_Position = gl_ModelViewProjectionMatrix * vertex;
 }

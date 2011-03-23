@@ -18,6 +18,9 @@
 #include "TestObject.h"
 #include "branch.h"
 #include "tree.h"
+#include "TextureManager.h"
+#include "ShaderManager.h"
+#include "TreeBranch.h"
 
 // GLOBAL DEFINITIONS__________________________________________________________
 
@@ -41,7 +44,12 @@ Branch *br, *br2;
 Branch *xbr1, *xbr2, *xbr3;
 CoordSystem* cs, *cs2;
 TestOBJ *tobj;
-Tree	*tree;
+//Tree	*tree;
+
+Tree	*tree2;
+
+TextureManager texManager;
+ShaderManager  shaManager;
 
 // FORWARD DECLARATIONS________________________________________________________
 
@@ -88,7 +96,7 @@ void callback_CompileShaders()
 	callback_UseShaders(bResult);
 
 	// prepare tree...
-	tree->init();
+	//tree->init();
 }
 
 
@@ -110,53 +118,10 @@ void display()
     glRotatef( g_RotObject[0], 1.0f, 0.0f, 0.0f );
     glRotatef( g_RotObject[1] + rotY, 0.0f, 1.0f, 0.0f );
 	
-	//glEnable(GL_TEXTURE_2D);
-	//glBindTexture(GL_TEXTURE_2D, texId);
-	
-	
-	if (g_bShadersSupported)
-	{
-		glUseProgram(g_Program);	// Active programmable pipeline
-		//glUniform1f(hTimer, (GetTickCount()%2000)/2000.0f);
-		//glUniform1i(glGetUniformLocation(g_Program, "my_texture"),0);
-		//glUniform1f(glGetUniformLocation(g_Program, "size"),varA);
-	}
-	
-	// glMultiTexCoord2f(GL_TEXTURE1, 1.0, 1.0);
-	// VA: glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-	//     glTexCoordPointer(2,GL_FLOAT, ptr)...
-	//glutSolidTeapot(1);
-
-
-	glUseProgram(NULL);
-	glDisable(GL_LIGHTING);
-	//tobj->draw();
-	//tree->draw();
-	/*glColor3f(0.f, 1.f, 0.f);
-	glBegin(GL_LINE_STRIP);
-		glVertex3f(0.f, 0.f,0.f);
-		glVertex3f(1.f,1.f,0.f);
-		glColor3f(1.f, 0.f, 0.f);
-		glVertex3f(1.f,1.f,0.f);
-		glVertex3f(1.5f, 1.5f,0.f);
-	glEnd();
-	*/
-	/*glColor3f(0.f, 0.f, 5.f);
-	for (int i=0; i<20; i++){
-
-		glBegin(GL_LINE_STRIP);
-		glVertex3f(0.f, i*0.1f,0.f);
-		glVertex3f(1.f, i*0.1f,0.f);
-		glEnd();
-	}*/
-	glEnable(GL_LIGHTING);
 	glColor3f(1.f, 1.f, 1.f);
 	// draw tree/branch
-	//xbr1->draw();
-	//xbr2->draw();
-	//xbr3->draw();
-	tree->draw();
-	// Return to fixed-functional GL pipeline
+
+	tree2->draw2();
 	
 
 	// Render GUI controls
@@ -170,8 +135,14 @@ void display()
 	}
 }
 void initApp(void){
+	// init shaders
+	Shader * pBranchShader = new Shader();
+	pBranchShader->createShaderProgram("Shaders/branch_vs.glsl", "Shaders/branch_fs.glsl");
+	shaManager.addShader(pBranchShader);
+	Shader * pLeafShader = new Shader();
+	pLeafShader->createShaderProgram("Shaders/leaf_vs.glsl", "Shaders/leaf_fs.glsl");
+	shaManager.addShader(pLeafShader);
 	
-
 	// init coord system of branch
 	Vector3 org(0.f,0.f, 0.f);
 	Vector3 org2(0.f,0.f, 0.f);
@@ -180,19 +151,41 @@ void initApp(void){
 	Vector3 t(0.f,1.f, 0.f);
 	cs = new CoordSystem(org, r,s,t);
 	CoordSystem	xcs = cs->getRotated(v3(0.f, 0.f, 1.f), 1);
-	xbr1 = new Branch(NULL, 0, *cs, 2, 0.1,0.1,10,1,0.3326, 0.398924);
-	xbr1->setBending(1,0);
+	//xbr1 = new Branch(NULL, 0, *cs, 1, 0.2,0.1,4,8,0.3326, 0.398924);
+	//xbr1->setBending(1,0);
 	
-	xcs.origin.t = xbr1->L;
-	xcs.origin.r -= 0.3;
-	xbr2 = new Branch(xbr1, 1.0, xcs, 2, 0.1,0.1,2,4,0.3326, 0.398924);
-	xbr2->setBending(0.1,0);
-	
-	tree = new Tree();
-	tree->trunk = xbr1;
-	tree->init();
 
+	xcs.origin.t = 1.0;
+	xcs.origin.r = -0.1;
+	CoordSystem	leafCs1 = xcs.getRotated(v3(0.f, 0.f, 1.f), -1);
+	leafCs1.origin.r=0.0;
+	leafCs1.origin.t=0.5;
+
+	CoordSystem	leafCs2 = xcs.getRotated(v3(0.f, 0.f, 1.f), 1);
+	leafCs2.origin.r=0.1;
+	leafCs2.origin.t=0.7;
 	
+	//xbr2 = new Branch(xbr1, 1.0, xcs, 0.5, 0.1,0.05,5,8,0.3326, 0.398924);
+	//xbr2->setBending(0.1,0);
+
+	//tree = new Tree();
+	//tree->trunk = xbr1;
+	//tree->init();
+
+	v3 motionVector(1.f, 1.f, 1.f);
+	TreeBranch * br1 = new TreeBranch(NULL, *cs, 0.0f, &texManager, 1.0f, 0.2,0.1,4,8,0.3326, 0.398924,motionVector);
+	br1->setBending(0.6,0);
+	TreeBranch * br2 = new TreeBranch(br1, xcs, 1.0f, &texManager, 0.5f, 0.1,0.05,3,8,0.3326, 0.398924,motionVector);
+	br2->setBending(0.1,0);
+	TreeLeaf* leaf1 = new TreeLeaf(br2,leafCs1, 0.5f, &texManager, 0.3f, motionVector);
+	TreeLeaf* leaf2 = new TreeLeaf(br2,leafCs2, 0.7f, &texManager, 0.5f, motionVector);
+	
+	tree2 = new Tree();
+	tree2->branchShaderID = pBranchShader->programID;
+	tree2->leafShaderID	  = pLeafShader->programID;
+	tree2->trunk2 = br1;
+	tree2->init2();
+
 	/*
 	CoordSystem xcs3 = xcs.getRotated(v3(0.f, 0.f, 1.f), 1);
 	
@@ -215,8 +208,10 @@ void onTimer(int value)
 	ttime += PI/100;
 	valA = sin(ttime);
 	valB = sin(ttime*0.8);
-	tree->setTime(ttime);
-	tree->update(ttime);
+	//tree->setTime(ttime);
+
+	tree2->setTime(ttime);
+	//tree->update(ttime);
 	//xbr1->setBending(valA*varA,0);
 	//xbr1->update();
 	/*
