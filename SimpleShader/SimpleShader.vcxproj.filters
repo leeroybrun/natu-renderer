@@ -66,6 +66,27 @@
     <ClCompile Include="LODEpng\lodepng.cpp">
       <Filter>Utils\LODEpng</Filter>
     </ClCompile>
+    <ClCompile Include="TreeComponent.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TreeBranch.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TextureManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Texture.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ShaderManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Shader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TreeLeaf.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="branch.h">
@@ -122,21 +143,48 @@
     <ClInclude Include="LODEpng\lodepng.h">
       <Filter>Utils\LODEpng</Filter>
     </ClInclude>
+    <ClInclude Include="TreeComponent.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TreeBranch.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TextureManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Texture.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ShaderManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Shader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="settings.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TreeLeaf.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
+    <None Include="Shaders\branch_fs.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\branch_vs.glsl">
+      <Filter>Shaders</Filter>
+    </None>
     <None Include="Shaders\hvd_fs.glsl">
       <Filter>Shaders</Filter>
     </None>
     <None Include="Shaders\hvd_vs.glsl">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="Shaders\simple.fs">
+    <None Include="Shaders\leaf_fs.glsl">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="Shaders\simple.vs">
-      <Filter>Shaders</Filter>
-    </None>
-    <None Include="Shaders\hvd_vs2.glsl">
+    <None Include="Shaders\leaf_vs.glsl">
       <Filter>Shaders</Filter>
     </None>
   </ItemGroup>

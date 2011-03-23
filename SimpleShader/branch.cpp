@@ -2,6 +2,7 @@
 #include "data.h"
 extern bool g_bUseShaders;
 Branch::Branch(Branch * _parent, float _xval, CoordSystem & _cs, float length, float radiusAtBegin, float radiusAtEnd, int _divT, int _divR, float _c2, float _c4):c2(_c2),c4(_c4){
+	
 	parent = NULL;
 	bCs = _cs;
 	originalCS = _cs;
@@ -35,6 +36,7 @@ void Branch::init(){
 	float stepL = L/(divT+1);
 	float angle = 0;
 	float r = 0, s=0, R=0;
+	
 	// each ring:
 	for (i=0; i<divT+2; i++){
 		// position along the branch
@@ -45,30 +47,101 @@ void Branch::init(){
 		// each vertex on ring:
 		for (j=0; j<divR; j++){
 		
-		angle = TWO_PI/divR * j;
+			angle = TWO_PI/divR * j;
+			v3 pos, oTangent, oNormal;
+			r = R*cos(angle);
+			s = R*sin(angle);
+			pos+= (originalCS.r * r); // r
+			pos+= (originalCS.s * s); // s
+			pos+= (originalCS.t * t); // t
+		
+			oTangent += originalCS.t * t;
+			oNormal = originalCS.r;
+			oNormal.normalize();
+			oTangent.normalize();
+		
+			pos+=  originalCS.origin;
+			v3 bPos(r,s,t);
+
+			// add in vertices array
+			Vertex v(pos, bPos, oNormal, oTangent, t/L);
+			vertArr.push_back(v);
+
+			// fill texture coords [x-vals, branch ids]
+			textureCoords[2*vi/3] = v.x;
+			textureCoords[2*vi/3+1] = float(this->id);
+			normals[vi]	 = oNormal.x;	
+			vertices[vi] = bPos.x;
+			vi++;
+			normals[vi]	 = oNormal.y;
+			vertices[vi] = bPos.y;
+			vi++;
+			normals[vi]	 = oNormal.z;
+			vertices[vi] = bPos.z;
+			vi++;
+
+			// fill indices array
+			if (i<divT+1){
+				// not for the last ring
+				if (j!=0){
+					indices[ii] = ((i+1)*divR+j);
+					ii++;
+
+					indices[ii] = ((i)*divR+j);
+					ii++;
+
+				} 
+				indices[ii] = (i*divR+j); 
+				ii++;
+
+				indices[ii] = ((i+1)*divR+j); 
+				ii++;
+			}
+
+		}
+		if (i<divT+1){
+			indices[ii] = ((i+1)*divR); 
+			ii++;
+
+			indices[ii] = ((i)*divR);
+			ii++;
+		}
+	}			
+	indicesCount = ii;
+	/*/
+	for (i=0; i<divT+2; i++){
+		// position along the branch
+		t = i*stepL;
+		// interpolate radius along the branch
+//		R = (1-t/L)*(radiusAtBegin - radiusAtEnd)+radiusAtEnd;
+R=0;
+		// each vertex on ring:
+//		for (j=0; j<divR; j++){
+		
+		angle = TWO_PI/divR;
 		v3 pos, oTangent, oNormal;
 		r = R*cos(angle);
 		s = R*sin(angle);
-		pos+= (originalCS.r * r); // r
-		pos+= (originalCS.s * s); // s
-		pos+= (originalCS.t * t); // t
+		pos+= (bCs.r * r); // r
+		pos+= (bCs.s * s); // s
+		pos+= (bCs.t * t); // t
 		
-		oTangent += originalCS.t * t;
-		oNormal = originalCS.r;
+		oTangent += bCs.t * t;
+		oNormal = bCs.r;
 		oNormal.normalize();
 		oTangent.normalize();
 		
-		pos+=  originalCS.origin;
+		pos+=  bCs.origin;
 		v3 bPos(r,s,t); 
 
 		// add in vertices array
 		Vertex v(pos, bPos, oNormal, oTangent, t/L);
 		vertArr.push_back(v);
 
-		// fill texture coords [x-vals, branch ids]
-		textureCoords[i*2] = v.x;
-		textureCoords[i*2+1] = float(this->id);
-		printf("Vid: %i\n", this->id);
+		// fill texture coords [x-vals]
+		textureCoords[i*2]   = v.x;
+		textureCoords[i*2+1] = 0.0f;
+
 		normals[vi]	 = oNormal.x;	
 		vertices[vi] = bPos.x;
 		vi++;
@@ -80,14 +153,24 @@ void Branch::init(){
 		vi++;
 		indices[ii] = ii; 
 		ii++;	
-	} // for j
+	}
 	indicesCount = ii;
-	} // for i
+	*/
+	// print out arrays
+	for (i=0; i<(divT+2)*divR*2; i+=2){
+		printf("tc[%i]= %f , %f\n", i/2, textureCoords[i], textureCoords[i+1]);
+	}
+	for (i=0; i<(divT+2)*divR*3; i+=3){
+		printf("v[%i]= %f , %f , %f\n", i/3, vertices[i], vertices[i+1], vertices[i+2]);
+		//printf("n[%i]= %f , %f , %f\n", i/3, normals[i], normals[i+1], normals[i+2]);
+	}
+	for (i=0; i<4*(divR)*(divT+1); i++){
+		printf("ind[%i]= %i\n", i, indices[i]);
+	}
+
 }
 
 void Branch::draw(){
-	//bCs.draw();
-	
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glEnableClientState(GL_NORMAL_ARRAY);
 	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
@@ -95,7 +178,7 @@ void Branch::draw(){
 		glNormalPointer(GL_FLOAT, 0, normals);
 		glClientActiveTexture(GL_TEXTURE0);
 		glTexCoordPointer(2, GL_FLOAT, 0, textureCoords);
-			glDrawElements(GL_LINE_STRIP, indicesCount, GL_UNSIGNED_INT, indices);
+		glDrawElements(GL_LINE_STRIP, indicesCount, GL_UNSIGNED_INT, indices);
 	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 	glDisableClientState(GL_NORMAL_ARRAY);
 	glDisableClientState(GL_VERTEX_ARRAY);
@@ -106,8 +189,6 @@ void Branch::draw(){
 		errString = gluErrorString(errCode);
 		fprintf (stderr, "OpenGL Error: %s\n", errString);
 	}
-	//*/
-
 };
 
 void Branch::update(){

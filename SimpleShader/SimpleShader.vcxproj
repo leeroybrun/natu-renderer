@@ -147,8 +147,15 @@
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <ClCompile Include="png.cpp" />
+    <ClCompile Include="Shader.cpp" />
+    <ClCompile Include="ShaderManager.cpp" />
     <ClCompile Include="TestObject.cpp" />
+    <ClCompile Include="Texture.cpp" />
+    <ClCompile Include="TextureManager.cpp" />
     <ClCompile Include="tree.cpp" />
+    <ClCompile Include="TreeBranch.cpp" />
+    <ClCompile Include="TreeComponent.cpp" />
+    <ClCompile Include="TreeLeaf.cpp" />
     <ClCompile Include="vertex.cpp" />
     <ClCompile Include="..\_utils\shaders.cpp" />
     <ClCompile Include="..\_utils\utils.cpp" />
@@ -162,8 +169,16 @@
     <ClInclude Include="gui.h" />
     <ClInclude Include="main.h" />
     <ClInclude Include="png.h" />
+    <ClInclude Include="settings.h" />
+    <ClInclude Include="Shader.h" />
+    <ClInclude Include="ShaderManager.h" />
     <ClInclude Include="TestObject.h" />
+    <ClInclude Include="Texture.h" />
+    <ClInclude Include="TextureManager.h" />
     <ClInclude Include="tree.h" />
+    <ClInclude Include="TreeBranch.h" />
+    <ClInclude Include="TreeComponent.h" />
+    <ClInclude Include="TreeLeaf.h" />
     <ClInclude Include="vertex.h" />
     <ClInclude Include="..\_utils\Matrix3x3.h" />
     <ClInclude Include="..\_utils\Matrix4x4.h" />
@@ -176,11 +191,12 @@
     <ClInclude Include="LODEpng\lodepng.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Shaders\branch_fs.glsl" />
+    <None Include="Shaders\branch_vs.glsl" />
     <None Include="Shaders\hvd_fs.glsl" />
     <None Include="Shaders\hvd_vs.glsl" />
-    <None Include="Shaders\hvd_vs2.glsl" />
-    <None Include="Shaders\simple.fs" />
-    <None Include="Shaders\simple.vs" />
+    <None Include="Shaders\leaf_fs.glsl" />
+    <None Include="Shaders\leaf_vs.glsl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

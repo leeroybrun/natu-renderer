@@ -23,7 +23,7 @@ public:
 	v3		bPos;
 	v3		normal;
 	v3		tangent;
-
+	v3		textureCoords;
 	
 
 };
