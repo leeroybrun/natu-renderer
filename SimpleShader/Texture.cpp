@@ -89,13 +89,41 @@ bool Texture::loadTexture(const char * filename){
 
 
 void Texture::bindTexture(GLenum texUnit){
-		//glEnable(type);
-		glActiveTexture(texUnit);
+		glEnable(type);
+		unitId = texUnit;
+		glActiveTexture(unitId);
 		//glClientActiveTexture(texUnit);
-		glBindTexture(type, glID);	
+		glBindTexture(type, glID);
+		switch (texUnit){
+			case GL_TEXTURE0:
+				unitOffset =   0;
+				break;
+			case GL_TEXTURE1:
+				unitOffset =   1;
+				break;
+			case GL_TEXTURE2:
+				unitOffset =   2;
+				break;
+			case GL_TEXTURE3:
+				unitOffset =   3;
+				break;
+			case GL_TEXTURE4:
+				unitOffset =   4;
+				break;
+			case GL_TEXTURE5:
+				unitOffset =   5;
+				break;
+			case GL_TEXTURE6:
+				unitOffset =   6;
+				break;
+			case GL_TEXTURE7:
+				unitOffset =   7;
+				break;
+		}
 }
 
-void Texture::unbindTexture(GLenum texUnit){
-		glActiveTexture(texUnit);	
+void Texture::unbindTexture(){
+		
+		glActiveTexture(unitId);	
 		glBindTexture(type, 0);
 }

@@ -17,7 +17,8 @@ public:
 	
 	// draw
 	void			draw();
-		
+	//	leaf?
+	bool			isLeaf(){ return true;	}	
 // variables
 	float			size;
 	v3				motionVector;

@@ -3,6 +3,7 @@
 
 #include "../_utils/GLUT/glut.h"
 #include "../_utils/Vector3.h"
+#include <cstdio>
 
 //typedef Vector3 v3;
 
@@ -35,6 +36,9 @@ class CoordSystem
 
 		void normalize();
 
+		void printOut();
+
+		v3 getCoordsInThisSystem(v3 &v);
 		// origin
 		v3 origin;
 		// x,y,z axis

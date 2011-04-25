@@ -42,7 +42,7 @@ extern GLuint g_GeometryShader;					// Geometry shader GL id, declared in main.c
 
 // FORWARD DECLARATIONS________________________________________________________
 // Callback functions
-void callback_CompileShaders();					// Compile GLSL shaders
+//void callback_CompileShaders();					// Compile GLSL shaders
 void callback_VariableAchanged(float value);	// Callback function for slider A
 void callback_VariableBchanged(float value); 	// Callback function for slider B
 void callback_VariableCchanged(float value); 	// Callback function for slider C
@@ -74,53 +74,53 @@ void callback_RotateModel(bool bRotate)
 // Name: callback_AttachVertexShader()
 // Desc: Attach/detach vertex shader
 //-----------------------------------------------------------------------------
-void callback_AttachVertexShader	 (bool bAttach )
-{
-	g_bAttachVertexShader	= bAttach;
-	if (bAttach == false)
-	{
-		GUIManager::setElementActive("Attach VS CheckBox", false);
-	}
-}
+//void callback_AttachVertexShader	 (bool bAttach )
+//{
+//	g_bAttachVertexShader	= bAttach;
+//	if (bAttach == false)
+//	{
+//		GUIManager::setElementActive("Attach VS CheckBox", false);
+//	}
+//}
 
 
 //-----------------------------------------------------------------------------
 // Name: callback_AttachGeometryShader()
 // Desc: Attach/detach geometry shader
 //-----------------------------------------------------------------------------
-void callback_AttachGeometryShader(bool bAttach )
-{
-	g_bAttachGeometryShader = bAttach;
-	if (bAttach == false)
-	{
-		GUIManager::setElementActive("Attach GS CheckBox", false);
-	}
-}
+//void callback_AttachGeometryShader(bool bAttach )
+//{
+//	g_bAttachGeometryShader = bAttach;
+//	if (bAttach == false)
+//	{
+//		GUIManager::setElementActive("Attach GS CheckBox", false);
+//	}
+//}
 
 
 //-----------------------------------------------------------------------------
 // Name: callback_AttachFragmentShader()
 // Desc: Attach/detach fragment shader
 //-----------------------------------------------------------------------------
-void callback_AttachFragmentShader(bool bAttach )
-{
-	g_bAttachFragmentShader = bAttach;
-	if (bAttach == false)
-	{
-		GUIManager::setElementActive("Attach FS CheckBox", false);
-	}
-}
+//void callback_AttachFragmentShader(bool bAttach )
+//{
+//	g_bAttachFragmentShader = bAttach;
+//	if (bAttach == false)
+//	{
+//		GUIManager::setElementActive("Attach FS CheckBox", false);
+//	}
+//}
 
 
 //-----------------------------------------------------------------------------
 // Name: callback_UseShaders()
 // Desc: Use programmable-pipeline on/off
 //-----------------------------------------------------------------------------
-void callback_UseShaders(bool bShaders)	
-{
-	g_bUseShaders = (g_Program == 0) ? false : bShaders;
-	GUIManager::setElementActive("UseShaders CheckBox", g_bUseShaders);
-}
+//void callback_UseShaders(bool bShaders)	
+//{
+//	g_bUseShaders = (g_Program == 0) ? false : bShaders;
+//	GUIManager::setElementActive("UseShaders CheckBox", g_bUseShaders);
+//}
 
 
 //-----------------------------------------------------------------------------
@@ -129,11 +129,11 @@ void callback_UseShaders(bool bShaders)
 //-----------------------------------------------------------------------------
 void initGUI()
 {
-	GUICheckBox*	pcbxUseShaders		= new GUICheckBox	(10,  15, 40, 10, "use pragrammable pipeline", "UseShaders CheckBox");
-	GUICheckBox*	pcbxVertexShader	= new GUICheckBox	(10,  30, 40, 10, "attach vertex shader"	 , "Attach VS CheckBox"	);
-	GUICheckBox*	pcbxGeometryShader	= new GUICheckBox	(10,  45, 40, 10, "attach geometry shader"	 , "Attach GS CheckBox"	);
-	GUICheckBox*	pcbxFragmentShader	= new GUICheckBox	(10,  60, 40, 10, "attach fragment shader"	 , "Attach FS CheckBox"	);
-	GUIPushButton*	pbtnCompile			= new GUIPushButton	(10,  75,130, 13, "compile program"			 , "Compile CheckBox"	);
+	//GUICheckBox*	pcbxUseShaders		= new GUICheckBox	(10,  15, 40, 10, "use pragrammable pipeline", "UseShaders CheckBox");
+	//GUICheckBox*	pcbxVertexShader	= new GUICheckBox	(10,  30, 40, 10, "attach vertex shader"	 , "Attach VS CheckBox"	);
+	//GUICheckBox*	pcbxGeometryShader	= new GUICheckBox	(10,  45, 40, 10, "attach geometry shader"	 , "Attach GS CheckBox"	);
+	//GUICheckBox*	pcbxFragmentShader	= new GUICheckBox	(10,  60, 40, 10, "attach fragment shader"	 , "Attach FS CheckBox"	);
+	//GUIPushButton*	pbtnCompile			= new GUIPushButton	(10,  75,130, 13, "compile program"			 , "Compile CheckBox"	);
 	GUICheckBox*	pcbxWireMode		= new GUICheckBox	(10, 100, 40, 10, "wire-mode"				 , "Wire-Mode CheckBox"	);
 	GUICheckBox*	pcbxRotate			= new GUICheckBox	(10, 116,40, 10, "rotate"					 , "Rotate CheckBox"	);
 
@@ -141,23 +141,23 @@ void initGUI()
 	GUISlider*		psldVariable_B		= new GUISlider		(0, 1000, 10, 150, 160, 6, "variable B"		, "Variable B CheckBox"	);
 	GUISlider*		psldVariable_C		= new GUISlider		(0, 1000, 10, 165, 160, 6, "variable C"		, "Variable C CheckBox"	);
 
-	pcbxUseShaders->setCallBackFunc(callback_UseShaders);
+	//pcbxUseShaders->setCallBackFunc(callback_UseShaders);
 //	pcbxUseShaders->setActive(true);
-	pcbxVertexShader->setCallBackFunc(callback_AttachVertexShader);
-	pcbxGeometryShader->setCallBackFunc(callback_AttachGeometryShader);
-	pcbxFragmentShader->setCallBackFunc(callback_AttachFragmentShader);
-	pbtnCompile->setCallBackFunc(callback_CompileShaders);
+	//pcbxVertexShader->setCallBackFunc(callback_AttachVertexShader);
+	//pcbxGeometryShader->setCallBackFunc(callback_AttachGeometryShader);
+	//pcbxFragmentShader->setCallBackFunc(callback_AttachFragmentShader);
+	//pbtnCompile->setCallBackFunc(callback_CompileShaders);
 	pcbxWireMode->setCallBackFunc(callback_EnableWireMode);
 	pcbxRotate->setCallBackFunc(callback_RotateModel);
 	psldVariable_A->setCallBackFunc(callback_VariableAchanged);
 	psldVariable_B->setCallBackFunc(callback_VariableBchanged);
 	psldVariable_C->setCallBackFunc(callback_VariableCchanged);
 
-	GUIManager::addElement(pcbxUseShaders);
-	GUIManager::addElement(pcbxVertexShader);
-	GUIManager::addElement(pcbxGeometryShader);
-	GUIManager::addElement(pcbxFragmentShader);
-	GUIManager::addElement(pbtnCompile);
+	//GUIManager::addElement(pcbxUseShaders);
+	//GUIManager::addElement(pcbxVertexShader);
+	//GUIManager::addElement(pcbxGeometryShader);
+	//GUIManager::addElement(pcbxFragmentShader);
+	//GUIManager::addElement(pbtnCompile);
 	GUIManager::addElement(pcbxWireMode);
 	GUIManager::addElement(pcbxRotate);
 	GUIManager::addElement(psldVariable_A);

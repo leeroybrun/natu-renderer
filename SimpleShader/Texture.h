@@ -18,7 +18,7 @@ public:
 	~Texture(void);
 
 	void bindTexture(GLuint texUnit);
-	void unbindTexture(GLuint texUnit);
+	void unbindTexture();
 
 	bool loadTexture(const char * filename);
 
@@ -28,7 +28,8 @@ public:
 	GLenum	dataFormat;
 	GLsizei width;
 	GLsizei height;
-
+	GLuint  unitOffset;
+	GLuint  unitId;
 
 };
 

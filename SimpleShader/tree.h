@@ -2,17 +2,36 @@
 #define _TREE_H
 
 #include "../_utils/GLEE/glee.h" 
-#include "../_utils/GLUT/glut.h"
-#include "../_utils/shaders.h"
+#include "../_utils/GLUT/glut.h" 
+#include "../_utils/shaders.h" 
 #include "branch.h"
 #include "TreeBranch.h"
 #include "TreeLeaf.h"
 #include "Shader.h"
 #include "TextureManager.h"
+#include "OBJTfile.h"
 
 #include "settings.h"
 
 // #include "TreeLeaf.h"
+enum VERTEX_ATTRIBUTES{
+	 POSITION             ,
+	 NORMAL		          ,
+	 BINORMAL	          ,
+	 TANGENT	          ,
+	 COLOR0		          ,
+	 COLOR1		          ,
+	 TEXCOORD0	          ,
+	 TEXCOORD1	          ,
+	 XVALS		          ,
+	 TIME				  ,
+	 BRANCH_INDEX         ,
+	 BRANCH_DATA_TEXTURE  ,
+	 BRANCH_TEXTURE0	  ,
+
+	 VBO_VERTEX_COMPONENTS
+};
+
 
 using namespace std;
 
@@ -26,42 +45,54 @@ public:
 	
 	// create texture & set-up for drawing...
 	void init();
-	void init2();
 	
-	void update(float time, float var=1.f);
 	void draw();
-	void draw2();
 
-	void load();
-	void save();
+	void load(string filename, TextureManager *texManager);
+	void save(string filename);
 
 	void setTime(float _time);
 
-	Branch *trunk;
+	
 
-
-	TreeComponent*		trunk2;
-	vector<TreeBranch*> branches2;
-	vector<TreeLeaf*>	leaves;
-	Texture*			dataTexture2;
-	Texture*			leafTexture1;
-	void				createDataTexture2();
-	int					linearizeHierarchy2();
 	GLuint				branchShaderID;
 	GLuint				leafShaderID;
 
+	void				createDataTexture();
+	int					linearizeHierarchy();
+	void				createBranchesVBO();
+	void				createLeavesVBO();
 
+	TreeBranch			*trunk;
+	vector<TreeBranch*>	branches;
+	vector<TreeLeaf*>	leaves;
+
+	Texture*			dataTexture;
+	Texture*			leafTexture1;
+
+	GLuint				branchVBOid;
+	GLuint				branchEBOid;
+	GLuint				branchEBOcount;
+
+	int					offsets[VBO_VERTEX_COMPONENTS];
+	int					sizes[VBO_VERTEX_COMPONENTS];
+	GLint				locations[VBO_VERTEX_COMPONENTS];
+	GLfloat				*vbo_data[VBO_VERTEX_COMPONENTS];
+	GLuint 				*ebo_data;
+	
+	//GLuint				leavesVBOid;
+	//void				*leavesData;
+
+	GLuint				dataTextureID;
+
+	
 
 private:
 	// create texture containing tree data
-	void createDataTexture();
+	
 	int texDimX, texDimY;
-	GLuint dataTextureID;
-	float *dataTexture;
+	
 
-	int getBranchCount();
-	int linearizeHierarchy();
-	vector<Branch*> branches;
 	//vector<TreeLeaf*>	leaves2;
 	
 	GLuint hvd_shaderProgram;

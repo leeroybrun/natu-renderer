@@ -19,6 +19,25 @@ TreeComponent::TreeComponent(tc* _parent, CoordSystem &_cs, float _x, TextureMan
 	indexPtr = NULL;
 
 }
+	TreeComponent::TreeComponent(tc* _parent, CoordSystem &_cs, CoordSystem &_objectCS, float _x, TextureManager * _texMan):
+	x(_x),
+	originalCS(_cs),
+	objectCS(_objectCS),
+	cs(_cs),
+	parent(_parent),
+	texManager(_texMan)
+{
+	if (parent!=NULL){
+		parent->children.push_back(this);
+	}
+
+	shaderProgramID = NULL;
+	binormalID= -1;
+	tangentID = -1;
+	vertPtr = normalPtr = binormalPtr = NULL;
+	indexPtr = NULL;
+
+}
 
 
 TreeComponent::~TreeComponent(void)

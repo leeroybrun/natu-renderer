@@ -1,16 +1,15 @@
 #
 uniform sampler2DRect	data_tex;
-uniform vec2			dataTexture_steps;
 uniform vec2			A;
 uniform float			time;
 attribute vec3			binormal;
-
+/*
 vec4 RED = vec4(1.0, 0.0, 0.0, 1.0);
 vec4 GREEN = vec4(0.0, 1.0, 0.0, 1.0);
 vec4 BLUE = vec4(0.0, 0.0, 1.0, 1.0);
 vec4 YELLOW = vec4(1.0, 1.0, 0.0, 1.0);
 
-
+*/
 void readBranchData(in float index, out vec3 o, out vec3 r, out vec3 s, out vec3 t, out vec2 motionVec, out float bx, out float pID, out float level, out float c2, out float c4, out float L){
 	o = texture2DRect( data_tex, vec2(0.5,index) ).xyz;
 	r = texture2DRect( data_tex, vec2(1.5,index) ).xyz;
@@ -145,6 +144,6 @@ void main()
 
 	vertex = vec4(vo,1.0);
 	// construct output
-	gl_FrontColor = vec4(binormal.y,0.0,0.0,1.0);
+	gl_FrontColor = gl_Color;//vec4(time*0.01,0.0,0.0,1.0);
 	gl_Position = gl_ModelViewProjectionMatrix * vertex;
 }

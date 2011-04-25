@@ -47,6 +47,7 @@ TestOBJ *tobj;
 //Tree	*tree;
 
 Tree	*tree2;
+Tree	*tree3;
 
 TextureManager texManager;
 ShaderManager  shaManager;
@@ -72,7 +73,7 @@ void callback_VariableCchanged(float value)
 	printf("variable C changed\n");
 }
 
-
+/*
 void callback_CompileShaders()
 {
 	bool bResult = createShaderProgram(	g_Program,
@@ -98,6 +99,7 @@ void callback_CompileShaders()
 	// prepare tree...
 	//tree->init();
 }
+*/
 
 
 // RENDER FUNCTIONS____________________________________________________________
@@ -121,8 +123,8 @@ void display()
 	glColor3f(1.f, 1.f, 1.f);
 	// draw tree/branch
 
-	tree2->draw2();
-	
+	tree2->draw();
+//	tree3->draw2();
 
 	// Render GUI controls
 	GUIManager::display();			// Render gui components
@@ -137,7 +139,7 @@ void display()
 void initApp(void){
 	// init shaders
 	Shader * pBranchShader = new Shader();
-	pBranchShader->createShaderProgram("Shaders/branch_vs.glsl", "Shaders/branch_fs.glsl");
+	pBranchShader->createShaderProgram("Shaders/branch_vs_habel.glsl", "Shaders/branch_fs.glsl");
 	shaManager.addShader(pBranchShader);
 	Shader * pLeafShader = new Shader();
 	pLeafShader->createShaderProgram("Shaders/leaf_vs.glsl", "Shaders/leaf_fs.glsl");
@@ -150,6 +152,7 @@ void initApp(void){
 	Vector3 s(0.f,0.f, 1.f);
 	Vector3 t(0.f,1.f, 0.f);
 	cs = new CoordSystem(org, r,s,t);
+	cs->printOut();
 	CoordSystem	xcs = cs->getRotated(v3(0.f, 0.f, 1.f), 1);
 	//xbr1 = new Branch(NULL, 0, *cs, 1, 0.2,0.1,4,8,0.3326, 0.398924);
 	//xbr1->setBending(1,0);
@@ -157,14 +160,16 @@ void initApp(void){
 
 	xcs.origin.t = 1.0;
 	xcs.origin.r = -0.1;
-	CoordSystem	leafCs1 = xcs.getRotated(v3(0.f, 0.f, 1.f), -1);
-	leafCs1.origin.r=0.0;
-	leafCs1.origin.t=0.5;
-
-	CoordSystem	leafCs2 = xcs.getRotated(v3(0.f, 0.f, 1.f), 1);
-	leafCs2.origin.r=0.1;
-	leafCs2.origin.t=0.7;
+	xcs.printOut();
 	
+	CoordSystem	leafCs1 = xcs.getRotated(v3(0.f, 0.f, 1.f), -1);
+	leafCs1.origin.r=0.2;
+	leafCs1.origin.t=0.5;
+	leafCs1.printOut();
+	CoordSystem	leafCs2 = xcs.getRotated(v3(0.f, 0.f, 1.f), 1);
+	leafCs2.origin.r=0.2;
+	leafCs2.origin.t=0.7;
+	leafCs2.printOut();	
 	//xbr2 = new Branch(xbr1, 1.0, xcs, 0.5, 0.1,0.05,5,8,0.3326, 0.398924);
 	//xbr2->setBending(0.1,0);
 
@@ -173,19 +178,26 @@ void initApp(void){
 	//tree->init();
 
 	v3 motionVector(1.f, 1.f, 1.f);
-	TreeBranch * br1 = new TreeBranch(NULL, *cs, 0.0f, &texManager, 1.0f, 0.2,0.1,4,8,0.3326, 0.398924,motionVector);
+	TreeBranch * br1 = new TreeBranch(NULL, *cs, 0.0f, &texManager, 1.0f, 0.2,0.1,1,3,0.3326, 0.398924,motionVector);
 	br1->setBending(0.6,0);
-	TreeBranch * br2 = new TreeBranch(br1, xcs, 1.0f, &texManager, 0.5f, 0.1,0.05,3,8,0.3326, 0.398924,motionVector);
+	TreeBranch * br2 = new TreeBranch(br1, xcs, 1.0f, &texManager, 0.5f, 0.1,0.05,1,3,0.3326, 0.398924,motionVector);
 	br2->setBending(0.1,0);
-	TreeLeaf* leaf1 = new TreeLeaf(br2,leafCs1, 0.5f, &texManager, 0.3f, motionVector);
-	TreeLeaf* leaf2 = new TreeLeaf(br2,leafCs2, 0.7f, &texManager, 0.5f, motionVector);
+	//TreeLeaf* leaf1 = new TreeLeaf(br2,leafCs1, 0.2f, &texManager, 0.4f, motionVector);
+	//TreeLeaf* leaf2 = new TreeLeaf(br2,leafCs2, 0.7f, &texManager, 0.2f, motionVector);
+	//TreeLeaf* leaf3 = new TreeLeaf(br1,leafCs1, 1.0f, &texManager, 0.5f, motionVector);
 	
 	tree2 = new Tree();
 	tree2->branchShaderID = pBranchShader->programID;
 	tree2->leafShaderID	  = pLeafShader->programID;
-	tree2->trunk2 = br1;
-	tree2->init2();
-
+	tree2->trunk = br1;
+	tree2->init();
+	/*
+	tree3 = new Tree();
+	tree3->branchShaderID = pBranchShader->programID;
+	tree3->leafShaderID	  = pLeafShader->programID;
+	tree3->load("./data/JavorSMALL3.objt", &texManager);
+	tree3->init2();
+	*/
 	/*
 	CoordSystem xcs3 = xcs.getRotated(v3(0.f, 0.f, 1.f), 1);
 	
@@ -211,6 +223,7 @@ void onTimer(int value)
 	//tree->setTime(ttime);
 
 	tree2->setTime(ttime);
+	//tree3->setTime(ttime);
 	//tree->update(ttime);
 	//xbr1->setBending(valA*varA,0);
 	//xbr1->update();
@@ -302,14 +315,14 @@ void keyboard(unsigned char key, int x, int y)
 	{
 		case 27 : 
 			// Destroy shaders
-			destroyShaderProgram(g_Program, &g_VertexShader, &g_GeometryShader, &g_FragmentShader);
+			//destroyShaderProgram(g_Program, &g_VertexShader, &g_GeometryShader, &g_FragmentShader);
 			exit(0);
 		break;
 		case ' ': 
-			callback_UseShaders(!g_bUseShaders);
+			//callback_UseShaders(!g_bUseShaders);
 		break;
 		case 'c': 
-			callback_CompileShaders();
+			//callback_CompileShaders();
 		break;
 		case 'h':
 			GUIManager::visible(!GUIManager::isVisible());

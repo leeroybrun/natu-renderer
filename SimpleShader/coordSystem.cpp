@@ -14,6 +14,15 @@ CoordSystem::CoordSystem(const CoordSystem& copy){
 	s = copy.s;
 	t = copy.t;
 };
+// get same vector but in different basis
+v3 CoordSystem::getCoordsInThisSystem(v3 &v){
+	v3 outVector;
+	outVector.x = v.dot(r);
+	outVector.y = v.dot(s);
+	outVector.z = v.dot(t);
+	return outVector;
+}
+
 // rotate
 void CoordSystem::rotate(v3 &axis, float angle){
 	r.rotate(angle, axis);
@@ -39,6 +48,14 @@ void CoordSystem::normalize(){
 	r.normalize();
 	s.normalize();
 	t.normalize();
+};
+
+void CoordSystem::printOut(){
+	printf("Origin: %f %f %f\n", origin.x, origin.y, origin.z);
+	printf("R: %f %f %f\n",r.x,r.y,r.z);
+	printf("S: %f %f %f\n",s.x,s.y,s.z);
+	printf("T: %f %f %f\n",t.x,t.y,t.z);
+
 };
 
 void CoordSystem::draw(){
