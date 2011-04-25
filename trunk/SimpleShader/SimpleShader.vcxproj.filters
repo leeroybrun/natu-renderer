@@ -28,6 +28,12 @@
     <Filter Include="Utils\LODEpng">
       <UniqueIdentifier>{859ffea1-84bf-4cae-80d1-c66793746507}</UniqueIdentifier>
     </Filter>
+    <Filter Include="IOfiles">
+      <UniqueIdentifier>{d70e255e-4fce-49c6-891a-afdec88dbc93}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="DataContainers">
+      <UniqueIdentifier>{ab7c86c3-e082-43c0-bc22-d8f89e709c6a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="branch.cpp">
@@ -85,6 +91,18 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="TreeLeaf.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="IOfile.cpp">
+      <Filter>IOfiles</Filter>
+    </ClCompile>
+    <ClCompile Include="VertexBuffer.cpp">
+      <Filter>DataContainers</Filter>
+    </ClCompile>
+    <ClCompile Include="VBOfile.cpp">
+      <Filter>IOfiles</Filter>
+    </ClCompile>
+    <ClCompile Include="OBJTfile.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -167,6 +185,18 @@
     <ClInclude Include="TreeLeaf.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="IOfile.h">
+      <Filter>IOfiles</Filter>
+    </ClInclude>
+    <ClInclude Include="VertexBuffer.h">
+      <Filter>DataContainers</Filter>
+    </ClInclude>
+    <ClInclude Include="VBOfile.h">
+      <Filter>IOfiles</Filter>
+    </ClInclude>
+    <ClInclude Include="OBJTfile.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\branch_fs.glsl">
@@ -185,6 +215,9 @@
       <Filter>Shaders</Filter>
     </None>
     <None Include="Shaders\leaf_vs.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\branch_vs_habel.glsl">
       <Filter>Shaders</Filter>
     </None>
   </ItemGroup>

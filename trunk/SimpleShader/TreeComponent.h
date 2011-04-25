@@ -29,6 +29,7 @@ class TreeComponent
 public:
 	// constuctor
 	TreeComponent(tc* _parent, CoordSystem &_cs, float _x, TextureManager * _texMan);
+	TreeComponent(tc* _parent, CoordSystem &_cs, CoordSystem &_objectCS, float _x, TextureManager * _texMan);
 	
 	// destructor
 	~TreeComponent(void);
@@ -37,6 +38,8 @@ public:
 		virtual void init()=0;
 		// draw
 		virtual void draw()=0;
+		// leaf?
+		virtual bool isLeaf()=0;
 		
 		// set bending
 		void setBending(float _Ar, float _As);
@@ -47,7 +50,7 @@ public:
 		tc*				parent;
 
 		vector<tc*>		children;
-		vector<Vertex>  vertices;
+		vector<Vertex*>  vertices;
 		
 		int *			indexPtr;
 		float *			vertPtr;		
@@ -71,6 +74,7 @@ public:
 
 		CoordSystem		cs;
 		CoordSystem		originalCS;
+		CoordSystem		objectCS;
 
 		GLuint			shaderProgramID;
 

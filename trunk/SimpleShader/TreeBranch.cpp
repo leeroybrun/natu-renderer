@@ -29,10 +29,90 @@ TreeBranch::TreeBranch(	tc* _parent,
 	normalPtr			= new float[(divT+2)*divR*3];
 	binormalPtr			= new float[(divT+2)*divR*3];
 	tangentPtr			= new float[(divT+2)*divR*3];
-	indexPtr			= new int [4*(divR)*(divT+1)];
+	indexPtr			= new int [3*2*(divR)*(divT+1)];
 	dataTextureCoords	= new float [(divT+2)*divR*2];
-}
 
+	phases				= v4(0.f, 0.f, 0.f, 0.f);
+	xvals				= v4(0.f, 0.f, 0.f, 0.f);
+	lengths				= v4(0.f, 0.f, 0.f, 0.f);
+	int i;
+	for (i=0; i<MAX_HIERARCHY_DEPTH; i++){
+		upVectors[i]	= v3(0.f, 0.f, 0.f);
+		rightVectors[i] = v3(0.f, 0.f, 0.f);
+	}
+	upVector = cs.r;
+	rightVector = cs.s;
+	phase = 1.f;
+	TreeBranch *p;
+	if (parent!=NULL){
+		level = ((TreeBranch*)parent)->level + 1;
+		// copy xvals
+		p = (TreeBranch *) parent;
+		for (i=0; i<MAX_HIERARCHY_DEPTH; i++){
+			xvals.d[i] = p->xvals[i];
+		}
+		xvals.d[level-1] = _x;
+	} else {
+		level = 0;
+	}
+	init();
+}
+TreeBranch::TreeBranch(	tc* _parent,
+						CoordSystem &_cs,
+						CoordSystem &_objectCS,
+						float _x,
+						TextureManager * _texMan,
+						float length,
+						float radiusAtBegin,
+						float radiusAtEnd,
+						int _divT,
+						int _divR,
+						float _c2,
+						float _c4,
+						v3 &_motionVector):
+	TreeComponent(_parent, _cs,_objectCS, _x, _texMan)
+{
+	type	= ComponentType::BRANCH;
+	L		= length;
+	r1		= radiusAtBegin;
+	r2		= radiusAtEnd;
+	c2		= _c2;
+	c4		= _c4;
+	divT	= _divT;
+	divR	= _divR;
+	motionVector	= _motionVector;
+	verticesCount		= (divT+2)*divR;
+	vertPtr				= new float[verticesCount*3];
+	normalPtr			= new float[verticesCount*3];
+	binormalPtr			= new float[verticesCount*3];
+	tangentPtr			= new float[verticesCount*3];
+	indexPtr			= new int [3*2*(divR)*(divT+1)];
+	dataTextureCoords	= new float [verticesCount*2];
+
+	phases				= v4(0.f, 0.f, 0.f, 0.f);
+	xvals				= v4(0.f, 0.f, 0.f, 0.f);
+	lengths				= v4(0.f, 0.f, 0.f, 0.f);
+	int i;
+	for (i=0; i<MAX_HIERARCHY_DEPTH; i++){
+		upVectors[i]	= v3(0.f, 0.f, 0.f);
+		rightVectors[i] = v3(0.f, 0.f, 0.f);
+	}	
+	upVector = cs.r;
+	rightVector = cs.s;
+	phase = 1.f;
+	TreeBranch *p;
+	if (parent!=NULL){
+		level = ((TreeBranch*)parent)->level + 1;
+		// copy xvals
+		p = (TreeBranch *) parent;
+		for (i=0; i<MAX_HIERARCHY_DEPTH; i++){
+			xvals.d[i] = p->xvals[i];
+		}
+		xvals.d[level-1] = _x;
+	} else {
+		level = 0;
+	}
+}
 
 TreeBranch::~TreeBranch(void)
 {
@@ -45,15 +125,21 @@ TreeBranch::~TreeBranch(void)
 
 void TreeBranch::init()
 {
+	if (parent!=NULL){
+		level = ((TreeBranch*) parent)->level+1;
+	}
+	// TODO:
+	float bendR = 0.1+level/5;
+	setBending(bendR, 0.0);
+	Vertex *v;
 	// generate vertices
-	int i,j;
+	int i,j,k;
 	int vi=0;
 	int ii=0;
 	float t = 0;
 	float stepL = L/(divT+1);
 	float angle = 0;
 	float r = 0, s=0, R=0;
-	
 	// each ring:
 	for (i=0; i<divT+2; i++){
 		// position along the branch
@@ -73,20 +159,26 @@ void TreeBranch::init()
 			pos+= (originalCS.t * t); // t
 		
 			oTangent	= originalCS.t.getNormalized();
-			oNormal		= originalCS.r.getNormalized();
+			oNormal		= v3(r,s,0).getNormalized();//originalCS.r.getNormalized();
 			oBinormal	= oTangent.cross(oNormal);
 			pos+=  originalCS.origin;
 			v3 bPos(r,s,t);
 
 			// add in vertices array
-			Vertex v(pos, bPos, oNormal, oTangent, t/L);
+			v = new Vertex(pos, bPos, oNormal, oTangent);
 			// set texture coords (color texture)
-			v.textureCoords.x = angle/TWO_PI;	//[0..1]
-			v.textureCoords.y = v.x;			//[0..1]
+			v->textureCoords.x = angle/TWO_PI;	//[0..1]
+			v->textureCoords.y = t/L;			//[0..1]
+
+			// set X values
+			for (k=0; k<MAX_HIERARCHY_DEPTH; k++){
+				v->x[k] = xvals.d[k];
+			}
+			v->x[level] = t/L;
 			vertices.push_back(v);
 
 			// fill texture coords [x-vals, branch ids]
-			dataTextureCoords[2*vi/3] = v.x;
+			dataTextureCoords[2*vi/3] = t/L;
 			dataTextureCoords[2*vi/3+1] = float(this->id);
 			normalPtr[vi]	 = oNormal.x;	
 			vertPtr[vi]		 = bPos.x;
@@ -107,28 +199,22 @@ void TreeBranch::init()
 			// fill indices array
 			if (i<divT+1){
 				// not for the last ring
-				if (j!=0){
-					indexPtr[ii] = ((i+1)*divR+j);
-					ii++;
 
-					indexPtr[ii] = ((i)*divR+j);
-					ii++;
-
-				} 
-				indexPtr[ii] = (i*divR+j); 
+				indexPtr[ii] = (i*divR)+j;
 				ii++;
-
-				indexPtr[ii] = ((i+1)*divR+j); 
+				indexPtr[ii] = (i*divR)+ divR+j;
+				ii++;
+				indexPtr[ii] = (i*divR)+ (j+1)%divR;
+				ii++;
+				
+				indexPtr[ii] = (i*divR)+ j;
+				ii++;
+				indexPtr[ii] = (i*divR)+ divR+(divR + j - 1)%divR;
+				ii++;
+				indexPtr[ii] = (i*divR)+ divR + j;
 				ii++;
 			}
 
-		}
-		if (i<divT+1){
-			indexPtr[ii] = ((i+1)*divR); 
-			ii++;
-
-			indexPtr[ii] = ((i)*divR);
-			ii++;
 		}
 	}			
 	indicesCount = ii;
@@ -184,4 +270,14 @@ void TreeBranch::draw()
 		//fprintf (stderr, "OpenGL Error: %s\n", errString);
 	}
 	
+}
+
+
+int	TreeBranch::getVertexCount()
+{
+	return vertices.size();
+}
+int	TreeBranch::getIndicesCount()
+{
+	return indicesCount;
 }

@@ -64,11 +64,12 @@ void Branch::init(){
 			v3 bPos(r,s,t);
 
 			// add in vertices array
-			Vertex v(pos, bPos, oNormal, oTangent, t/L);
+			Vertex v(pos, bPos, oNormal, oTangent);
+			//Vertex v(pos, bPos, oNormal, oTangent, t/L);
 			vertArr.push_back(v);
 
 			// fill texture coords [x-vals, branch ids]
-			textureCoords[2*vi/3] = v.x;
+			textureCoords[2*vi/3] = v.x[0];
 			textureCoords[2*vi/3+1] = float(this->id);
 			normals[vi]	 = oNormal.x;	
 			vertices[vi] = bPos.x;
@@ -222,7 +223,7 @@ Vertex	Branch::bendVertex(Vertex &v){
 	vCS.r		= v.tangent;
 	vCS.s		= v.tangent.cross(v.normal);
 	vCS.t		= v.normal;
-	vCS = bendCoordSystem(vCS, v.x);
+	vCS = bendCoordSystem(vCS, v.x[0]);
 	Vertex out;
 	out.oPos = vCS.origin;
 	out.normal = vCS.t;
