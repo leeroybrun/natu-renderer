@@ -9,7 +9,11 @@
 #include <sstream>
 #include <iomanip>
 
+#define BACKSPACE(cnt) for (int i=0; i<cnt; i++){printf("\b \b");}
+#define BACK(cnt) for (int i=0; i<cnt; i++){printf("\b");}
 // GLOBAL DEFINITIONS__________________________________________________________
+#define TIME_QUERY_EXTENSION	"GL_EXT_timer_query"
+#define GL_TIME_ELAPSED			0x88BF
 
 // GLOBAL CONSTANTS____________________________________________________________
 const float ROTATION_SPEED		= 0.5f;
@@ -46,7 +50,6 @@ extern GLuint g_GeometryShader;					// Geometry shader GL id, declared in main.c
 void callback_VariableAchanged(float value);	// Callback function for slider A
 void callback_VariableBchanged(float value); 	// Callback function for slider B
 void callback_VariableCchanged(float value); 	// Callback function for slider C
-
 
 // CALLBACK FUNCTIONS__________________________________________________________
 
@@ -134,6 +137,7 @@ void initGUI()
 	//GUICheckBox*	pcbxGeometryShader	= new GUICheckBox	(10,  45, 40, 10, "attach geometry shader"	 , "Attach GS CheckBox"	);
 	//GUICheckBox*	pcbxFragmentShader	= new GUICheckBox	(10,  60, 40, 10, "attach fragment shader"	 , "Attach FS CheckBox"	);
 	//GUIPushButton*	pbtnCompile			= new GUIPushButton	(10,  75,130, 13, "compile program"			 , "Compile CheckBox"	);
+	GUILabel*		fpsLabel			= new GUILabel		("fps", 10, 10,  "fpsLabel");
 	GUICheckBox*	pcbxWireMode		= new GUICheckBox	(10, 100, 40, 10, "wire-mode"				 , "Wire-Mode CheckBox"	);
 	GUICheckBox*	pcbxRotate			= new GUICheckBox	(10, 116,40, 10, "rotate"					 , "Rotate CheckBox"	);
 

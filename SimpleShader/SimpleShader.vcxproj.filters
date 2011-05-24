@@ -220,5 +220,8 @@
     <None Include="Shaders\branch_vs_habel.glsl">
       <Filter>Shaders</Filter>
     </None>
+    <None Include="Shaders\branch_vs2.glsl">
+      <Filter>Shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

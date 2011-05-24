@@ -21,9 +21,8 @@ public:
 	bool			isLeaf(){ return true;	}	
 // variables
 	float			size;
-	v3				motionVector;
-	GLint			binormalID;
-	GLint			tangentID;
+	v4				xvals;
+	int				parentID;
 	
 };
 

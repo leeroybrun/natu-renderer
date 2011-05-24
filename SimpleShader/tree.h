@@ -28,6 +28,18 @@ enum VERTEX_ATTRIBUTES{
 	 BRANCH_INDEX         ,
 	 BRANCH_DATA_TEXTURE  ,
 	 BRANCH_TEXTURE0	  ,
+	 BRANCH_TEXTURE1	  ,
+	 BRANCH_TEXTURE2	  ,
+	 BRANCH_TEXTURE3	  ,
+	 NOISE_TEXTURE0		  ,
+	 NOISE_TEXTURE1		  ,
+	 NOISE_TEXTURE2		  ,
+	 NOISE_TEXTURE3		  ,
+	 NOISE_TEXTURE4		  ,
+	 BRANCH_COUNT		  , 
+	 WIND_DIRECTION		  ,
+	 WIND_STRENGTH		  ,
+	 WOOD_AMPLITUDE 	  ,
 
 	 VBO_VERTEX_COMPONENTS
 };
@@ -60,6 +72,8 @@ public:
 
 	void				createDataTexture();
 	int					linearizeHierarchy();
+	void				recalcCoordSystems();
+	void				fillParentDataForEachBranch();
 	void				createBranchesVBO();
 	void				createLeavesVBO();
 
@@ -69,6 +83,8 @@ public:
 
 	Texture*			dataTexture;
 	Texture*			leafTexture1;
+	Texture*			branchNoiseTexture;
+	Texture*			leafNoiseTexture;
 
 	GLuint				branchVBOid;
 	GLuint				branchEBOid;
@@ -76,6 +92,10 @@ public:
 
 	int					offsets[VBO_VERTEX_COMPONENTS];
 	int					sizes[VBO_VERTEX_COMPONENTS];
+
+	int					leafOffsets[VBO_VERTEX_COMPONENTS];
+	int					leafSizes[VBO_VERTEX_COMPONENTS];
+
 	GLint				locations[VBO_VERTEX_COMPONENTS];
 	GLfloat				*vbo_data[VBO_VERTEX_COMPONENTS];
 	GLuint 				*ebo_data;
@@ -84,7 +104,9 @@ public:
 	//void				*leavesData;
 
 	GLuint				dataTextureID;
-
+	GLuint				bnoiseTextureID;
+	GLuint				lnoiseTextureID;
+	GLfloat				branch_count;
 	
 
 private:

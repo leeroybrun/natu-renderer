@@ -205,6 +205,7 @@
     <None Include="Shaders\branch_vs.glsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
     </None>
+    <None Include="Shaders\branch_vs2.glsl" />
     <None Include="Shaders\branch_vs_habel.glsl" />
     <None Include="Shaders\hvd_fs.glsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>

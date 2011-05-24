@@ -19,10 +19,10 @@ TreeComponent::TreeComponent(tc* _parent, CoordSystem &_cs, float _x, TextureMan
 	indexPtr = NULL;
 
 }
-	TreeComponent::TreeComponent(tc* _parent, CoordSystem &_cs, CoordSystem &_objectCS, float _x, TextureManager * _texMan):
+TreeComponent::TreeComponent(tc* _parent, CoordSystem &_cs, CoordSystem &_objectCS, float _x, TextureManager * _texMan):
 	x(_x),
 	originalCS(_cs),
-	objectCS(_objectCS),
+	//objectCS(_objectCS),
 	cs(_cs),
 	parent(_parent),
 	texManager(_texMan)

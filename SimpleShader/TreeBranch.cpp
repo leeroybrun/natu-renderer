@@ -23,7 +23,7 @@ TreeBranch::TreeBranch(	tc* _parent,
 	c4		= _c4;
 	divT	= _divT;
 	divR	= _divR;
-	motionVector	= _motionVector;
+	motionVector	= v3(_motionVector);
 
 	vertPtr				= new float[(divT+2)*divR*3];
 	normalPtr			= new float[(divT+2)*divR*3];
@@ -33,16 +33,19 @@ TreeBranch::TreeBranch(	tc* _parent,
 	dataTextureCoords	= new float [(divT+2)*divR*2];
 
 	phases				= v4(0.f, 0.f, 0.f, 0.f);
-	xvals				= v4(0.f, 0.f, 0.f, 0.f);
+	xvals				= v4(-1.f, -1.f, -1.f, -1.f);
 	lengths				= v4(0.f, 0.f, 0.f, 0.f);
 	int i;
 	for (i=0; i<MAX_HIERARCHY_DEPTH; i++){
 		upVectors[i]	= v3(0.f, 0.f, 0.f);
 		rightVectors[i] = v3(0.f, 0.f, 0.f);
-	}
-	upVector = cs.r;
-	rightVector = cs.s;
-	phase = 1.f;
+		origins[i]		= v3(0.f, 0.f, 0.f);
+	}	
+	upVector	= originalCS.r;
+	rightVector = originalCS.s;
+	tVector		= originalCS.t;
+	origin		= originalCS.origin;
+	phase		= 1.f;
 	TreeBranch *p;
 	if (parent!=NULL){
 		level = ((TreeBranch*)parent)->level + 1;
@@ -90,16 +93,19 @@ TreeBranch::TreeBranch(	tc* _parent,
 	dataTextureCoords	= new float [verticesCount*2];
 
 	phases				= v4(0.f, 0.f, 0.f, 0.f);
-	xvals				= v4(0.f, 0.f, 0.f, 0.f);
+	xvals				= v4(-1.f, -1.f, -1.f, -1.f);
 	lengths				= v4(0.f, 0.f, 0.f, 0.f);
 	int i;
 	for (i=0; i<MAX_HIERARCHY_DEPTH; i++){
 		upVectors[i]	= v3(0.f, 0.f, 0.f);
 		rightVectors[i] = v3(0.f, 0.f, 0.f);
+		origins[i]		= v3(0.f, 0.f, 0.f);
 	}	
-	upVector = cs.r;
-	rightVector = cs.s;
-	phase = 1.f;
+	upVector	= originalCS.r;
+	rightVector = originalCS.s;
+	tVector		= originalCS.t;
+	origin		= originalCS.origin;
+	phase		= 1.f;
 	TreeBranch *p;
 	if (parent!=NULL){
 		level = ((TreeBranch*)parent)->level + 1;
@@ -222,7 +228,8 @@ void TreeBranch::init()
 
 // draw
 void TreeBranch::draw()
-{			
+{	
+	/*
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glEnableClientState(GL_NORMAL_ARRAY);
 	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
@@ -269,9 +276,8 @@ void TreeBranch::draw()
 		errString = gluErrorString(errCode);
 		//fprintf (stderr, "OpenGL Error: %s\n", errString);
 	}
-	
+	*/
 }
-
 
 int	TreeBranch::getVertexCount()
 {

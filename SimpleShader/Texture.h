@@ -20,7 +20,7 @@ public:
 	void bindTexture(GLuint texUnit);
 	void unbindTexture();
 
-	bool loadTexture(const char * filename);
+	bool loadTexture(const char * filename, bool makeFloat = false, GLint borderMode = GL_CLAMP, GLint filterMode = GL_LINEAR);
 
 	GLuint	glID;
 	void *	data;

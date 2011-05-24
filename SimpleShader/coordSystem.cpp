@@ -14,6 +14,19 @@ CoordSystem::CoordSystem(const CoordSystem& copy){
 	s = copy.s;
 	t = copy.t;
 };
+
+CoordSystem CoordSystem::getSystemInThisSystem(CoordSystem &cs)
+{
+	CoordSystem out(cs);
+	out.r = getCoordsInThisSystem(cs.r);
+	out.s = getCoordsInThisSystem(cs.s);
+	out.t = getCoordsInThisSystem(cs.t);
+
+	out.origin = getCoordsInThisSystem(cs.origin-origin);
+
+	return out;
+}
+
 // get same vector but in different basis
 v3 CoordSystem::getCoordsInThisSystem(v3 &v){
 	v3 outVector;

@@ -58,13 +58,19 @@ public:
 	int				level;
 
 	v4				phases;
-	v3      		upVectors[MAX_HIERARCHY_DEPTH];
+	v3				motionVectors[MAX_HIERARCHY_DEPTH];
+	v3      		upVectors	[MAX_HIERARCHY_DEPTH];
 	v3				rightVectors[MAX_HIERARCHY_DEPTH];
+	v3				tVectors    [MAX_HIERARCHY_DEPTH];
+	v3				origins		[MAX_HIERARCHY_DEPTH];
 	v4				xvals;
 	v4				lengths;
+
 	float			phase;
 	v3				upVector;
 	v3				rightVector;
+	v3				tVector;
+	v3				origin;
 
 	v3				motionVector;
 

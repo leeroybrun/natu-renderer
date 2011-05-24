@@ -6,6 +6,7 @@
 #include "../_utils/GLUT/glut.h"
 #include "data.h"
 
+extern float fps;
 
 class GUIElement;
 
