@@ -50,7 +50,7 @@ public:
 		tc*				parent;
 
 		vector<tc*>		children;
-		vector<Vertex*>  vertices;
+		vector<Vertex*> vertices;
 		
 		int *			indexPtr;
 		float *			vertPtr;		
@@ -72,13 +72,14 @@ public:
 		float			Ar;
 		float			As;
 
-		CoordSystem		cs;
+		CoordSystem		cs;		
 		CoordSystem		originalCS;
-		CoordSystem		objectCS;
+//		CoordSystem		objectCS;
 
 		GLuint			shaderProgramID;
 
 		TextureManager * texManager;
+
 
 		
 

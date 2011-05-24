@@ -37,6 +37,8 @@ class CoordSystem
 		void normalize();
 
 		void printOut();
+		
+		CoordSystem getSystemInThisSystem(CoordSystem &cs);
 
 		v3 getCoordsInThisSystem(v3 &v);
 		// origin

@@ -11,7 +11,13 @@ const static GLint COL2_TEX_UNIT_ORDER		= 1;
 const static GLenum DATA_TEX_UNIT			= 0x84C2;
 const static GLint DATA_TEX_UNIT_ORDER		= 2;
 const static int MAX_HIERARCHY_DEPTH		= 4;
+const static float LEAF_SIZE				= 0.5;
 
+inline float randomf(float minf, float maxf){ 
+	//srand(unsigned int(clock()));
+	int lastRandom = rand();
+	return float((double(lastRandom)/RAND_MAX)*(maxf-minf)) + minf; 
+}
 const static char * TEX_LEAF1 = "textures/leaf2r.png";
 #define BUFFER_OFFSET(i) ((char*) NULL + (i))
 #endif

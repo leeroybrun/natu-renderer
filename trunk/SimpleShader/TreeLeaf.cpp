@@ -11,9 +11,9 @@ TreeLeaf::TreeLeaf(
 	TreeComponent(_parent, _cs, _x, _texMan)
 {
 	type			= ComponentType::LEAF;
-	motionVector	= _motionVector;
 	size			= _size;
-	
+	parentID		= ((TreeBranch*)_parent)->id;
+
 	vertPtr				= new float[4*3];
 	normalPtr			= new float[4*3];
 	binormalPtr			= new float[4*3];

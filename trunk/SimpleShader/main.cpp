@@ -33,6 +33,11 @@ GLuint		g_FragmentShader		= 0;	// Fragment shader GL id
 GLuint		g_GeometryShader		= 0;	// Geometry shader GL id
 GLint hTimer = 0;
 GLuint texId = 0;
+
+bool tqAvailable;
+GLuint tqid;
+float fps;
+
 float varA = 0.1;
 float varB = 0.8;
 float varC = 0.7;
@@ -72,7 +77,31 @@ void callback_VariableCchanged(float value)
 	varC = value;
 	printf("variable C changed\n");
 }
-
+static int isExtensionSupported(const char *extension)
+{
+	const GLubyte *extensions = NULL;
+	const GLubyte *start;
+	GLubyte *pos, *terminator;
+	/* Kontrola parametru – jméno musí být bez mezer. */
+	pos = (GLubyte *) strchr(extension, ' ');// ptr na ‘ ‘
+	if (pos || *extension == '\0') // nebo prázdné jméno
+		return 0;
+	extensions = glGetString(GL_EXTENSIONS);
+	/* zjištìní pøítomnosti extenze */
+	start = extensions;
+	for (;;) {
+		pos = (GLubyte *) strstr((const char *) start, extension);
+		if (!pos)
+			break;
+		/* není to jen podøetìzec delšího jména extenze? */
+		terminator = pos + strlen(extension);
+		if (pos == start || *(pos - 1) == ' ')
+			if (*terminator == ' ' || *terminator == '\0')
+				return 1;
+		start = terminator;
+	}
+	return 0;
+}
 /*
 void callback_CompileShaders()
 {
@@ -123,8 +152,28 @@ void display()
 	glColor3f(1.f, 1.f, 1.f);
 	// draw tree/branch
 
-	tree2->draw();
-//	tree3->draw2();
+
+
+	if (tqAvailable){
+	    // measure on GPU			
+			glBeginQuery(GL_TIME_ELAPSED, tqid);
+		
+			
+			
+		tree2->draw();	
+		
+		
+		//if (result_available)
+			glEndQuery(GL_TIME_ELAPSED);
+		
+		GLuint64EXT time = 0;
+		glGetQueryObjectui64vEXT(tqid, GL_QUERY_RESULT, &time); // blocking CPU
+		fps = 1000000000.0/ double(time);
+		int cnt = printf("fps: %f", fps);
+		BACKSPACE(cnt);
+	} else {
+		tree2->draw();
+	}
 
 	// Render GUI controls
 	GUIManager::display();			// Render gui components
@@ -136,106 +185,93 @@ void display()
 		rotY += 0.75f;
 	}
 }
+
+
 void initApp(void){
+
+
+	if (isExtensionSupported(TIME_QUERY_EXTENSION)){
+		tqAvailable = true;
+		glGenQueries(1, &tqid);
+	}
+
 	// init shaders
 	Shader * pBranchShader = new Shader();
-	pBranchShader->createShaderProgram("Shaders/branch_vs_habel.glsl", "Shaders/branch_fs.glsl");
+	if (!pBranchShader->createShaderProgram("Shaders/branch_vs2.glsl", "Shaders/branch_fs.glsl")){
+		// error... stop
+		system("PAUSE");
+		exit(1);
+	}
 	shaManager.addShader(pBranchShader);
-	Shader * pLeafShader = new Shader();
+	/*Shader * pLeafShader = new Shader();
 	pLeafShader->createShaderProgram("Shaders/leaf_vs.glsl", "Shaders/leaf_fs.glsl");
-	shaManager.addShader(pLeafShader);
+	shaManager.addShader(pLeafShader);*/
 	
 	// init coord system of branch
+	/*
 	Vector3 org(0.f,0.f, 0.f);
-	Vector3 org2(0.f,0.f, 0.f);
 	Vector3 r(1.f,0.f, 0.f);
 	Vector3 s(0.f,0.f, 1.f);
 	Vector3 t(0.f,1.f, 0.f);
 	cs = new CoordSystem(org, r,s,t);
-	cs->printOut();
-	CoordSystem	xcs = cs->getRotated(v3(0.f, 0.f, 1.f), 1);
-	//xbr1 = new Branch(NULL, 0, *cs, 1, 0.2,0.1,4,8,0.3326, 0.398924);
-	//xbr1->setBending(1,0);
-	
-
-	xcs.origin.t = 1.0;
-	xcs.origin.r = -0.1;
-	xcs.printOut();
-	
-	CoordSystem	leafCs1 = xcs.getRotated(v3(0.f, 0.f, 1.f), -1);
-	leafCs1.origin.r=0.2;
-	leafCs1.origin.t=0.5;
-	leafCs1.printOut();
-	CoordSystem	leafCs2 = xcs.getRotated(v3(0.f, 0.f, 1.f), 1);
-	leafCs2.origin.r=0.2;
-	leafCs2.origin.t=0.7;
-	leafCs2.printOut();	
-	//xbr2 = new Branch(xbr1, 1.0, xcs, 0.5, 0.1,0.05,5,8,0.3326, 0.398924);
-	//xbr2->setBending(0.1,0);
-
-	//tree = new Tree();
-	//tree->trunk = xbr1;
-	//tree->init();
+	//cs->rotate(v3(1.f,0.f,1.f), 0.01);
+	CoordSystem	cs2 = cs->getRotated(v3(0.f, 0.f, 1.f), M_PI/3.0);
+	CoordSystem	cs3 = cs->getRotated(v3(0.f, 0.f, 1.f), -M_PI/2.0);
+	CoordSystem	cs4 = cs->getRotated(v3(0.f, 0.f, 1.f), 0.0);
 
 	v3 motionVector(1.f, 1.f, 1.f);
-	TreeBranch * br1 = new TreeBranch(NULL, *cs, 0.0f, &texManager, 1.0f, 0.2,0.1,1,3,0.3326, 0.398924,motionVector);
+	float angle = randomf(0.f, M_PI );
+	float scale = 1.0;
+	motionVector = v3(scale*cos(angle), scale*sin(angle), 0.f);
+	TreeBranch * br1 = new TreeBranch(NULL, *cs, 0.0f, &texManager, 1.0f, 0.2,0.1,2,4,0.3326, 0.398924, motionVector);
 	br1->setBending(0.6,0);
-	TreeBranch * br2 = new TreeBranch(br1, xcs, 1.0f, &texManager, 0.5f, 0.1,0.05,1,3,0.3326, 0.398924,motionVector);
+
+	angle = randomf(0.f, M_PI );
+	motionVector = v3(scale*cos(angle), scale*sin(angle), 0.f);
+	TreeBranch * br2 = new TreeBranch(br1, cs2, 0.5f, &texManager, 0.5f, 0.1,0.05,1,4,0.3326, 0.398924, motionVector);
 	br2->setBending(0.1,0);
-	//TreeLeaf* leaf1 = new TreeLeaf(br2,leafCs1, 0.2f, &texManager, 0.4f, motionVector);
-	//TreeLeaf* leaf2 = new TreeLeaf(br2,leafCs2, 0.7f, &texManager, 0.2f, motionVector);
-	//TreeLeaf* leaf3 = new TreeLeaf(br1,leafCs1, 1.0f, &texManager, 0.5f, motionVector);
+
+	angle = randomf(0.f, M_PI );
+	motionVector = v3(scale*cos(angle), scale*sin(angle), 0.f);
+	TreeBranch * br3 = new TreeBranch(br1, cs3, 0.6f, &texManager, 0.3f, 0.1,0.05,1,4,0.3326, 0.398924, motionVector);
+	br3->setBending(0.1,0);
 	
+	angle = randomf(0.f, M_PI );
+	motionVector = v3(scale*cos(angle), scale*sin(angle), 0.f);
+	TreeBranch * br4 = new TreeBranch(br1, cs4, 1.0f, &texManager, 0.3f, 0.1,0.05,1,4,0.3326, 0.398924, motionVector);
+	br4->setBending(0.1,0);
+
 	tree2 = new Tree();
 	tree2->branchShaderID = pBranchShader->programID;
-	tree2->leafShaderID	  = pLeafShader->programID;
+	//tree2->leafShaderID	  = pLeafShader->programID;
 	tree2->trunk = br1;
+
+	*/
+	tree2 = new Tree();
+	tree2->branchShaderID = pBranchShader->programID;
+	tree2->load("data/Javor.objt", &texManager);
+
 	tree2->init();
-	/*
-	tree3 = new Tree();
-	tree3->branchShaderID = pBranchShader->programID;
-	tree3->leafShaderID	  = pLeafShader->programID;
-	tree3->load("./data/JavorSMALL3.objt", &texManager);
-	tree3->init2();
-	*/
-	/*
-	CoordSystem xcs3 = xcs.getRotated(v3(0.f, 0.f, 1.f), 1);
 	
-	xcs3.origin.z=1.0f;
-	xbr3 = new Branch(xbr2, 0.5, xcs3, 2, 0.1,0.1,2,4,0.3326, 0.398924);
-	*/
-	//tree = new Tree();
-	//tree->trunk = br;
-	//tree->init();
-	glEnable(GL_TEXTURE_RECTANGLE_ARB);
+	//glEnable(GL_TEXTURE_RECTANGLE_ARB);
 }
+
 void deinitApp(){
+	if (tqAvailable){
+		glDeleteQueries(1, &tqid);
+	}
 	delete br;
 	delete br2;
 	delete cs;
 	delete cs2;
 }
+
 void onTimer(int value)
 {
 	ttime += PI/100;
-	valA = sin(ttime);
-	valB = sin(ttime*0.8);
-	//tree->setTime(ttime);
 
 	tree2->setTime(ttime);
-	//tree3->setTime(ttime);
-	//tree->update(ttime);
-	//xbr1->setBending(valA*varA,0);
-	//xbr1->update();
-	/*
-	xbr2->x = varC;
-	xbr2->originalCS.origin.t = varC*xbr1->L;
-	xbr2->setBending(valB*varB,0);
-	xbr2->update();
-	xbr3->setBending(0.1,0);
-	xbr3->update();
-	*/
-	//printf("%f\n",time );
+	
 	glutTimerFunc(10, onTimer, value);
 }
 
@@ -277,7 +313,7 @@ void initGL()
 	
 	g_bShadersSupported = (	GLEE_ARB_shader_objects && GLEE_ARB_shading_language_100 &&
 							GLEE_ARB_vertex_shader  && GLEE_ARB_fragment_shader);
-	texId = createSimpleTexture(256,256);
+	//texId = createSimpleTexture(256,256);
 
 }
 
