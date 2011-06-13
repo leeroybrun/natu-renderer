@@ -19,10 +19,12 @@ public:
 	void			draw();
 	//	leaf?
 	bool			isLeaf(){ return true;	}	
+	int				getVertexCount();
 // variables
 	float			size;
 	v4				xvals;
 	int				parentID;
+	int				level;
 	
 };
 

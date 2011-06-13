@@ -4,7 +4,8 @@
 /* Constructor */
 Tree::Tree(){
 	dataTexture		= NULL;
-	leafTexture1	= NULL;
+	lColorTexture	= NULL;
+	bColorTexture	= NULL;
 
 	trunk			= NULL;
 
@@ -34,8 +35,13 @@ Tree::~Tree(){
 	if (leafNoiseTexture!=NULL){
 		delete leafNoiseTexture;
 	}
+	if (lColorTexture!=NULL){
+		delete lColorTexture;
+	}
+	if (bColorTexture!=NULL){
+		delete bColorTexture;
+	}
 }
-
 
 void Tree::init(){
 	// get loactions of proper attributes
@@ -51,7 +57,24 @@ void Tree::init(){
 	locations[WIND_DIRECTION]	   = glGetUniformLocation(branchShaderID, "wind_direction");
 	locations[WIND_STRENGTH]	   = glGetUniformLocation(branchShaderID, "wind_strength");
 	locations[WOOD_AMPLITUDE]	   = glGetUniformLocation(branchShaderID, "wood_amplitude");
-	
+	locations[COLOR_TEXTURE0]		= glGetUniformLocation(branchShaderID, "color_texture");
+	locations[TEXCOORD0]			= glGetAttribLocation(branchShaderID, "texCoords0");
+
+	leafLocations[NORMAL]				= glGetAttribLocation(leafShaderID, "normal");
+	leafLocations[TANGENT]				= glGetAttribLocation(leafShaderID, "tangent");
+	leafLocations[XVALS]				= glGetAttribLocation(leafShaderID, "x_vals");
+	leafLocations[BRANCH_INDEX]			= glGetAttribLocation(leafShaderID, "branch_index");
+	leafLocations[TEXCOORD0]			= glGetAttribLocation(leafShaderID, "texCoords0");
+	leafLocations[BRANCH_DATA_TEXTURE]	= glGetUniformLocation(leafShaderID, "data_tex");
+	leafLocations[TIME]					= glGetUniformLocation(leafShaderID, "time");
+	leafLocations[BRANCH_COUNT]			= glGetUniformLocation(leafShaderID, "branch_count");
+	leafLocations[NOISE_TEXTURE0]		= glGetUniformLocation(leafShaderID, "branch_noise_tex");
+	leafLocations[NOISE_TEXTURE1]		= glGetUniformLocation(leafShaderID, "leaf_noise_tex");
+	leafLocations[WIND_DIRECTION]		= glGetUniformLocation(leafShaderID, "wind_direction");
+	leafLocations[WIND_STRENGTH]		= glGetUniformLocation(leafShaderID, "wind_strength");
+	leafLocations[WOOD_AMPLITUDE]		= glGetUniformLocation(leafShaderID, "wood_amplitude");
+	leafLocations[COLOR_TEXTURE0]		= glGetUniformLocation(leafShaderID, "color_texture");
+
 	// create branch data texture
 	createDataTexture();
 
@@ -65,49 +88,62 @@ void Tree::init(){
 	// TODO: via texture manager
 	branchNoiseTexture = new Texture();
 	branchNoiseTexture->loadTexture("textures/habel/Noise_20.png", true, GL_REPEAT, GL_LINEAR);
-
+	// add branch color texture
+	bColorTexture = new Texture();
+	bColorTexture->loadTexture(TEX_WOOD1, false, GL_REPEAT, GL_LINEAR);
+	
 	leafNoiseTexture = new Texture();
 	leafNoiseTexture->loadTexture("textures/habel/Noise_53.png", true, GL_REPEAT, GL_LINEAR);
 
 	// add leaf color texture
-	//leafTexture1 = new Texture();
-	//leafTexture1->loadTexture(TEX_LEAF1);
+	lColorTexture = new Texture();
+	lColorTexture->loadTexture(TEX_LEAF1, false, GL_REPEAT, GL_LINEAR);
+
+
 
 }
+
 void Tree::createLeavesVBO(){
+	// recalc coord systems...
 	int i, sizeL = leaves.size(), size;
-	int vCnt = 0, iCnt = 0;
+	TreeLeaf * leaf;
+	for (i=0; i<sizeL; i++){
+		leaf = leaves[i];
+		leaf->init();
+		if (leaf->parent!=NULL){
+			leaf->cs = leaf->parent->originalCS.getSystemInThisSystem(leaf->originalCS);
+		}
+	}
+
+	int vCnt = 0;
 	// count total vertices & indices
 	for (i=0; i<sizeL; i++){
 		vCnt += leaves[i]->getVertexCount();
-		iCnt += leaves[i]->getIndicesCount();
 	}
-
+	leafVerticesCount = vCnt;
 	// get sizes
 	for (i = 0; i < VBO_VERTEX_COMPONENTS; i++){
-		sizes[i]=0;
+		leafSizes[i]=0;
 	}
-	sizes[POSITION] = 3;
-	sizes[NORMAL]	= 3;
-	sizes[TANGENT]	= 3;
-	sizes[TEXCOORD0]= 2;
-	sizes[BRANCH_INDEX]=1;
-	sizes[XVALS]	= 4;
+	leafSizes[POSITION] = 3;
+	leafSizes[NORMAL]	= 3;
+	leafSizes[TANGENT]	= 3;
+	leafSizes[TEXCOORD0]= 2;
+	leafSizes[BRANCH_INDEX]=1;
+	leafSizes[XVALS]	= 4;
 	int totalVertexSize = 0;
 	for (i = 0; i < VBO_VERTEX_COMPONENTS; i++){
-		vbo_data[i]= new GLfloat[vCnt*sizes[i]];
-		totalVertexSize+=sizes[i];
+		vbo_data[i]= new GLfloat[vCnt*leafSizes[i]];
+		totalVertexSize+=leafSizes[i];
 	}
-	// ebo
-	ebo_data = new GLuint	[iCnt];
 
 	// get offsets
-	offsets[POSITION] = 0;
-	offsets[NORMAL]   = offsets[POSITION]  + vCnt * sizes[POSITION]	* sizeof(GLfloat);
-	offsets[TANGENT]  = offsets[NORMAL]    + vCnt * sizes[NORMAL]	* sizeof(GLfloat);
-	offsets[TEXCOORD0]= offsets[TANGENT]   + vCnt * sizes[TANGENT]	* sizeof(GLfloat);
-	offsets[XVALS]	  =	offsets[TEXCOORD0] + vCnt * sizes[TEXCOORD0]* sizeof(GLfloat);
-	offsets[BRANCH_INDEX]= offsets[XVALS]  + vCnt * sizes[XVALS]	* sizeof(GLfloat);
+	leafOffsets[POSITION] = 0;
+	leafOffsets[NORMAL]   = leafOffsets[POSITION]  + vCnt * leafSizes[POSITION]	* sizeof(GLfloat);
+	leafOffsets[TANGENT]  = leafOffsets[NORMAL]    + vCnt * leafSizes[NORMAL]	* sizeof(GLfloat);
+	leafOffsets[TEXCOORD0]= leafOffsets[TANGENT]   + vCnt * leafSizes[TANGENT]	* sizeof(GLfloat);
+	leafOffsets[XVALS]	  =	leafOffsets[TEXCOORD0] + vCnt * leafSizes[TEXCOORD0]* sizeof(GLfloat);
+	leafOffsets[BRANCH_INDEX]= leafOffsets[XVALS]  + vCnt * leafSizes[XVALS]	* sizeof(GLfloat);
 	
 	// fill arrays
 	int k,l, indicesCnt, vertexCnt, offset, ch;
@@ -116,93 +152,44 @@ void Tree::createLeavesVBO(){
 	Vertex *vertex;
 	for (i=0; i<sizeL; i++)// each leaf 
 	{
-		id = leaves[i]->parentID;
-		offset = dataPtr;
-		for (k=0; k<leaves[i]->vertices.size(); k++){
-			vertex = leaves[i]->vertices[k];
+		leaf = leaves[i];
+		id = leaf->parentID;
+		for (k=0; k<leaf->vertices.size(); k++){
+			vertex = leaf->vertices[k];
 			// position
-			vbo_data[POSITION][dataPtr*sizes[POSITION] + 0] = vertex->bPos.data[ 0 ];
-			vbo_data[POSITION][dataPtr*sizes[POSITION] + 1] = vertex->bPos.data[ 1 ];
-			vbo_data[POSITION][dataPtr*sizes[POSITION] + 2] = vertex->bPos.data[ 2 ];
+			vbo_data[POSITION][dataPtr*leafSizes[POSITION] + 0] = vertex->bPos.data[ 0 ];
+			vbo_data[POSITION][dataPtr*leafSizes[POSITION] + 1] = vertex->bPos.data[ 1 ];
+			vbo_data[POSITION][dataPtr*leafSizes[POSITION] + 2] = vertex->bPos.data[ 2 ];
 
 			// normal
-			vbo_data[NORMAL][dataPtr*sizes[NORMAL] + 0] = vertex->normal.data[ 0 ];
-			vbo_data[NORMAL][dataPtr*sizes[NORMAL] + 1] = vertex->normal.data[ 1 ];
-			vbo_data[NORMAL][dataPtr*sizes[NORMAL] + 2] = vertex->normal.data[ 2 ];
+			vbo_data[NORMAL][dataPtr*leafSizes[NORMAL] + 0] = vertex->normal.data[ 0 ];
+			vbo_data[NORMAL][dataPtr*leafSizes[NORMAL] + 1] = vertex->normal.data[ 1 ];
+			vbo_data[NORMAL][dataPtr*leafSizes[NORMAL] + 2] = vertex->normal.data[ 2 ];
 
 			// tangent
-			vbo_data[TANGENT][dataPtr*sizes[TANGENT] + 0] = vertex->tangent.data[ 0 ];
-			vbo_data[TANGENT][dataPtr*sizes[TANGENT] + 1] = vertex->tangent.data[ 1 ];
-			vbo_data[TANGENT][dataPtr*sizes[TANGENT] + 2] = vertex->tangent.data[ 2 ];
+			vbo_data[TANGENT][dataPtr*leafSizes[TANGENT] + 0] = vertex->tangent.data[ 0 ];
+			vbo_data[TANGENT][dataPtr*leafSizes[TANGENT] + 1] = vertex->tangent.data[ 1 ];
+			vbo_data[TANGENT][dataPtr*leafSizes[TANGENT] + 2] = vertex->tangent.data[ 2 ];
 
 			// texcoord0
-			vbo_data[TEXCOORD0][dataPtr*sizes[TEXCOORD0] + 0] = vertex->textureCoords.data[ 0 ];
-			vbo_data[TEXCOORD0][dataPtr*sizes[TEXCOORD0] + 1] = vertex->textureCoords.data[ 1 ];
+			vbo_data[TEXCOORD0][dataPtr*leafSizes[TEXCOORD0] + 0] = vertex->textureCoords.data[ 0 ];
+			vbo_data[TEXCOORD0][dataPtr*leafSizes[TEXCOORD0] + 1] = vertex->textureCoords.data[ 1 ];
 
 			// xvals
-			vbo_data[XVALS][dataPtr*sizes[XVALS] + 0] = vertex->x[ 0 ];
-			vbo_data[XVALS][dataPtr*sizes[XVALS] + 1] = vertex->x[ 1 ];
-			vbo_data[XVALS][dataPtr*sizes[XVALS] + 2] = vertex->x[ 2 ];
-			vbo_data[XVALS][dataPtr*sizes[XVALS] + 3] = vertex->x[ 3 ];
+			vbo_data[XVALS][dataPtr*leafSizes[XVALS] + 0] = vertex->x[ 0 ];
+			vbo_data[XVALS][dataPtr*leafSizes[XVALS] + 1] = vertex->x[ 1 ];
+			vbo_data[XVALS][dataPtr*leafSizes[XVALS] + 2] = vertex->x[ 2 ];
+			vbo_data[XVALS][dataPtr*leafSizes[XVALS] + 3] = vertex->x[ 3 ];
 
 			// branch index
 			vbo_data[BRANCH_INDEX][dataPtr + 0] = id+0.5f;
-			branches[i]->motionVectors[0];
-			//printf("branch_index[%i] = %f\n", dataPtr, id+0.5f);
 
 			dataPtr++;
 		}
-		// copy branch indices...
-		int * branchIndices = branches[i]->indexPtr;
-		int branchIndexCnt = branches[i]->indicesCount;
-		
-		for (k=0; k<branchIndexCnt; k++){
-			ebo_data[indexPtr] = branchIndices[k]+offset; 
-			indexPtr++;
-		}
 	}
-
-	// print out vbo_data
-	/*float x,y,z,w;
-	for (i=0; i<dataPtr; i++){
-		x = vbo_data[POSITION][i*sizes[POSITION] + 0];
-		y = vbo_data[POSITION][i*sizes[POSITION] + 1];
-		z = vbo_data[POSITION][i*sizes[POSITION] + 2];
-		//printf("POS[%i]= %f, %f, %f\n", i, x,y,z);
-		// normal
-		x = vbo_data[NORMAL][i*sizes[NORMAL] + 0];
-		y = vbo_data[NORMAL][i*sizes[NORMAL] + 1];
-		z = vbo_data[NORMAL][i*sizes[NORMAL] + 2];
-		//printf("NOR[%i]= %f, %f, %f\n", i, x,y,z);
-		// tangent
-		x = vbo_data[TANGENT][i*sizes[TANGENT] + 0];
-		y = vbo_data[TANGENT][i*sizes[TANGENT] + 1];
-		z = vbo_data[TANGENT][i*sizes[TANGENT] + 2];
-		//printf("TAN[%i]= %f, %f, %f\n", i, x,y,z);
-		// texcoord0
-		x = vbo_data[TEXCOORD0][i*sizes[TEXCOORD0] + 0];
-		y = vbo_data[TEXCOORD0][i*sizes[TEXCOORD0] + 1];
-		//printf("TEX0[%i]= %f, %f\n", i, x,y);
-		// xvals
-		x = vbo_data[XVALS][i*sizes[XVALS] + 0];
-		y = vbo_data[XVALS][i*sizes[XVALS] + 1];
-		z = vbo_data[XVALS][i*sizes[XVALS] + 2];
-		w = vbo_data[XVALS][i*sizes[XVALS] + 3];
-		//printf("XVAL[%i]= %f, %f, %f, %f\n", i, x,y,z,w);
-		// branch index
-		x = vbo_data[BRANCH_INDEX][i + 0];
-		//printf("BRI[%i]= %f\n", i, x);
-	}
-	*/
 	// create vbos...
-	glGenBuffers(1, &branchEBOid);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, branchEBOid); // vytvoreni indexoveho bufferu
-     glBufferData(GL_ELEMENT_ARRAY_BUFFER, iCnt*sizeof(GLuint), ebo_data, GL_STATIC_DRAW);
-	 branchEBOcount = iCnt;	
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-
-	glGenBuffers(1, &branchVBOid);
-	glBindBuffer(GL_ARRAY_BUFFER, branchVBOid);
+	glGenBuffers(1, &leafVBOid);
+	glBindBuffer(GL_ARRAY_BUFFER, leafVBOid);
 		// empty init
 		int vboSize = totalVertexSize * vCnt * sizeof(GLfloat);
 		glBufferData(GL_ARRAY_BUFFER, vboSize, 0, GL_STATIC_DRAW);
@@ -210,42 +197,46 @@ void Tree::createLeavesVBO(){
 		// fill by parts
 		// position
 		glBufferSubData(GL_ARRAY_BUFFER,
-						offsets   [POSITION],
-						vCnt*sizes[POSITION]*sizeof(GLfloat),
+						leafOffsets   [POSITION],
+						vCnt*leafSizes[POSITION]*sizeof(GLfloat),
 						vbo_data  [POSITION]
 						);
 		// normal
 		glBufferSubData(GL_ARRAY_BUFFER,
-						offsets   [NORMAL],
-						vCnt*sizes[NORMAL]*sizeof(GLfloat),
+						leafOffsets   [NORMAL],
+						vCnt*leafSizes[NORMAL]*sizeof(GLfloat),
 						vbo_data  [NORMAL]
 						);
 		// tangent
 		glBufferSubData(GL_ARRAY_BUFFER,
-						offsets   [TANGENT],
-						vCnt*sizes[TANGENT]*sizeof(GLfloat),
+						leafOffsets   [TANGENT],
+						vCnt*leafSizes[TANGENT]*sizeof(GLfloat),
 						vbo_data  [TANGENT]
 						);
 		// xvals
 		glBufferSubData(GL_ARRAY_BUFFER,
-						offsets   [XVALS],
-						vCnt*sizes[XVALS]*sizeof(GLfloat),
+						leafOffsets   [XVALS],
+						vCnt*leafSizes[XVALS]*sizeof(GLfloat),
 						vbo_data  [XVALS]
 						);
 		// branch index
 		glBufferSubData(GL_ARRAY_BUFFER,
-						offsets   [BRANCH_INDEX],
-						vCnt*sizes[BRANCH_INDEX]*sizeof(GLfloat),
+						leafOffsets   [BRANCH_INDEX],
+						vCnt*leafSizes[BRANCH_INDEX]*sizeof(GLfloat),
 						vbo_data  [BRANCH_INDEX]
 						);
 		// texcoord0
 		glBufferSubData(GL_ARRAY_BUFFER,
-						offsets   [TEXCOORD0],
-						vCnt*sizes[TEXCOORD0]*sizeof(GLfloat),
+						leafOffsets   [TEXCOORD0],
+						vCnt*leafSizes[TEXCOORD0]*sizeof(GLfloat),
 						vbo_data  [TEXCOORD0]
 						);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
-
+	for (i = 0; i < VBO_VERTEX_COMPONENTS; i++){
+		delete [] vbo_data[i];
+		vbo_data[i] = NULL;
+	}
+	printf("vCnt = %i\n",vCnt);
 }
 
 void Tree::createBranchesVBO(){
@@ -319,14 +310,7 @@ void Tree::createBranchesVBO(){
 			vbo_data[XVALS][dataPtr*sizes[XVALS] + 1] = vertex->x[ 1 ];
 			vbo_data[XVALS][dataPtr*sizes[XVALS] + 2] = vertex->x[ 2 ];
 			vbo_data[XVALS][dataPtr*sizes[XVALS] + 3] = vertex->x[ 3 ];
-/*
-			printf("bxvals = %f %f %f %f\n", 
-				vertex->x[ 0 ],
-				vertex->x[ 1 ],
-				vertex->x[ 2 ],
-				vertex->x[ 3 ]
-				);
-*/
+
 			// branch index
 			vbo_data[BRANCH_INDEX][dataPtr + 0] = id+0.5f;
 			branches[i]->motionVectors[0];
@@ -343,39 +327,6 @@ void Tree::createBranchesVBO(){
 			indexPtr++;
 		}
 	}
-
-	// print out vbo_data
-	/*float x,y,z,w;
-	for (i=0; i<dataPtr; i++){
-		x = vbo_data[POSITION][i*sizes[POSITION] + 0];
-		y = vbo_data[POSITION][i*sizes[POSITION] + 1];
-		z = vbo_data[POSITION][i*sizes[POSITION] + 2];
-		//printf("POS[%i]= %f, %f, %f\n", i, x,y,z);
-		// normal
-		x = vbo_data[NORMAL][i*sizes[NORMAL] + 0];
-		y = vbo_data[NORMAL][i*sizes[NORMAL] + 1];
-		z = vbo_data[NORMAL][i*sizes[NORMAL] + 2];
-		//printf("NOR[%i]= %f, %f, %f\n", i, x,y,z);
-		// tangent
-		x = vbo_data[TANGENT][i*sizes[TANGENT] + 0];
-		y = vbo_data[TANGENT][i*sizes[TANGENT] + 1];
-		z = vbo_data[TANGENT][i*sizes[TANGENT] + 2];
-		//printf("TAN[%i]= %f, %f, %f\n", i, x,y,z);
-		// texcoord0
-		x = vbo_data[TEXCOORD0][i*sizes[TEXCOORD0] + 0];
-		y = vbo_data[TEXCOORD0][i*sizes[TEXCOORD0] + 1];
-		//printf("TEX0[%i]= %f, %f\n", i, x,y);
-		// xvals
-		x = vbo_data[XVALS][i*sizes[XVALS] + 0];
-		y = vbo_data[XVALS][i*sizes[XVALS] + 1];
-		z = vbo_data[XVALS][i*sizes[XVALS] + 2];
-		w = vbo_data[XVALS][i*sizes[XVALS] + 3];
-		//printf("XVAL[%i]= %f, %f, %f, %f\n", i, x,y,z,w);
-		// branch index
-		x = vbo_data[BRANCH_INDEX][i + 0];
-		//printf("BRI[%i]= %f\n", i, x);
-	}
-	*/
 	// create vbos...
 	glGenBuffers(1, &branchEBOid);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, branchEBOid); // vytvoreni indexoveho bufferu
@@ -427,6 +378,12 @@ void Tree::createBranchesVBO(){
 						vbo_data  [TEXCOORD0]
 						);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	for (i = 0; i < VBO_VERTEX_COMPONENTS; i++){
+		delete [] vbo_data[i];
+		vbo_data[i] = NULL;
+	}
+	delete [] ebo_data;
+	ebo_data = NULL;
 }
 
 bool Tree::makeShader(const char* vsfilename,const char* gsfilename,const char* fsfilename, GLuint &programID, GLuint &vertexShader, GLuint &geometryShader,  GLuint &fragmentShader){
@@ -447,7 +404,6 @@ bool Tree::makeShader(const char* vsfilename,const char* gsfilename,const char* 
 	return bResult;
 }
 
-
 void Tree::recalcCoordSystems()
 {
 	int i, size=branches.size();
@@ -459,7 +415,6 @@ void Tree::recalcCoordSystems()
 		}
 	}
 }
-
 
 void Tree::fillParentDataForEachBranch()
 {
@@ -477,7 +432,7 @@ void Tree::fillParentDataForEachBranch()
 			branch->lengths.d	[actBranch->level] = actBranch->L;
 			//branch->phases.d	[actBranch->level] = actBranch->phase;
 			branch->motionVectors[actBranch->level]= actBranch->motionVector;
-			printf("<- branch id=%i (level = %i)", actBranch->id, actBranch->level);
+			//printf("<- branch id=%i (level = %i)", actBranch->id, actBranch->level);
 			if (actBranch->parent!=NULL){
 				branch->origins		[actBranch->level] = cSys->origin;
 				branch->upVectors	[actBranch->level] = cSys->r;
@@ -492,7 +447,7 @@ void Tree::fillParentDataForEachBranch()
 				actBranch = NULL;
 			}
 		}
-		printf("\n");
+		//printf("\n");
 	}
 }
 
@@ -513,7 +468,7 @@ void Tree::createDataTexture()
 	for (int i=0; i<texDimX*texDimY*channels; i=i+texDimY*channels){
 		k=0;
 		b = branches[i/(texDimY*channels)];
-		printf("id: %i\n", b->id);
+		//printf("id: %i\n", b->id);
 		for (ch = 0; ch<channels; ch++){
 			data[i + k*channels + ch] = 0.7f;
 		}
@@ -592,7 +547,7 @@ int Tree::linearizeHierarchy(){
 				actBranch = (TreeBranch*)(branch->children[i]);
 				bStack.push(actBranch);
 			} else {
-				leaves.push_back((TreeLeaf*) branch->children[i] );
+				//leaves.push_back((TreeLeaf*) branch->children[i] );
 			}
 		}		
 	}
@@ -600,24 +555,25 @@ int Tree::linearizeHierarchy(){
 };
 
 void Tree::draw(){
-
-
-
-
 	glDisable(GL_LIGHTING);
 	glPushMatrix();
-	//glTranslatef(-1.f, 0.f, 0.f);
+
+	glScalef( 1.f , -1.f, 1.f);
+	glScalef(2.0, 2.0, 2.0);
 
 	dataTexture->bindTexture(1);
 	branchNoiseTexture->bindTexture(2);
-	//leafNoiseTexture->bindTexture(3);
-
+	bColorTexture->bindTexture(4);
+	// ========================================================================================
+	// draw BRANCHES
+	// ========================================================================================
 	glUseProgram(branchShaderID);
 		// set time
 		glUniform1f(locations[TIME], time);
 		// set data_texture
 		glUniform1i(locations[BRANCH_DATA_TEXTURE], GLint(dataTexture->unitOffset));
 		glUniform1i(locations[NOISE_TEXTURE0], GLint(branchNoiseTexture->unitOffset));
+		glUniform1i(locations[COLOR_TEXTURE0], GLint(bColorTexture->unitOffset));
 		glUniform1f(locations[BRANCH_COUNT], GLfloat(branch_count));
 			
 		// bind index buffer
@@ -630,6 +586,8 @@ void Tree::draw(){
 		   glEnableVertexAttribArray(GLuint(locations[NORMAL]		));
 		   glEnableVertexAttribArray(GLuint(locations[TANGENT]		));
 		   glEnableVertexAttribArray(GLuint(locations[XVALS]		));
+		   glEnableVertexAttribArray(GLuint(locations[TEXCOORD0]	));
+
 		   // draw VBOs...
 			glVertexPointer(3, GL_FLOAT, 0, BUFFER_OFFSET(offsets[POSITION]));
 			
@@ -641,12 +599,13 @@ void Tree::draw(){
 			
 			glVertexAttribPointer(locations[TANGENT], sizes[TANGENT], GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(offsets[TANGENT]));
 			
+			glVertexAttribPointer(locations[TEXCOORD0], sizes[TEXCOORD0], GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(offsets[TEXCOORD0]));
 			//glClientActiveTexture(dataTexture->unitId);
 			//glTexCoordPointer(2, GL_FLOAT, 0, BUFFER_OFFSET(offsets[TEXCOORD0]));
 			
 			glDrawElements(GL_TRIANGLES, branchEBOcount, GL_UNSIGNED_INT, BUFFER_OFFSET(0));
-			//printf(".");
 		   // disable
+		   glDisableVertexAttribArray(GLuint(locations[TEXCOORD0]));
 		   glDisableVertexAttribArray(locations[BRANCH_INDEX]);
 		   glDisableVertexAttribArray(locations[NORMAL]);
 		   glDisableVertexAttribArray(locations[TANGENT]);
@@ -658,10 +617,77 @@ void Tree::draw(){
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	// turn off shader
 	glUseProgram(0);
+	
+	// ========================================================================================
+	// draw LEAVES
+	// ========================================================================================
+	glEnable (GL_BLEND);
+	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+	lColorTexture->bindTexture(4);
+	leafNoiseTexture->bindTexture(3);
+	glUseProgram(leafShaderID);
+		// set time
+		glUniform1f(leafLocations[TIME], time);
+		// set data_texture
+		glUniform1i(leafLocations[BRANCH_DATA_TEXTURE],	GLint(dataTexture->unitOffset)			);
+		glUniform1i(leafLocations[NOISE_TEXTURE0],		GLint(branchNoiseTexture->unitOffset)	);
+		glUniform1f(leafLocations[BRANCH_COUNT],		GLfloat(branch_count)					);
+		glUniform1i(leafLocations[COLOR_TEXTURE0],		GLint(lColorTexture->unitOffset)		);
+			
+		// bind index buffer
+		//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, branchEBOid);
+		glBindBuffer(GL_ARRAY_BUFFER, leafVBOid); 
+		   // enable states
+		   glEnableClientState(GL_VERTEX_ARRAY);
+		   //glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+		   glEnableVertexAttribArray(GLuint(leafLocations[BRANCH_INDEX]	));
+		   glEnableVertexAttribArray(GLuint(leafLocations[NORMAL]		));
+		   glEnableVertexAttribArray(GLuint(leafLocations[TANGENT]		));
+		   glEnableVertexAttribArray(GLuint(leafLocations[XVALS]		));
+		   glEnableVertexAttribArray(GLuint(leafLocations[TEXCOORD0]	));
+		   // draw VBOs...
+
+			glVertexPointer(3, GL_FLOAT, 0, BUFFER_OFFSET(leafOffsets[POSITION]));
+			glVertexAttribPointer(leafLocations[TEXCOORD0],		leafSizes[TEXCOORD0],		GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(leafOffsets[TEXCOORD0]));
+			glVertexAttribPointer(leafLocations[BRANCH_INDEX],	leafSizes[BRANCH_INDEX],	GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(leafOffsets[BRANCH_INDEX]));					  
+			glVertexAttribPointer(leafLocations[XVALS],			leafSizes[XVALS],			GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(leafOffsets[XVALS]));					  
+			glVertexAttribPointer(leafLocations[NORMAL],		leafSizes[NORMAL],			GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(leafOffsets[NORMAL]));			  
+			glVertexAttribPointer(leafLocations[TANGENT],		leafSizes[TANGENT],			GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(leafOffsets[TANGENT]));
+			
+			glDrawArrays(GL_QUADS, 0, leafVerticesCount);
+			//glDrawElements(GL_TRIANGLES, branchEBOcount, GL_UNSIGNED_INT, BUFFER_OFFSET(0));
+			//printf(".");
+		   // disable
+		   glDisableVertexAttribArray(locations[BRANCH_INDEX]);
+		   glDisableVertexAttribArray(locations[NORMAL]);
+		   glDisableVertexAttribArray(locations[TANGENT]);
+		   glDisableVertexAttribArray(locations[XVALS]);
+		    glDisableVertexAttribArray(locations[TEXCOORD0]);
+		   //glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+		   glDisableClientState(GL_VERTEX_ARRAY);
+		// unbind buffers
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+	// turn off shader
+	glUseProgram(0);
+
+	// unbind leaf noise texture
+	leafNoiseTexture->unbindTexture();
+	//*/
 	// unbind data texture
 	dataTexture->unbindTexture();
+
+	// unbind branch noise texture
+	branchNoiseTexture->unbindTexture();
+
+	// unbind branch color texture
+	bColorTexture->unbindTexture();
+
+	// unbind leaf color texture
+	lColorTexture->unbindTexture();
+	glDisable (GL_BLEND);
 	glPopMatrix();
-	//glDisable(GL_TEXTURE_RECTANGLE_ARB);
 	glEnable(GL_LIGHTING);
 	
 }
@@ -700,7 +726,7 @@ void Tree::load(string filename, TextureManager *texManager){
 		}
 		// length
 		if (entity.isSetLength){
-			length = entity.length;
+			length = entity.length / file.maxLength;
 		} else {
 			if (entity.isSetLevel){
 				length = 1.f/(entity.level*3.f+1.f);
@@ -756,7 +782,7 @@ void Tree::load(string filename, TextureManager *texManager){
 		if (entity.isSetR2){
 			r2 = entity.r2;
 		} else {		
-			r2 = 0.01*length;
+			r2 = 0.0001;
 		}
 		// add branch...	
 		// set motion vector
@@ -765,19 +791,20 @@ void Tree::load(string filename, TextureManager *texManager){
 			motionVector = v3(scale*cos(angle), scale*sin(angle), 0.f);
 		
 		branches[id] = new TreeBranch(parent, cs, x, texManager, length, r1, r2, divT, divR, c2, c4, motionVector);  
-		branches[id]->setBending(0.5,0.0);
+		branches[id]->id = id;
 	} // for each entity in map
 	
 	// set trunk
 	trunk = branches[0];
-
+	int leafCnt = 0;
 	// process leaves
 	for ( iter=file.leaves.begin() ; iter != file.leaves.end(); iter++ ){
 		id		= (*iter).first;
 		entity	= (*iter).second;
-
+		leafCnt++;
 		// parent
 		if (entity.isSetParent){
+			//printf("%i \n", entity.parentId);
 			parent = branches[entity.parentId];
 		} else {
 			parent = NULL;
@@ -821,7 +848,7 @@ void Tree::load(string filename, TextureManager *texManager){
 		// add to container
 		leaves.push_back(leaf);
 	}
-
+	printf("leaves count: %i\n", leafCnt);
 }
 
 void Tree::save(string filename){}

@@ -17,6 +17,7 @@ bool getFromString1f(string &s, float *f){
 
 OBJTfile::OBJTfile(void)
 {
+	maxLength = 0.f;
 }
 
 
@@ -51,9 +52,10 @@ void OBJTfile::loadFromFile(const char * filename){
 	// name
 	if (words[0].compare("name")==0){
 		name = words[2];
+		readNextWords(words, multilineCommentFlag);
 	}
 	// read entities
-	readNextWords(words, multilineCommentFlag);
+	
 	while (!feof(mFile)){
 		if (words[0]==BRANCH_IDENTIFIER){
 			StEntity branch;
@@ -155,6 +157,9 @@ void OBJTfile::readEntity(StEntity &entity){
 		}
 		if (words[0]==LENGTH){
 			getFromString1f(words[1], &(entity.length));
+			if (entity.length>maxLength){
+				maxLength = entity.length;
+			}
 			entity.isSetLength=true;			
 			readNextWords(words, multilineCommentFlag);
 			continue;

@@ -65,6 +65,8 @@ public:
 	map<int, StEntity> branches;
 	map<int, StEntity> leaves;
 	string name;
+	float maxLength;
+
 private:
 	//void readKeyValue(string &key, string& value)
 	void readLine(string &line);

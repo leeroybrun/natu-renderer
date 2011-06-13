@@ -19,5 +19,6 @@ inline float randomf(float minf, float maxf){
 	return float((double(lastRandom)/RAND_MAX)*(maxf-minf)) + minf; 
 }
 const static char * TEX_LEAF1 = "textures/leaf2r.png";
+const static char * TEX_WOOD1 = "textures/bark2_decal.png";
 #define BUFFER_OFFSET(i) ((char*) NULL + (i))
 #endif

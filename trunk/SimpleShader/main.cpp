@@ -145,7 +145,7 @@ void display()
 	
     glMatrixMode( GL_MODELVIEW );
     glLoadIdentity();
-    glTranslatef( 0.0f, 0.0f, g_CameraZ );
+    glTranslatef( 0.0f, -1.0f, g_CameraZ );
     glRotatef( g_RotObject[0], 1.0f, 0.0f, 0.0f );
     glRotatef( g_RotObject[1] + rotY, 0.0f, 1.0f, 0.0f );
 	
@@ -170,7 +170,7 @@ void display()
 		glGetQueryObjectui64vEXT(tqid, GL_QUERY_RESULT, &time); // blocking CPU
 		fps = 1000000000.0/ double(time);
 		int cnt = printf("fps: %f", fps);
-		BACKSPACE(cnt);
+		BACK(cnt);
 	} else {
 		tree2->draw();
 	}
@@ -196,6 +196,7 @@ void initApp(void){
 	}
 
 	// init shaders
+	// branch shader
 	Shader * pBranchShader = new Shader();
 	if (!pBranchShader->createShaderProgram("Shaders/branch_vs2.glsl", "Shaders/branch_fs.glsl")){
 		// error... stop
@@ -203,9 +204,14 @@ void initApp(void){
 		exit(1);
 	}
 	shaManager.addShader(pBranchShader);
-	/*Shader * pLeafShader = new Shader();
-	pLeafShader->createShaderProgram("Shaders/leaf_vs.glsl", "Shaders/leaf_fs.glsl");
-	shaManager.addShader(pLeafShader);*/
+	// leaf shader
+	Shader * pLeafShader = new Shader();
+	if (!pLeafShader->createShaderProgram("Shaders/leaf_vs.glsl", "Shaders/leaf_fs.glsl")){
+		// error... stop
+		system("PAUSE");
+		exit(1);
+	}
+	shaManager.addShader(pLeafShader);
 	
 	// init coord system of branch
 	/*
@@ -248,8 +254,9 @@ void initApp(void){
 
 	*/
 	tree2 = new Tree();
-	tree2->branchShaderID = pBranchShader->programID;
-	tree2->load("data/Javor.objt", &texManager);
+	tree2->branchShaderID	= pBranchShader->programID;
+	tree2->leafShaderID		= pLeafShader->programID;
+	tree2->load("data/JavorListy.objt", &texManager);
 
 	tree2->init();
 	
@@ -282,7 +289,7 @@ void onTimer(int value)
 //-----------------------------------------------------------------------------
 void initGL()
 {
-	glClearColor(0.5f, .5f, .5f, 0);
+	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 
     glEnable(GL_LIGHTING);
     glEnable(GL_LIGHT0);
