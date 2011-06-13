@@ -10,135 +10,87 @@ TreeLeaf::TreeLeaf(
 		v3 &_motionVector         ):
 	TreeComponent(_parent, _cs, _x, _texMan)
 {
+	cs				= parent->originalCS.getSystemInThisSystem(originalCS);
 	type			= ComponentType::LEAF;
 	size			= _size;
-	parentID		= ((TreeBranch*)_parent)->id;
-
-	vertPtr				= new float[4*3];
-	normalPtr			= new float[4*3];
-	binormalPtr			= new float[4*3];
-	tangentPtr			= new float[4*3];
-	indexPtr			= new int [4];
-	dataTextureCoords	= new float [4*2];
-	col1TextureCoords	= new float [4*2];
+	parentID		= ((TreeBranch*)parent)->id;
+	xvals			= v4(-1.f, -1.f, -1.f, -1.f);
 }
 
 
 TreeLeaf::~TreeLeaf(void)
 {
-	delete [] vertPtr;
-	delete [] normalPtr;
-	delete [] binormalPtr;
-	delete [] indexPtr;
-	delete [] dataTextureCoords;
+}
+
+int TreeLeaf::getVertexCount(){
+	return vertices.size();
 }
 
 void TreeLeaf::init()
 {
+	parentID = ((TreeBranch*)parent)->id;
+	// inherit xvals
+	int k;
+	TreeBranch *p;
+	int i;
+	if (parent!=NULL){
+		level = ((TreeBranch*)parent)->level + 1;
+		// copy xvals
+		p = (TreeBranch *) parent;
+		for (i=1; i<MAX_HIERARCHY_DEPTH; i++){
+			xvals.d[i-1] = p->xvals[i];
+		}
+		xvals.d[level-1] = x;
+	} else {
+		level = 0;
+	}
+
 	// create quad...
 
-	v3 normal	= originalCS.t;
-	v3 binormal = originalCS.s;
-	v3 tangent	= originalCS.r;
+	v3 normal	= cs.t;
+	v3 binormal = cs.s;
+	v3 tangent	= cs.r;
 
-	v3 p1 = v3(0.0, 0.0,  -size/2.f);
-	v3 p2 = v3(0.0, 0.0,   size/2.f);
-	v3 p3 = v3(0.0, size,  size/2.f);
-	v3 p4 = v3(0.0, size, -size/2.f);
-	// TODO
-	float size = 1.0;
-	int i=0;
-	writeTex(dataTextureCoords, this->x, float(((TreeBranch*)this->parent)->id), i);
-	writeTex(col1TextureCoords, 0.f, 0.f, i);	
-	write(normalPtr,normal,i);
-	write(vertPtr,p1,i);
-	write(binormalPtr,binormal,i);
-	write(tangentPtr,tangent,i);
-	indexPtr[i] = i;
-	i++;
-	writeTex(dataTextureCoords, this->x, float(((TreeBranch*)this->parent)->id), i);
-	writeTex(col1TextureCoords, size, 0.f, i);	
-	write(normalPtr,normal,i);
-	write(vertPtr,p2,i);
-	write(binormalPtr,binormal,i);
-	write(tangentPtr,tangent,i);
-	indexPtr[i] = i;
-	i++;
-	writeTex(dataTextureCoords, this->x, float(((TreeBranch*)this->parent)->id), i);
-	writeTex(col1TextureCoords, size, size, i);	
-	write(normalPtr,normal,i);
-	write(vertPtr,p3,i);
-	write(binormalPtr,binormal,i);
-	write(tangentPtr,tangent,i);
-	indexPtr[i] = i;
-	i++;
-	writeTex(dataTextureCoords, this->x, float(((TreeBranch*)this->parent)->id), i);
-	writeTex(col1TextureCoords, 0.f, size, i);	
-	write(normalPtr,normal,i);
-	write(vertPtr,p4,i);
-	write(binormalPtr,binormal,i);
-	write(tangentPtr,tangent,i);
-	indexPtr[i] = i;
-	i++;
-	printf("NORMALS:\n");
-	print(normalPtr, i, 3);
-	printf("BINORMALS:\n");
-	print(binormalPtr, i, 3);
-	printf("TANGENTS:\n");
-	print(tangentPtr, i, 3);
+	v3 p1 = v3(-size/2.f, 0.0, 0.0);
+	v3 p2 = v3( size/2.f, 0.0, 0.0);
+	v3 p3 = v3( size/2.f, size, 0.0);
+	v3 p4 = v3(-size/2.f, size, 0.0);
+	v3 t1 = v3(0.0, 0.0);
+	v3 t2 = v3(1.0, 0.0);
+	v3 t3 = v3(1.0, 1.0);
+	v3 t4 = v3(0.0, 1.0);
+
+	Vertex *v;
+	v = new Vertex(p1, p1, normal, tangent);
+	v->textureCoords = t1;
+	for (k=0; k<MAX_HIERARCHY_DEPTH; k++){
+		v->x[k] = xvals.d[k];
+	}
+	vertices.push_back(v);
+
+	v = new Vertex(p2, p2, normal, tangent);
+	v->textureCoords = t2;
+	for (k=0; k<MAX_HIERARCHY_DEPTH; k++){
+		v->x[k] = xvals.d[k];
+	}
+	vertices.push_back(v);		
+
+	v = new Vertex(p3, p3, normal, tangent);
+	v->textureCoords = t3;
+	for (k=0; k<MAX_HIERARCHY_DEPTH; k++){
+		v->x[k] = xvals.d[k];
+	}
+	vertices.push_back(v);
+
+	v = new Vertex(p4, p4, normal, tangent);
+	v->textureCoords = t4;
+	for (k=0; k<MAX_HIERARCHY_DEPTH; k++){
+		v->x[k] = xvals.d[k];
+	}
+	vertices.push_back(v);
 }
 
 
 void TreeLeaf::draw()
 {
-	glEnableClientState(GL_VERTEX_ARRAY);
-	glEnableClientState(GL_NORMAL_ARRAY);
-	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-		if (binormalID!=-1){
-			// binormal present in shader...
-			glVertexAttribPointer( binormalID, 3, GL_FLOAT, false, 0, binormalPtr );
-			glEnableVertexAttribArray( binormalID );
-			
-		}
-		if (tangentID!=-1){
-			// binormal present in shader...
-			glVertexAttribPointer( tangentID, 3, GL_FLOAT, false, 0, tangentPtr );
-			glEnableVertexAttribArray( tangentID );
-			
-		}
-		glVertexPointer(3, GL_FLOAT, 0, vertPtr);
-		glNormalPointer(GL_FLOAT, 0, normalPtr);
-
-		// for each texture
-		// color texture
-		//glClientActiveTexture(GL_TEXTURE0);
-		//glTexCoordPointer(2, GL_FLOAT, 0, dataTextureCoords); //TODO
-		
-		// data texture
-		//glActiveTexture(DATA_TEX_UNIT);
-		glClientActiveTexture(DATA_TEX_UNIT);
-		glTexCoordPointer(2, GL_FLOAT, 0, dataTextureCoords);
-
-		//glActiveTexture(COL1_TEX_UNIT);
-		glClientActiveTexture(COL1_TEX_UNIT);
-		glTexCoordPointer(2, GL_FLOAT, 0, col1TextureCoords);
-		
-		glDrawElements(GL_QUADS, 4, GL_UNSIGNED_INT, this->indexPtr);
-	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-	glDisableClientState(GL_NORMAL_ARRAY);
-	glDisableClientState(GL_VERTEX_ARRAY);
-	if (binormalID!=-1){
-		glDisableVertexAttribArray( binormalID );
-	}
-	if (tangentID!=-1){
-		glDisableVertexAttribArray( tangentID );
-	}
-	GLenum errCode;
-	const GLubyte *errString;
-
-	if ((errCode = glGetError()) != GL_NO_ERROR) {
-		errString = gluErrorString(errCode);
-		//fprintf (stderr, "OpenGL Error: %s\n", errString);
-	}
-
 }

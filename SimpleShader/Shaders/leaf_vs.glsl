@@ -1,212 +1,268 @@
-#
-uniform sampler2DRect	data_tex;
-uniform sampler2D    	col1_texture;
+#version 120
+
+/*************************************************
+* HIERARCHICAL VERTEX DISPLACEMENT
+**************************************************/
+#define	texCols  18.0
+#define WHITE	vec4(1.0, 1.0, 1.0, 1.0)
+#define RED		vec4(1.0, 0.0, 0.0, 1.0)
+#define GREEN	vec4(0.0, 1.0, 0.0, 1.0)
+#define BLUE	vec4(0.0, 0.0, 1.0, 1.0)
+#define BLACK	vec4(0.0, 0.0, 0.0, 1.0)
+#define ONE2    vec2(1.0,1.0)
+#define ONE3    vec3(1.0,1.0,1.0)
+#define ONE4    vec4(1.0,1.0,1.0,1.0)
+uniform float			branch_count;
 uniform float			time;
-attribute vec3			binormal;
+uniform float			wind_strength;
+uniform float			wood_amplitude;
+
+uniform float			time_offset_leaves;
+
+uniform sampler2D		data_tex;
+uniform sampler2D		branch_noise_tex;
+uniform sampler2D		leaf_noise_tex;
+uniform vec3			wind_direction;
+
+
+attribute vec3			normal;
 attribute vec3			tangent;
-vec3					normal;
+vec3					binormal;
+attribute vec4			x_vals;
+attribute float			branch_index;
+attribute vec2			texCoords0;
 
-vec4 RED = vec4(1.0, 0.0, 0.0, 1.0);
-vec4 GREEN = vec4(0.0, 1.0, 0.0, 1.0);
-vec4 BLUE = vec4(0.0, 0.0, 1.0, 1.0);
-vec4 YELLOW = vec4(1.0, 1.0, 0.0, 1.0);
+varying vec4			normal_vs;
+varying vec4			tangent_vs;
+varying int				level;
 
+float					time_faster;
+vec4					color;	
 
-void readBranchData(in float index, out vec3 o, out vec3 r, out vec3 s, out vec3 t, out vec2 motionVec, out float bx, out float pID, out float level, out float c2, out float c4, out float L){
-	o = texture2DRect( data_tex, vec2(0.5,index) ).xyz;
-	r = texture2DRect( data_tex, vec2(1.5,index) ).xyz;
-	s = texture2DRect( data_tex, vec2(2.5,index) ).xyz;
-	t = texture2DRect( data_tex, vec2(3.5,index) ).xyz;
-	vec3 mixed1 = texture2DRect( data_tex, vec2(4.5,index) ).xyz;
-	vec3 mixed2 = texture2DRect( data_tex, vec2(5.5,index) ).xyz;
-	motionVec = texture2DRect( data_tex, vec2(6.5,index) ).xy;
+void animateBranchVertex(inout vec3 position)
+{
+//===========================================================
+// Displacement method inspired by Ralph Habels article: 
+//  Physically Guided Animation of Trees
+//
+//===========================================================
+
 	
-	bx	= mixed1.x;
-	pID	= mixed1.y+0.5;
-	level= mixed1.z;
-	c2	= mixed2.x;
-	c4	= mixed2.y;
-	L	= mixed2.z;
+
+	vec3 br, bs, bt;
+    //vec3 animated_vertex = position;
+	
+    float ttime = time;
+    float mv_time = time * 0.01;
+    //function for alpha = 0.1
+	//vec4 xvals_f = 0.3326*pow4(xvals,2.0) + 0.398924*pow4(xvals,4.0);
+	//vec4 xvals_deriv = 0.665201*xvals + 1.5957*pow4(xvals,3.0);
+	
+	//function for alpha = 0.2
+	vec4 xvals_f = 0.374570*x_vals*x_vals + 0.129428*x_vals*x_vals*x_vals*x_vals;
+    vec4 xvals_deriv = 0.749141*x_vals + 0.517713*x_vals*x_vals*x_vals;
+    //vec4 xvals_f = xvals;
+	//vec4 xvals_deriv = 1.0;
+	
+	
+	
+	//vec4 xvals_f = xvals*xvals+ xvals*xvals*xvals*xvals;
+	//vec4 xvals_deriv = xvals+ xvals*xvals*xvals;		
+	// get motionVectors from branch data texture
+
+	
+	
+	// get coord systems from branch data texture
+	vec4 sv0_l	= texture2D(data_tex, vec2(2.5/texCols, branch_index/branch_count));
+    vec4 sv1_l	= texture2D(data_tex, vec2(3.5/texCols, branch_index/branch_count));
+    vec4 sv2_l	= texture2D(data_tex, vec2(4.5/texCols, branch_index/branch_count));
+    vec4 sv3_l	= texture2D(data_tex, vec2(5.5/texCols, branch_index/branch_count));
+    vec3 rv0	= texture2D(data_tex, vec2(6.5/texCols, branch_index/branch_count)).xyz;
+    vec3 rv1	= texture2D(data_tex, vec2(7.5/texCols, branch_index/branch_count)).xyz;
+    vec3 rv2	= texture2D(data_tex, vec2(8.5/texCols, branch_index/branch_count)).xyz;
+    vec3 rv3	= texture2D(data_tex, vec2(9.5/texCols, branch_index/branch_count)).xyz;
+    // motion vectors
+	vec4 mv01 = texture2D(data_tex, vec2(0.5/texCols, branch_index/branch_count));
+    vec4 mv23 = texture2D(data_tex, vec2(1.5/texCols, branch_index/branch_count));
+    vec2 mv0 = mv01.xy;
+    vec2 mv1 = mv01.zw;
+    vec2 mv2 = mv23.xy;
+    vec2 mv3 = mv23.zw;
+    // branch lengths
+	float length0 = sv0_l.w;
+    float length1 = sv1_l.w;
+    float length2 = sv2_l.w;
+    float length3 = sv3_l.w;
+    // sv vectors
+	vec3 sv0 = sv0_l.xyz;
+    vec3 sv1 = sv1_l.xyz;
+    vec3 sv2 = sv2_l.xyz;
+    vec3 sv3 = sv3_l.xyz;
+    // amplitudes
+	//vec2 amp = vec2 (sin(time)*0.5,0.0);
+	vec2 amp0 = 0.1 * ( texture2D(branch_noise_tex, mv0 * mv_time).rg  * 2.0 - ONE2);
+    vec2 amp1 = 0.2 * ( texture2D(branch_noise_tex, mv1 * mv_time).rg  * 2.0 - ONE2);
+    vec2 amp2 = 0.4 * ( texture2D(branch_noise_tex, mv2 * mv_time).rg  * 2.0 - ONE2);
+    vec2 amp3 = 0.8 * ( texture2D(branch_noise_tex, mv3 * mv_time).rg  * 2.0 - ONE2);
+
+	
+
+
+    // apply animation to the vertex.
+	//--------------------------------------------------------------------------------------
+	level = 0;
+	// level0
+	// find t vector
+	vec3 tv	= cross(rv0,sv0);
+    // find branch origin
+	vec3 centerB = vec3(0.0, 0.0, 0.0);
+    vec3 center = centerB + x_vals.x * length0 * tv;
+    // bend function
+	vec2 fu	= xvals_f.x	 * amp0;
+    vec2 fu_deriv = xvals_deriv.x / length0 * amp0 ;
+    vec2 s = sqrt(ONE2+fu_deriv*fu_deriv);
+    vec2 d = fu / fu_deriv * (s - ONE2);
+    vec3 corr_s = (tv + sv0*fu_deriv.x)/s.x * d.x;
+    vec3 corr_r = (tv + rv0*fu_deriv.y)/s.y * d.y;
+    //recalculate coord system of actual branch 
+	bt  = normalize(tv + rv0*fu_deriv.y + sv0*fu_deriv.x);
+    br	= normalize(rv0 - tv*fu_deriv.y);
+    bs	= normalize(sv0 - tv*fu_deriv.x);
+    // bend the center point
+	centerB =  center + fu.x * sv0 + fu.y * rv0 - (corr_s+corr_r);
+
+	
+    
+	if (x_vals.y>=0){
+        // level1
+		level = 1;
+	    // bend branch system according to the parent branch bending
+		sv1 = sv1.x * bs + sv1.y * br + sv1.z * bt;
+        rv1 = rv1.x * bs + rv1.y * br + rv1.z * bt;
+        //...
+		tv	= cross(rv1,sv1);
+        center		= centerB + x_vals.y * length1 * tv;
+        fu			= xvals_f.y	 * amp1;
+        fu_deriv	= xvals_deriv.y / length1 * amp1 ;
+        s = sqrt(ONE2+fu_deriv*fu_deriv);
+        d = fu / fu_deriv * (s - ONE2);
+        corr_s = (tv + sv1*fu_deriv.x)/s.x * d.x;
+        corr_r = (tv + rv1*fu_deriv.y)/s.y * d.y;
+        bt  = normalize(tv + rv1*fu_deriv.y + sv1*fu_deriv.x);
+        br	= normalize(rv1 - tv*fu_deriv.y);
+        bs	= normalize(sv1 - tv*fu_deriv.x);
+        centerB =  center + fu.x * sv1 + fu.y * rv1 - (corr_s+corr_r);
+    }
+	if (x_vals.z>=0){
+        // level2
+		level = 2;
+	    // bend branch system according to the parent branch bending
+		sv2 = sv2.x * bs + sv2.y * br + sv2.z * bt;
+        rv2 = rv2.x * bs + rv2.y * br + rv2.z * bt;
+        //...
+		tv	= cross(rv2,sv2);
+        center		= centerB + x_vals.z * length2 * tv;
+        fu			= xvals_f.z * amp2;
+        fu_deriv	= xvals_deriv.z / length2 * amp2 ;
+        s = sqrt(ONE2+fu_deriv*fu_deriv);
+        d = fu / fu_deriv * (s - ONE2);
+        corr_s = (tv + sv2*fu_deriv.x)/s.x * d.x;
+        corr_r = (tv + rv2*fu_deriv.y)/s.y * d.y;
+        bt  = normalize(tv + rv2*fu_deriv.y + sv2*fu_deriv.x);
+        br	= normalize(rv2 - tv*fu_deriv.y);
+        bs	= normalize(sv2 - tv*fu_deriv.x);
+        centerB =  center + fu.x * sv2 + fu.y * rv2 - (corr_s+corr_r);
+    }
+
+	if (x_vals.w>=0){
+        // level3
+		level = 3;
+		sv3 = sv3.x * bs + sv3.y * br + sv3.z * bt;
+        rv3 = rv3.x * bs + rv3.y * br + rv3.z * bt;
+        tv	= cross(rv3,sv3);
+        center		= centerB + x_vals.w * length3 * tv;
+        fu			= xvals_f.w	 * amp3;
+        fu_deriv	= xvals_deriv.w/ length3 * amp3 ;
+        s = sqrt(ONE2+fu_deriv*fu_deriv);
+        d = fu / fu_deriv * (s - ONE2);
+        corr_s = (tv + sv3*fu_deriv.x)/s.x * d.x;
+        corr_r = (tv + rv3*fu_deriv.y)/s.y * d.y;
+        bt  = normalize(tv + rv3*fu_deriv.y + sv3*fu_deriv.x);
+        br	= normalize(rv3 - tv*fu_deriv.y);
+        bs	= normalize(sv3 - tv*fu_deriv.x);
+        centerB =  center + fu.x * sv3 + fu.y * rv3 - (corr_s+corr_r);
+    }
+	tangent = normalize(tangent);
+	normal = normalize(normal);
+	tangent	 = tangent.x * bt + tangent.y * bs + tangent.z * br;
+	normal	 = normal.x * bt + normal.y * bs + normal.z * br;
+	binormal = cross(tangent, normal);
+	color = vec4(abs(dot(tangent, normal)));
+	// tangent = normalize(tangent);
+    // normal  = normalize(normal);
+	position *= 0.05;
+	//position = centerB + position.z*bs + position.y*br;
+    position = centerB + position.y*tangent + position.x*binormal;
 }
 
-float readParentIndex(in float index){
-	return texture2DRect( data_tex, vec2(4.5,index) ).y + 0.5;
+
+/*
+void animateLeafVertex(inout vec3 position, inout vec3 normal, inout  vec3 tangent, in vec2 texcoord, in float branchindex)
+{
+	vec2 looksvposition = wind_direction.xz * TimeOffsetLeaves;
+	
+	
+	vec3 amp = texture2D(NoiseSampler, position.xz*0.1).xyz* 2.0 - 1.0;
+		amp += texture2D(NoiseSampler, position.yz*0.1-vec2(looksvposition.x,0)).xyz* 2.0 - 1.0;
+		amp += texture2D(NoiseSampler, position.xy*0.1-vec2(looksvposition.y,0)).xyz* 2.0 - 1.0;
+	
+	vec3 nondef_normal = normal;
+	float rotoffset = AmplitudeLeaves*amp.x*(texcoord.x-0.5);
+	position += rotoffset*normal;
+	
+	normal = nondef_normal + tangent*(rotoffset/0.04406305);
+	normal = normalize(normal);
+	
+	tangent = tangent + nondef_normal*(rotoffset/0.04406305);
+	tangent = normalize(tangent);
+	
+	//------------------------------------------------------------------------------------------------
+	
+	vec3 tanoffset = AmplitudeLeaves*amp.y*(1 - texcoord.y)*0.5;
+	position += tanoffset*tangent;
+	
+	vec3 bitangent = cross(normal,tangent);
+	
+
+	tangent -= bitangent*(tanoffset/0.1727);
+	tangent = normalize(tangent);
+	
+	vec3 noffset = AmplitudeLeaves*amp.b*(1 - texcoord.y)*0.5;
+	position += noffset*normal;
+	
+	normal -= bitangent*(noffset/0.1727);
+	normal = normalize(normal);
+	
+	
 }
-
-void bendCoordSystem( in float bx, in float bPid, in float bC2, in float bC4, in float bL, in vec2 bA, in vec3 bO, in vec3 bR, in vec3 bS, in vec3 bT, in float vx, inout vec3 vO, inout vec3 R, inout vec3 S, inout vec3 T ){
-	//float rr,rs,rt,sr,ss,st,tr,ts,tt;
-	float Ar, As;
-	Ar = bA.x*sin(time);
-	As = 0.0;//bA.y * sin(time);
-
-	// tranform branch coord system
-	float xr,xs,ux, uxs, uxr, uxsd, uxrd, uxd, sxr, sxs, dxr, dxs;	
-	ux		= bC2*vx*vx + bC4*vx*vx*vx*vx; // u(x)
-	uxd		= 2.0*bC2*vx + 3.0*bC4*vx*vx*vx; // du(x)/dx
-	uxrd	= Ar*uxd/bL;
-	uxsd	= As*uxd/bL;
-	uxr		= Ar*ux;
-	uxs		= As*ux;
-	sxr		= sqrt(1.0+uxrd*uxrd);
-	sxs		= sqrt(1.0+uxsd*uxsd);
-	dxr		= uxrd!=0.0?uxr/uxrd*(sxr-1.0):0.0;
-	dxs		= uxsd!=0.0?uxs/uxsd*(sxs-1.0):0.0;
-	
-	// tangent & normal recalculation
-	xr		= vx - dxr/sxr;
-	xs		= vx - dxs/sxs;
-	uxrd	= Ar*(2.0*bC2*xr + 3.0*bC4*xr*xr*xr)/bL;
-	uxsd	= As*(2.0*bC2*xs + 3.0*bC4*xs*xs*xs)/bL;
-	
-	vec3 t2	= normalize(bT + (bR*uxrd + bS*uxsd));
-	vec3 r2	= normalize(bR - bT*uxrd);
-	vec3 s2	= normalize(bS - bT*uxsd);
-
-	// calculate output:
-
-	//CS origin
-	vO = bO + r2*vO.x + s2*vO.y + bT*vO.z - (bT * dxr - bR * uxr)/sxr - (bT * dxs - bS * uxs)/sxs;
-	
-	//CS base vectors
-	R = r2*R.x + s2*R.y + t2*R.z;
-	S = r2*S.x + s2*S.y + t2*S.z;
-	T = r2*T.x + s2*T.y + t2*T.z;
-}	
-void bendCoordSystemLeaf( in vec2 A, in vec3 lO, in vec3 lR, in vec3 lS, in vec3 lT, in float vx, inout vec3 vO, inout vec3 R, inout vec3 S, inout vec3 T ){
-	//float rr,rs,rt,sr,ss,st,tr,ts,tt;
-	float Ar, As, At;
-	Ar = A.x * sin(2.0*time);
-	As = A.y * sin(3.0*time);
-
-// TODO
-	At = 0.5 * sin(1.7*time);
-	vec3 Av = Ar*lR + As*lS +At*lT;
-
-	R = normalize(lR+Av);
-	S = normalize(lS+Av);
-	T = normalize(lT+Av);
-	vO = lO + vO.x*R +  vO.y*S +  vO.z*T;
-	/*
-	// tranform branch coord system
-	float xr,xs,ux, uxs, uxr, uxsd, uxrd, uxd, sxr, sxs, dxr, dxs;	
-	ux		= vx; // u(x)
-	uxd		= 1.0; // du(x)/dx
-	uxrd	= Ar*uxd;
-	uxsd	= As*uxd;
-	uxr		= Ar*ux;
-	uxs		= As*ux;
-	sxr		= sqrt(1.0+uxrd*uxrd);
-	sxs		= sqrt(1.0+uxsd*uxsd);
-	dxr		= uxrd!=0.0?uxr/uxrd*(sxr-1.0):0.0;
-	dxs		= uxsd!=0.0?uxs/uxsd*(sxs-1.0):0.0;
-	
-	// tangent & normal recalculation
-	xr		= vx - dxr/sxr;
-	xs		= vx - dxs/sxs;
-	uxrd	= Ar*(xr);
-	uxsd	= As*(xs);
-	
-	vec3 t2	= normalize(lT + (lR*uxrd + lS*uxsd));
-	vec3 r2	= normalize(lR - lT*uxrd);
-	vec3 s2	= normalize(lS - lT*uxsd);
-
-	//CS origin
-	vO = lO + r2*vO.x + s2*vO.y + lT*vO.z - (lT * dxr - lR * uxr)/sxr - (lT * dxs - lS * uxs)/sxs;
-	
-	//CS base vectors
-	R = r2*R.x + s2*R.y + t2*R.z;
-	S = r2*S.x + s2*S.y + t2*S.z;
-	T = r2*T.x + s2*T.y + t2*T.z;
-	*/
-}
-		
-
+*/
 void main()
 {
-	vec4 vertex = gl_Vertex;
-	normal		= gl_Normal.xyz;
-	float lx = gl_MultiTexCoord2.x;
-	// actual branch data
-	vec3 bo, br, bs, bt;
-	float bx , bpid, blevel;
-	vec2 bmv;
-	float bc2, bc4, bL;
-	// parent branch data
-	vec3 po, pr, ps, pt;
-	float px , ppid, plevel;
-	vec2 pmv;
-	float pc2, pc4, pL;
-
-	// create simple vertex coord system to bend
-	readBranchData(gl_MultiTexCoord2.y+0.5, po, pr, ps, pt, pmv, px, ppid, plevel, pc2, pc4, pL);
-	if (pL>0.0){
-		gl_FrontColor = GREEN;
-	} else {
-		gl_FrontColor = RED;
+	color		= WHITE;
+    vec3 vertex = gl_Vertex.xyz;
+    vec3 norm	= normal;
+    vec3 tang	= tangent;
+    float bi	= branch_index;
+    vec4 x		= x_vals;
+    animateBranchVertex(vertex); // with branch motion
+	/*
+	if (texCoords0.y>0.0){
+		vertex.y += 0.2;
 	}
-	vec3 lo = vec3(0.0,0.0,lx*pL);
-//TO DO: subst. with real normal and tangent:
-	vec3 lr =tangent;//vec3(1.0, 0.0, 0.0);//
-	vec3 ls =binormal;//vec3(0.0, 1.0, 0.0);//
-	vec3 lt =normal;	//vec3(0.0, 0.0, 1.0);//
-	
-		
-	// extract hierarchy data 
-	const int HIER_DEPTH = 5;
-	float indices[HIER_DEPTH];
-	indices[0] = gl_MultiTexCoord2.y+0.5;
-	int i,j;
-	for (i=1; i<HIER_DEPTH; i++){
-		indices[i] = readParentIndex(indices[i-1]);
-		
-		if (indices[i]<0.0){
-			// no parent
-			i = i-1;
-			break;
-		}
-		
-	}
-	// read trunk data as 1st parent
-	readBranchData(indices[i], po, pr, ps, pt, pmv, px, ppid, plevel, pc2, pc4, pL);
-	// hierarchical transform	
-	for (j=i-1; j>=0; j--){
-		// read actual coord system (CS)
-		readBranchData(indices[j], bo, br, bs, bt, bmv, bx, bpid, blevel, bc2,bc4, bL);
-
-		// bend actual CS in parent CS
-		bendCoordSystem( bx, ppid, pc2, pc4, pL, pmv, po, pr, ps, pt, bx, bo, br, bs, bt);
-		// propagate to next transform step
-		po	= bo;
-		pr	= br;
-		ps	= bs;
-		pt	= bt;
-		pc2	= bc2;
-		pc4	= bc4;
-		pL	= bL;
-		pmv	= bmv;
-		// has parent
-	} 
-	// bend given vertex CS in final CS
-	bendCoordSystem( bx, ppid, pc2, pc4, pL, pmv, po, pr, ps, pt, lx, lo, lr, ls, lt);
-
-	// deform leaf
-	float vx = gl_MultiTexCoord0.t;
-	vec3 vo = vertex.xyz+vec3(0.0,0.0,0.0);//vec3(gl_MultiTexCoord0.st,0.0);//vec3(0.0,0.0,0.0);// vx*pL);
-//TO DO: subst. with real normal and tangent:
-	vec3 vr =vec3(1.0, 0.0, 0.0);
-	vec3 vs =vec3(0.0, 1.0, 0.0);
-	vec3 vt =vec3(0.0, 0.0, 1.0);
-	vec2 A = vec2(0.5, 0.4);	
-	bendCoordSystemLeaf( A, lo, lr, ls, lt, vx, vo, vr, vs, vt);
-
-	vertex = vec4(vo,1.0);
-
-	// construct output
-	//gl_FrontColor = vec4(gl_MultiTexCoord2.y,0.0,0.0,1.0);
-	
-
-
-
-	gl_TexCoord[0] = gl_MultiTexCoord0;
-	gl_Position = gl_ModelViewProjectionMatrix * vertex;
+	*/
+	// animateLeafVertex(vertex); // own motion of leaf
+	gl_TexCoord[0] = vec4(texCoords0, 0.0, 0.0);
+	gl_FrontColor = color;
+    gl_Position = gl_ModelViewProjectionMatrix * vec4(vertex,1.0);
 }
+

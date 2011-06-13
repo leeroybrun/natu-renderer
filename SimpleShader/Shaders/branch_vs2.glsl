@@ -26,13 +26,15 @@ attribute vec3			normal;
 attribute vec3			tangent;
 attribute vec4			x_vals;
 attribute float			branch_index;
+attribute vec2			texCoords0;
+
 float				time_faster;
 varying vec4		normal_vs;
 varying vec4		tangent_vs;
 varying int			level;
 vec4 color;	
 
-void animateVertexByHierarchy(inout vec3 position)
+void animateBranchVertex(inout vec3 position)
 {
 //===========================================================
 // Displacement method inspired by Ralph Habels article: 
@@ -231,7 +233,8 @@ void main()
     vec3 tang	= tangent;
     float bi	= branch_index;
     vec4 x		= x_vals;
-    animateVertexByHierarchy(vertex);
+    animateBranchVertex(vertex);
+	gl_TexCoord[0] = vec4(texCoords0, 0.0, 0.0);
 
 	gl_FrontColor = color;
     gl_Position = gl_ModelViewProjectionMatrix * vec4(vertex,1.0);

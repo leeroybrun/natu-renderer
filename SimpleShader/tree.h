@@ -40,6 +40,7 @@ enum VERTEX_ATTRIBUTES{
 	 WIND_DIRECTION		  ,
 	 WIND_STRENGTH		  ,
 	 WOOD_AMPLITUDE 	  ,
+	 COLOR_TEXTURE0		  ,
 
 	 VBO_VERTEX_COMPONENTS
 };
@@ -75,6 +76,7 @@ public:
 	void				recalcCoordSystems();
 	void				fillParentDataForEachBranch();
 	void				createBranchesVBO();
+	void				fillParentDataForEachLeaf();
 	void				createLeavesVBO();
 
 	TreeBranch			*trunk;
@@ -82,7 +84,8 @@ public:
 	vector<TreeLeaf*>	leaves;
 
 	Texture*			dataTexture;
-	Texture*			leafTexture1;
+	Texture*			lColorTexture;
+	Texture*			bColorTexture;
 	Texture*			branchNoiseTexture;
 	Texture*			leafNoiseTexture;
 
@@ -90,13 +93,19 @@ public:
 	GLuint				branchEBOid;
 	GLuint				branchEBOcount;
 
+	GLuint				leafVBOid;
+	GLuint				leafEBOid;
+	GLuint				leafEBOcount;
+
 	int					offsets[VBO_VERTEX_COMPONENTS];
 	int					sizes[VBO_VERTEX_COMPONENTS];
+	GLint				locations[VBO_VERTEX_COMPONENTS];
 
 	int					leafOffsets[VBO_VERTEX_COMPONENTS];
 	int					leafSizes[VBO_VERTEX_COMPONENTS];
-
-	GLint				locations[VBO_VERTEX_COMPONENTS];
+	GLint				leafLocations[VBO_VERTEX_COMPONENTS];
+	int					leafVerticesCount;
+	
 	GLfloat				*vbo_data[VBO_VERTEX_COMPONENTS];
 	GLuint 				*ebo_data;
 	
