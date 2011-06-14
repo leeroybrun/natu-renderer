@@ -10,6 +10,7 @@ TreeLeaf::TreeLeaf(
 		v3 &_motionVector         ):
 	TreeComponent(_parent, _cs, _x, _texMan)
 {
+	
 	cs				= parent->originalCS.getSystemInThisSystem(originalCS);
 	type			= ComponentType::LEAF;
 	size			= _size;

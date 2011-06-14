@@ -2,7 +2,8 @@
 #define __MAIN_H__
 
 #include <vector>
-#include "../_utils/GLEE/glee.h"      
+#include "../_utils/GLEE/glee.h" 
+#include "settings.h"
 #include "gui.h"
 #include <cstdlib>
 #include <iostream>
@@ -22,6 +23,11 @@ const float TRANSLATION_SPEED	= 0.05f;
 // GLOBAL VARIABLES____________________________________________________________
 int			g_WindowWidth		= 512;
 int			g_WindowHeight		= 512;
+
+v3			g_WindDirection(1.0,0.0,0.0);
+float		g_WindStrength = 1.0f;
+float		g_WoodAmplitude= 1.0f;
+
 
 GLfloat		g_RotObject[3]		= { 0 };		// Object rotation
 GLfloat		g_CameraZ			= -5.0f;		// Camera Z position

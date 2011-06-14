@@ -571,11 +571,13 @@ void Tree::draw(){
 		// set time
 		glUniform1f(locations[TIME], time);
 		// set data_texture
-		glUniform1i(locations[BRANCH_DATA_TEXTURE], GLint(dataTexture->unitOffset));
-		glUniform1i(locations[NOISE_TEXTURE0], GLint(branchNoiseTexture->unitOffset));
-		glUniform1i(locations[COLOR_TEXTURE0], GLint(bColorTexture->unitOffset));
-		glUniform1f(locations[BRANCH_COUNT], GLfloat(branch_count));
-			
+		glUniform1i(locations[BRANCH_DATA_TEXTURE],		GLint(dataTexture->unitOffset));
+		glUniform1i(locations[NOISE_TEXTURE0],			GLint(branchNoiseTexture->unitOffset));
+		glUniform1i(locations[COLOR_TEXTURE0],			GLint(bColorTexture->unitOffset));
+		glUniform1f(locations[BRANCH_COUNT],			GLfloat(branch_count));
+		glUniform3f(locations[WIND_DIRECTION],			g_WindDirection.x, g_WindDirection.y, g_WindDirection.z);
+		glUniform1f(locations[WIND_STRENGTH],			g_WindStrength);
+		glUniform1f(locations[WOOD_AMPLITUDE],			g_WoodAmplitude);
 		// bind index buffer
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, branchEBOid);
 		glBindBuffer(GL_ARRAY_BUFFER, branchVBOid); 
@@ -632,9 +634,12 @@ void Tree::draw(){
 		// set data_texture
 		glUniform1i(leafLocations[BRANCH_DATA_TEXTURE],	GLint(dataTexture->unitOffset)			);
 		glUniform1i(leafLocations[NOISE_TEXTURE0],		GLint(branchNoiseTexture->unitOffset)	);
+		glUniform1i(leafLocations[NOISE_TEXTURE1],		GLint(leafNoiseTexture->unitOffset)	    );
 		glUniform1f(leafLocations[BRANCH_COUNT],		GLfloat(branch_count)					);
 		glUniform1i(leafLocations[COLOR_TEXTURE0],		GLint(lColorTexture->unitOffset)		);
-			
+		glUniform3f(leafLocations[WIND_DIRECTION],		g_WindDirection.x, g_WindDirection.y, g_WindDirection.z);
+		glUniform1f(leafLocations[WIND_STRENGTH],		GLfloat(g_WindStrength));
+		glUniform1f(leafLocations[WOOD_AMPLITUDE],		GLfloat(g_WoodAmplitude));	
 		// bind index buffer
 		//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, branchEBOid);
 		glBindBuffer(GL_ARRAY_BUFFER, leafVBOid); 
@@ -797,6 +802,8 @@ void Tree::load(string filename, TextureManager *texManager){
 	// set trunk
 	trunk = branches[0];
 	int leafCnt = 0;
+
+	bool coordsOK = true;
 	// process leaves
 	for ( iter=file.leaves.begin() ; iter != file.leaves.end(); iter++ ){
 		id		= (*iter).first;
@@ -821,15 +828,19 @@ void Tree::load(string filename, TextureManager *texManager){
 		float size;
 		if (entity.isSetLength){
 			size = entity.length;
+			printf("size set\n");
 		} else {
 			size = LEAF_SIZE;
 		}
 
 		// base vectors
 		if (entity.isSetBase){
+			//cs = CoordSystem(entity.base[0]);
 			cs.r = entity.base[0];
 			cs.s = entity.base[1];	
 			cs.t = entity.base[2];
+			cs.normalize();
+			cs.repair();
 			objectCS.r = entity.base[0];
 			objectCS.s = entity.base[1];
 			objectCS.t = entity.base[2];
@@ -848,6 +859,7 @@ void Tree::load(string filename, TextureManager *texManager){
 		// add to container
 		leaves.push_back(leaf);
 	}
+	printf("COORDS %s \n", coordsOK?"OK":"ERROR");
 	printf("leaves count: %i\n", leafCnt);
 }
 

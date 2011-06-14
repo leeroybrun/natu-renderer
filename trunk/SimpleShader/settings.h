@@ -3,6 +3,7 @@
 
 #include "../_utils/GLEE/glee.h" 
 #include "../_utils/GLUT/glut.h"
+#include "../_utils/Vector3.h"
 
 const static GLenum COL1_TEX_UNIT			= GL_TEXTURE0;
 const static GLint COL1_TEX_UNIT_ORDER		= 0;
@@ -21,4 +22,8 @@ inline float randomf(float minf, float maxf){
 const static char * TEX_LEAF1 = "textures/leaf2r.png";
 const static char * TEX_WOOD1 = "textures/bark2_decal.png";
 #define BUFFER_OFFSET(i) ((char*) NULL + (i))
+
+extern v3			g_WindDirection;
+extern float		g_WindStrength ;
+extern float		g_WoodAmplitude;
 #endif

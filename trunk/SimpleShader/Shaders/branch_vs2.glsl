@@ -92,16 +92,21 @@ void animateBranchVertex(inout vec3 position)
     vec3 sv3 = sv3_l.xyz;
     // amplitudes
 	vec2 amp = vec2 (sin(time)*0.5,0.0);
-	vec2 amp0 = 0.1 * ( texture2D(branch_noise_tex, mv0 * mv_time).rg  * 2.0 - ONE2);
-    vec2 amp1 = 0.2 * ( texture2D(branch_noise_tex, mv1 * mv_time).rg  * 2.0 - ONE2);
-    vec2 amp2 = 0.4 * ( texture2D(branch_noise_tex, mv2 * mv_time).rg  * 2.0 - ONE2);
-    vec2 amp3 = 0.8 * ( texture2D(branch_noise_tex, mv3 * mv_time).rg  * 2.0 - ONE2);
+	vec2 amp0 = wood_amplitude * 0.1 * ( texture2D(branch_noise_tex, mv0 * mv_time).rg  * 2.0 - ONE2);
+    vec2 amp1 = wood_amplitude * 0.2 * ( texture2D(branch_noise_tex, mv1 * mv_time).rg  * 2.0 - ONE2);
+    vec2 amp2 = wood_amplitude * 0.4 * ( texture2D(branch_noise_tex, mv2 * mv_time).rg  * 2.0 - ONE2);
+    vec2 amp3 = wood_amplitude * 0.8 * ( texture2D(branch_noise_tex, mv3 * mv_time).rg  * 2.0 - ONE2);
     // apply animation to the vertex.
 	//--------------------------------------------------------------------------------------
 	level = 0;
 	// level0
 	// find t vector
 	vec3 tv	= cross(rv0,sv0);
+	
+	// calc wind prebend offset
+	amp0.x += dot(rv0, wind_direction) * wind_strength;
+	amp0.y += dot(sv0, wind_direction) * wind_strength;
+
     // find branch origin
 	vec3 centerB = vec3(0.0, 0.0, 0.0);
     vec3 center = centerB + x_vals.x * length0 * tv;
@@ -126,6 +131,10 @@ void animateBranchVertex(inout vec3 position)
         rv1 = rv1.x * bs + rv1.y * br + rv1.z * bt;
         //...
 		tv	= cross(rv1,sv1);
+		// calc wind prebend offset
+		amp1.x += dot(rv1, wind_direction) * wind_strength;
+		amp1.y += dot(sv1, wind_direction) * wind_strength;
+
         center		= centerB + x_vals.y * length1 * tv;
         fu			= xvals_f.y	 * amp1;
         fu_deriv	= xvals_deriv.y / length1 * amp1 ;
@@ -147,6 +156,10 @@ void animateBranchVertex(inout vec3 position)
         rv2 = rv2.x * bs + rv2.y * br + rv2.z * bt;
         //...
 		tv	= cross(rv2,sv2);
+		// calc wind prebend offset
+		amp2.x += dot(rv2, wind_direction) * wind_strength;
+		amp2.y += dot(sv2, wind_direction) * wind_strength;
+
         center		= centerB + x_vals.z * length2 * tv;
         fu			= xvals_f.z * amp2;
         fu_deriv	= xvals_deriv.z / length2 * amp2 ;
@@ -166,6 +179,10 @@ void animateBranchVertex(inout vec3 position)
 		sv3 = sv3.x * bs + sv3.y * br + sv3.z * bt;
         rv3 = rv3.x * bs + rv3.y * br + rv3.z * bt;
         tv	= cross(rv3,sv3);
+		// calc wind prebend offset
+		amp3.x += dot(rv3, wind_direction) * wind_strength;
+		amp3.y += dot(sv3, wind_direction) * wind_strength;
+
         center		= centerB + x_vals.w * length3 * tv;
         fu			= xvals_f.w	 * amp3;
         fu_deriv	= xvals_deriv.w/ length3 * amp3 ;
