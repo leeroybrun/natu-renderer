@@ -26,7 +26,8 @@ int			g_WindowHeight		= 512;
 
 v3			g_WindDirection(1.0,0.0,0.0);
 float		g_WindStrength = 1.0f;
-float		g_WoodAmplitude= 1.0f;
+v4			g_WoodAmplitude(1.0, 1.0, 1.0, 1.0);
+v4			g_WoodFrequency(1.0, 1.0, 1.0, 1.0);
 
 
 GLfloat		g_RotObject[3]		= { 0 };		// Object rotation
@@ -49,6 +50,7 @@ extern GLuint g_VertexShader;					// Vertex shader GL id, declared in main.cpp
 extern GLuint g_FragmentShader;					// Fragment shader GL id, declared in main.cpp
 extern GLuint g_GeometryShader;					// Geometry shader GL id, declared in main.cpp
 
+GUILabel*		fpsLabel;
 
 // FORWARD DECLARATIONS________________________________________________________
 // Callback functions
@@ -56,6 +58,86 @@ extern GLuint g_GeometryShader;					// Geometry shader GL id, declared in main.c
 void callback_VariableAchanged(float value);	// Callback function for slider A
 void callback_VariableBchanged(float value); 	// Callback function for slider B
 void callback_VariableCchanged(float value); 	// Callback function for slider C
+
+
+
+void clbk_WA0changed(float value){
+	g_WoodAmplitude.x = value;
+	printf("WA: %f, %f, %f, %f\n",
+		g_WoodAmplitude.x,
+		g_WoodAmplitude.y,
+		g_WoodAmplitude.z,
+		g_WoodAmplitude.w);
+} 
+void clbk_WA1changed(float value){
+	g_WoodAmplitude.y = value;
+	printf("WA: %f, %f, %f, %f\n",
+		g_WoodAmplitude.x,
+		g_WoodAmplitude.y,
+		g_WoodAmplitude.z,
+		g_WoodAmplitude.w);
+} 
+void clbk_WA2changed(float value){
+	g_WoodAmplitude.z = value;
+	printf("WA: %f, %f, %f, %f\n",
+		g_WoodAmplitude.x,
+		g_WoodAmplitude.y,
+		g_WoodAmplitude.z,
+		g_WoodAmplitude.w);
+} 
+void clbk_WA3changed(float value){
+	g_WoodAmplitude.w = value;
+	printf("WA: %f, %f, %f, %f\n",
+		g_WoodAmplitude.x,
+		g_WoodAmplitude.y,
+		g_WoodAmplitude.z,
+		g_WoodAmplitude.w);
+} 
+
+void clbk_WF0changed(float value){
+	g_WoodFrequency.x = value;
+	printf("WF: %f, %f, %f, %f\n",
+		g_WoodFrequency.x,
+		g_WoodFrequency.y,
+		g_WoodFrequency.z,
+		g_WoodFrequency.w);
+} 
+void clbk_WF1changed(float value){
+	g_WoodFrequency.y = value;
+	printf("WF: %f, %f, %f, %f\n",
+		g_WoodFrequency.x,
+		g_WoodFrequency.y,
+		g_WoodFrequency.z,
+		g_WoodFrequency.w);
+} 
+void clbk_WF2changed(float value){
+	g_WoodFrequency.z = value;
+	printf("WF: %f, %f, %f, %f\n",
+		g_WoodFrequency.x,
+		g_WoodFrequency.y,
+		g_WoodFrequency.z,
+		g_WoodFrequency.w);
+} 
+void clbk_WF3changed(float value){
+	g_WoodFrequency.w = value;
+	printf("WF: %f, %f, %f, %f\n",
+		g_WoodFrequency.x,
+		g_WoodFrequency.y,
+		g_WoodFrequency.z,
+		g_WoodFrequency.w);
+} 
+
+void clbk_WSchanged(float value){
+	g_WindStrength = value;
+	printf("WS: %f\n",
+		g_WindStrength);
+} 
+
+
+
+
+
+
 
 // CALLBACK FUNCTIONS__________________________________________________________
 
@@ -143,13 +225,21 @@ void initGUI()
 	//GUICheckBox*	pcbxGeometryShader	= new GUICheckBox	(10,  45, 40, 10, "attach geometry shader"	 , "Attach GS CheckBox"	);
 	//GUICheckBox*	pcbxFragmentShader	= new GUICheckBox	(10,  60, 40, 10, "attach fragment shader"	 , "Attach FS CheckBox"	);
 	//GUIPushButton*	pbtnCompile			= new GUIPushButton	(10,  75,130, 13, "compile program"			 , "Compile CheckBox"	);
-	GUILabel*		fpsLabel			= new GUILabel		("fps", 10, 10,  "fpsLabel");
+	fpsLabel							= new GUILabel		("fps", 10, 10,  "fpsLabel");
 	GUICheckBox*	pcbxWireMode		= new GUICheckBox	(10, 100, 40, 10, "wire-mode"				 , "Wire-Mode CheckBox"	);
 	GUICheckBox*	pcbxRotate			= new GUICheckBox	(10, 116,40, 10, "rotate"					 , "Rotate CheckBox"	);
 
-	GUISlider*		psldVariable_A		= new GUISlider		(0, 1000, 10, 135, 160, 6, "variable A"		, "Variable A CheckBox"	);
-	GUISlider*		psldVariable_B		= new GUISlider		(0, 1000, 10, 150, 160, 6, "variable B"		, "Variable B CheckBox"	);
-	GUISlider*		psldVariable_C		= new GUISlider		(0, 1000, 10, 165, 160, 6, "variable C"		, "Variable C CheckBox"	);
+	GUISlider*		psldVariable_A		= new GUISlider		(0, 2, 10, 135, 250, 6, "wind strength"		, "wind strength"	);
+	GUISlider*		psldVarWA0			= new GUISlider		(0, 5, 10, 150, 250, 6, "wood amplitude 0"	, "wood amplitude 0"	);
+	GUISlider*		psldVarWA1			= new GUISlider		(0, 5, 10, 165, 250, 6, "wood amplitude 1"	, "wood amplitude 1"	);
+	GUISlider*		psldVarWA2			= new GUISlider		(0, 5, 10, 180, 250, 6, "wood amplitude 2"	, "wood amplitude 2"	);
+	GUISlider*		psldVarWA3			= new GUISlider		(0, 5, 10, 195, 250, 6, "wood amplitude 3"	, "wood amplitude 3"	);
+
+	GUISlider*		psldVarWF0			= new GUISlider		(0, 10, 10, 210, 250, 6, "wood frequency 0"	, "wood frequency 0"	);
+	GUISlider*		psldVarWF1			= new GUISlider		(0, 10, 10, 225, 250, 6, "wood frequency 1"	, "wood frequency 1"	);
+	GUISlider*		psldVarWF2			= new GUISlider		(0, 10, 10, 240, 250, 6, "wood frequency 2"	, "wood frequency 2"	);
+	GUISlider*		psldVarWF3			= new GUISlider		(0, 10, 10, 255, 250, 6, "wood frequency 3"	, "wood frequency 3"	);
+
 
 	//pcbxUseShaders->setCallBackFunc(callback_UseShaders);
 //	pcbxUseShaders->setActive(true);
@@ -159,10 +249,18 @@ void initGUI()
 	//pbtnCompile->setCallBackFunc(callback_CompileShaders);
 	pcbxWireMode->setCallBackFunc(callback_EnableWireMode);
 	pcbxRotate->setCallBackFunc(callback_RotateModel);
-	psldVariable_A->setCallBackFunc(callback_VariableAchanged);
-	psldVariable_B->setCallBackFunc(callback_VariableBchanged);
-	psldVariable_C->setCallBackFunc(callback_VariableCchanged);
+	psldVariable_A->setCallBackFunc(clbk_WSchanged);
 
+
+	psldVarWA0->setCallBackFunc(clbk_WA0changed);
+	psldVarWA1->setCallBackFunc(clbk_WA1changed);
+	psldVarWA2->setCallBackFunc(clbk_WA2changed);
+	psldVarWA3->setCallBackFunc(clbk_WA3changed);
+
+	psldVarWF0->setCallBackFunc(clbk_WF0changed);
+	psldVarWF1->setCallBackFunc(clbk_WF1changed);
+	psldVarWF2->setCallBackFunc(clbk_WF2changed);
+	psldVarWF3->setCallBackFunc(clbk_WF3changed);
 	//GUIManager::addElement(pcbxUseShaders);
 	//GUIManager::addElement(pcbxVertexShader);
 	//GUIManager::addElement(pcbxGeometryShader);
@@ -171,8 +269,15 @@ void initGUI()
 	GUIManager::addElement(pcbxWireMode);
 	GUIManager::addElement(pcbxRotate);
 	GUIManager::addElement(psldVariable_A);
-	GUIManager::addElement(psldVariable_B);
-	GUIManager::addElement(psldVariable_C);
+	GUIManager::addElement(psldVarWA0);
+	GUIManager::addElement(psldVarWA1);
+	GUIManager::addElement(psldVarWA2);
+	GUIManager::addElement(psldVarWA3);
+	GUIManager::addElement(psldVarWF0);
+	GUIManager::addElement(psldVarWF1);
+	GUIManager::addElement(psldVarWF2);
+	GUIManager::addElement(psldVarWF3);
+	GUIManager::addElement(fpsLabel);
 	GUIManager::setColor(0.f, 0.f, 0.f, 0.f);
 }
 

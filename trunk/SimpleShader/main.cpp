@@ -152,7 +152,7 @@ void display()
 	glColor3f(1.f, 1.f, 1.f);
 	// draw tree/branch
 
-
+	char * fpsChars = new char[100];
 
 	if (tqAvailable){
 	    // measure on GPU			
@@ -170,12 +170,15 @@ void display()
 		glGetQueryObjectui64vEXT(tqid, GL_QUERY_RESULT, &time); // blocking CPU
 		fps = 1000000000.0/ double(time);
 		int cnt = printf("fps: %f", fps);
+
+		sprintf(fpsChars, "fps: %f", fps);
 		BACK(cnt);
 	} else {
 		tree2->draw();
 	}
 
 	// Render GUI controls
+	fpsLabel->setText(fpsChars);
 	GUIManager::display();			// Render gui components
 
 	glutSwapBuffers();
@@ -371,19 +374,6 @@ void keyboard(unsigned char key, int x, int y)
 		case 'h':
 			GUIManager::visible(!GUIManager::isVisible());
 		break;
-
-		case 'a':
-			if (g_WoodAmplitude>0.0){
-				g_WoodAmplitude -= 0.1;
-			}
-			printf("Wood Amplitude = %f\n", g_WoodAmplitude);
-			break;
-		case 'A':
-			if (g_WoodAmplitude<2.0){
-				g_WoodAmplitude += 0.1;
-			}
-			printf("Wood Amplitude = %f\n", g_WoodAmplitude);
-			break;
 
 		case 's':
 			if (g_WindStrength>0.0){

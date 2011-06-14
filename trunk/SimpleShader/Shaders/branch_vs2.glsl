@@ -4,7 +4,6 @@
 * HIERARCHICAL VERTEX DISPLACEMENT
 **************************************************/
 #define	texCols  18.0
-#define	texRows  4.0
 #define WHITE	vec4(1.0, 1.0, 1.0, 1.0)
 #define RED		vec4(1.0, 0.0, 0.0, 1.0)
 #define GREEN	vec4(0.0, 1.0, 0.0, 1.0)
@@ -21,7 +20,9 @@ uniform sampler2D		branch_noise_tex;
 uniform sampler2D		leaf_noise_tex;
 uniform vec3			wind_direction;
 uniform float			wind_strength;
-uniform float			wood_amplitude;
+uniform vec4			wood_amplitudes;
+uniform vec4			wood_frequencies;
+
 attribute vec3			normal;
 attribute vec3			tangent;
 attribute vec4			x_vals;
@@ -91,11 +92,10 @@ void animateBranchVertex(inout vec3 position)
     vec3 sv2 = sv2_l.xyz;
     vec3 sv3 = sv3_l.xyz;
     // amplitudes
-	vec2 amp = vec2 (sin(time)*0.5,0.0);
-	vec2 amp0 = wood_amplitude * 0.1 * ( texture2D(branch_noise_tex, mv0 * mv_time).rg  * 2.0 - ONE2);
-    vec2 amp1 = wood_amplitude * 0.2 * ( texture2D(branch_noise_tex, mv1 * mv_time).rg  * 2.0 - ONE2);
-    vec2 amp2 = wood_amplitude * 0.4 * ( texture2D(branch_noise_tex, mv2 * mv_time).rg  * 2.0 - ONE2);
-    vec2 amp3 = wood_amplitude * 0.8 * ( texture2D(branch_noise_tex, mv3 * mv_time).rg  * 2.0 - ONE2);
+	vec2 amp0 = wood_amplitudes.x * 0.1 * ( texture2D(branch_noise_tex, mv0 * mv_time * wood_frequencies.x).rg  * 2.0 - ONE2);
+    vec2 amp1 = wood_amplitudes.y * 0.2 * ( texture2D(branch_noise_tex, mv1 * mv_time * wood_frequencies.y).rg  * 2.0 - ONE2);
+    vec2 amp2 = wood_amplitudes.z * 0.4 * ( texture2D(branch_noise_tex, mv2 * mv_time * wood_frequencies.z).rg  * 2.0 - ONE2);
+    vec2 amp3 = wood_amplitudes.w * 0.8 * ( texture2D(branch_noise_tex, mv3 * mv_time * wood_frequencies.w).rg  * 2.0 - ONE2);
     // apply animation to the vertex.
 	//--------------------------------------------------------------------------------------
 	level = 0;
