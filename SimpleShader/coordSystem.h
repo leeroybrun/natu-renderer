@@ -12,8 +12,14 @@ class CoordSystem
 	public:
 		// contructor
 		CoordSystem(v3 _origin, v3 _x, v3 _y, v3 _z);
+
+		// single vector constructor
+		CoordSystem(const v3 &vector);
+
+
 		// copy contructor
 		CoordSystem(const CoordSystem& copy);
+
 		// default
 		CoordSystem(){
 			
@@ -21,6 +27,10 @@ class CoordSystem
 		
 		// destructor
 		~CoordSystem(void);
+
+		bool check();
+
+		void repair();
 
 		// rotate
 		void rotate(v3 &axis, float angle);

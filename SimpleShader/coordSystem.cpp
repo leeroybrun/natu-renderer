@@ -15,6 +15,46 @@ CoordSystem::CoordSystem(const CoordSystem& copy){
 	t = copy.t;
 };
 
+CoordSystem::CoordSystem(const v3 &vector){
+	v3 a( 1.0, 0.0, 0.0 );
+	v3 b( 0.0, 1.0, 0.0 );
+	v3 c( 0.0, 0.0, 1.0 );
+	v3 dir = vector.getNormalized();
+	float angle = acos(a.dot(dir));
+	v3 axis = a.cross(dir);
+	
+	r = a;
+	s = b;
+	t = c;
+
+	rotate(axis, angle);
+
+	origin = v3(0.0, 0.0, 0.0);
+
+}
+
+void CoordSystem::repair(){
+	v3 a = r.cross(s);
+	v3 b = r.cross(a);
+	s = a;
+	t = b;
+}
+
+bool CoordSystem::check(){
+	float EPSILON = 0.0000001;
+	float a = r.dot(s);
+	float b = s.dot(t);
+	float c = t.dot(r);
+
+	printf("Check system, dot(r,s) = %f, \t dot(s,t) = %f, \tdot(t,r) = %f\n", a,b,c);
+	if (abs(a)<EPSILON && abs(b)<EPSILON && abs(c)<EPSILON){
+		// all ok, all vectors perpendicular
+		return true;
+	}
+	return false;
+
+}
+
 CoordSystem CoordSystem::getSystemInThisSystem(CoordSystem &cs)
 {
 	CoordSystem out(cs);
@@ -70,6 +110,8 @@ void CoordSystem::printOut(){
 	printf("T: %f %f %f\n",t.x,t.y,t.z);
 
 };
+
+
 
 void CoordSystem::draw(){
 	// draw axis

@@ -354,6 +354,7 @@ void reshape (int w, int h)
 //-----------------------------------------------------------------------------
 void keyboard(unsigned char key, int x, int y)
 {
+	printf("KEY\n");
 	switch(key)
 	{
 		case 27 : 
@@ -370,6 +371,42 @@ void keyboard(unsigned char key, int x, int y)
 		case 'h':
 			GUIManager::visible(!GUIManager::isVisible());
 		break;
+
+		case 'a':
+			if (g_WoodAmplitude>0.0){
+				g_WoodAmplitude -= 0.1;
+			}
+			printf("Wood Amplitude = %f\n", g_WoodAmplitude);
+			break;
+		case 'A':
+			if (g_WoodAmplitude<2.0){
+				g_WoodAmplitude += 0.1;
+			}
+			printf("Wood Amplitude = %f\n", g_WoodAmplitude);
+			break;
+
+		case 's':
+			if (g_WindStrength>0.0){
+				g_WindStrength -= 0.1;
+			}
+			printf("Wind strength = %f\n", g_WindStrength);
+			break;
+		case 'S':
+			if (g_WindStrength<2.0){
+				g_WindStrength += 0.1;
+			}
+			printf("Wind strength = %f\n", g_WindStrength);
+			break;
+
+		case 'd':
+			g_WindDirection.rotateY(-0.1);
+			printf("Wind direction = %f, %f, %f\n", g_WindDirection.x, g_WindDirection.y,g_WindDirection.z);
+			break;
+		case 'D':
+			g_WindDirection.rotateY(0.1);
+			printf("Wind direction = %f, %f, %f\n", g_WindDirection.x, g_WindDirection.y,g_WindDirection.z);
+			break;
+
 	}
 
 	glutPostRedisplay();
