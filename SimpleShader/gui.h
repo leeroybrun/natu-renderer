@@ -89,6 +89,7 @@ class GUILabel : public GUIElement
 			return m_pTitle; 
 		}
 
+		void setText(char * label);
 		void setCallBackFunc(void (*pCallBackFunc)());
 
 	protected:
@@ -167,7 +168,7 @@ class GUISlider : public GUIElement
 		int m_MinimumValue;
 		int m_MaximumValue;
 		int m_Range;
-		int m_CurrentValue;
+		float m_CurrentValue;
 		int m_CurrentPosition;
 
 		int m_ProgressBarX	 , m_ProgressBarY;

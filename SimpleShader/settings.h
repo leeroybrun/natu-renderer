@@ -4,6 +4,7 @@
 #include "../_utils/GLEE/glee.h" 
 #include "../_utils/GLUT/glut.h"
 #include "../_utils/Vector3.h"
+#include "../_utils/Vector4.h"
 
 const static GLenum COL1_TEX_UNIT			= GL_TEXTURE0;
 const static GLint COL1_TEX_UNIT_ORDER		= 0;
@@ -25,5 +26,6 @@ const static char * TEX_WOOD1 = "textures/bark2_decal.png";
 
 extern v3			g_WindDirection;
 extern float		g_WindStrength ;
-extern float		g_WoodAmplitude;
+extern v4			g_WoodAmplitude;
+extern v4			g_WoodFrequency;
 #endif

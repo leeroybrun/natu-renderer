@@ -238,7 +238,13 @@ GUILabel::~GUILabel()
 {
 	if (m_pTitle) delete [] m_pTitle;
 }
-
+void GUILabel::setText(char * label)
+{
+	int titleLength = strlen(label);
+	m_pTitle = new char[titleLength + 1];
+	strcpy(m_pTitle, label); 
+	m_Width  = titleLength*5+5;
+}
 
 void GUILabel::render(bool bSetColor)
 {
@@ -536,13 +542,14 @@ bool GUISlider::mouseClickEvent(int x, int y)
 {
 	if (isInside(x, y))
 	{
-		const float ratio = float(x - m_ProgressBarX) / m_ProgressBarWidth;
-		m_CurrentValue    = int(m_MinimumValue + ratio*m_Range);
+		const float ratio = float(x - m_ProgressBarX) / float (m_ProgressBarWidth);
+		m_CurrentValue    = float(m_MinimumValue + ratio*m_Range);
 		m_CurrentPosition = m_ProgressBarX + ratio*m_ProgressBarWidth;
 		
 		if (m_pCallBackFunc)
 		{
-			m_pCallBackFunc(m_CurrentValue / float(abs(m_MaximumValue - m_MinimumValue)));
+			//m_pCallBackFunc(m_CurrentValue / float(abs(m_MaximumValue - m_MinimumValue)));
+			m_pCallBackFunc(m_CurrentValue);
 		}
 		return true;
 	}

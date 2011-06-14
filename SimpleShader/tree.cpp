@@ -56,7 +56,8 @@ void Tree::init(){
 	locations[NOISE_TEXTURE1]	   = glGetUniformLocation(branchShaderID, "leaf_noise_tex");
 	locations[WIND_DIRECTION]	   = glGetUniformLocation(branchShaderID, "wind_direction");
 	locations[WIND_STRENGTH]	   = glGetUniformLocation(branchShaderID, "wind_strength");
-	locations[WOOD_AMPLITUDE]	   = glGetUniformLocation(branchShaderID, "wood_amplitude");
+	locations[WOOD_AMPLITUDE]	   = glGetUniformLocation(branchShaderID, "wood_amplitudes");
+	locations[WOOD_FREQUENCY]	   = glGetUniformLocation(branchShaderID, "wood_frequencies");
 	locations[COLOR_TEXTURE0]		= glGetUniformLocation(branchShaderID, "color_texture");
 	locations[TEXCOORD0]			= glGetAttribLocation(branchShaderID, "texCoords0");
 
@@ -72,7 +73,8 @@ void Tree::init(){
 	leafLocations[NOISE_TEXTURE1]		= glGetUniformLocation(leafShaderID, "leaf_noise_tex");
 	leafLocations[WIND_DIRECTION]		= glGetUniformLocation(leafShaderID, "wind_direction");
 	leafLocations[WIND_STRENGTH]		= glGetUniformLocation(leafShaderID, "wind_strength");
-	leafLocations[WOOD_AMPLITUDE]		= glGetUniformLocation(leafShaderID, "wood_amplitude");
+	leafLocations[WOOD_AMPLITUDE]		= glGetUniformLocation(leafShaderID, "wood_amplitudes");
+	leafLocations[WOOD_FREQUENCY]		= glGetUniformLocation(leafShaderID, "wood_frequencies");
 	leafLocations[COLOR_TEXTURE0]		= glGetUniformLocation(leafShaderID, "color_texture");
 
 	// create branch data texture
@@ -577,7 +579,8 @@ void Tree::draw(){
 		glUniform1f(locations[BRANCH_COUNT],			GLfloat(branch_count));
 		glUniform3f(locations[WIND_DIRECTION],			g_WindDirection.x, g_WindDirection.y, g_WindDirection.z);
 		glUniform1f(locations[WIND_STRENGTH],			g_WindStrength);
-		glUniform1f(locations[WOOD_AMPLITUDE],			g_WoodAmplitude);
+		glUniform4f(locations[WOOD_AMPLITUDE],			g_WoodAmplitude.x, g_WoodAmplitude.y, g_WoodAmplitude.z, g_WoodAmplitude.w);
+		glUniform4f(locations[WOOD_FREQUENCY],			g_WoodFrequency.x, g_WoodFrequency.y, g_WoodFrequency.z, g_WoodFrequency.w);
 		// bind index buffer
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, branchEBOid);
 		glBindBuffer(GL_ARRAY_BUFFER, branchVBOid); 
@@ -639,7 +642,9 @@ void Tree::draw(){
 		glUniform1i(leafLocations[COLOR_TEXTURE0],		GLint(lColorTexture->unitOffset)		);
 		glUniform3f(leafLocations[WIND_DIRECTION],		g_WindDirection.x, g_WindDirection.y, g_WindDirection.z);
 		glUniform1f(leafLocations[WIND_STRENGTH],		GLfloat(g_WindStrength));
-		glUniform1f(leafLocations[WOOD_AMPLITUDE],		GLfloat(g_WoodAmplitude));	
+		glUniform4f(leafLocations[WOOD_AMPLITUDE],		g_WoodAmplitude.x, g_WoodAmplitude.y, g_WoodAmplitude.z, g_WoodAmplitude.w);
+		glUniform4f(leafLocations[WOOD_FREQUENCY],		g_WoodFrequency.x, g_WoodFrequency.y, g_WoodFrequency.z, g_WoodFrequency.w);
+		
 		// bind index buffer
 		//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, branchEBOid);
 		glBindBuffer(GL_ARRAY_BUFFER, leafVBOid); 
