@@ -75,6 +75,7 @@ void Tree::init(){
 	leafLocations[WIND_STRENGTH]		= glGetUniformLocation(leafShaderID, "wind_strength");
 	leafLocations[WOOD_AMPLITUDE]		= glGetUniformLocation(leafShaderID, "wood_amplitudes");
 	leafLocations[WOOD_FREQUENCY]		= glGetUniformLocation(leafShaderID, "wood_frequencies");
+	leafLocations[LEAF_FREQUENCY]		= glGetUniformLocation(leafShaderID, "leaf_frequency");
 	leafLocations[COLOR_TEXTURE0]		= glGetUniformLocation(leafShaderID, "color_texture");
 
 	// create branch data texture
@@ -644,7 +645,8 @@ void Tree::draw(){
 		glUniform1f(leafLocations[WIND_STRENGTH],		GLfloat(g_WindStrength));
 		glUniform4f(leafLocations[WOOD_AMPLITUDE],		g_WoodAmplitude.x, g_WoodAmplitude.y, g_WoodAmplitude.z, g_WoodAmplitude.w);
 		glUniform4f(leafLocations[WOOD_FREQUENCY],		g_WoodFrequency.x, g_WoodFrequency.y, g_WoodFrequency.z, g_WoodFrequency.w);
-		
+		glUniform1f(leafLocations[LEAF_AMPLITUDE],		g_LeafAmplitude);
+		glUniform1f(leafLocations[LEAF_FREQUENCY],		g_LeafFrequency);
 		// bind index buffer
 		//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, branchEBOid);
 		glBindBuffer(GL_ARRAY_BUFFER, leafVBOid); 
@@ -758,6 +760,8 @@ void Tree::load(string filename, TextureManager *texManager){
 			objectCS.r = entity.base[0];
 			objectCS.s = entity.base[1];
 			objectCS.t = entity.base[2];
+			cs.normalize();
+			cs.repair();
 
 		} else {
 			cs.r = v3(1.0, 0.0, 0.0);

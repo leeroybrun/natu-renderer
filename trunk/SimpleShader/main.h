@@ -28,7 +28,8 @@ v3			g_WindDirection(1.0,0.0,0.0);
 float		g_WindStrength = 1.0f;
 v4			g_WoodAmplitude(1.0, 1.0, 1.0, 1.0);
 v4			g_WoodFrequency(1.0, 1.0, 1.0, 1.0);
-
+float		g_LeafAmplitude = 1.0;
+float		g_LeafFrequency = 1.0;
 
 GLfloat		g_RotObject[3]		= { 0 };		// Object rotation
 GLfloat		g_CameraZ			= -5.0f;		// Camera Z position
@@ -133,6 +134,17 @@ void clbk_WSchanged(float value){
 		g_WindStrength);
 } 
 
+void clbk_LAchanged(float value){
+	g_LeafAmplitude = value;
+	printf("LA: %f\n",
+		g_LeafAmplitude);
+} 
+
+void clbk_LFchanged(float value){
+	g_LeafFrequency = value;
+	printf("LA: %f\n",
+		g_LeafFrequency);
+} 
 
 
 
@@ -241,6 +253,9 @@ void initGUI()
 	GUISlider*		psldVarWF3			= new GUISlider		(0, 10, 10, 255, 250, 6, "wood frequency 3"	, "wood frequency 3"	);
 
 
+	GUISlider*		psldVarLA			= new GUISlider		(0, 10, 10, 275, 250, 6, "leaf amplitude"	, "leaf amplitude"	);
+	GUISlider*		psldVarLF			= new GUISlider		(0, 10, 10, 290, 250, 6, "leaf frequency"	, "leaf frequency"	);
+
 	//pcbxUseShaders->setCallBackFunc(callback_UseShaders);
 //	pcbxUseShaders->setActive(true);
 	//pcbxVertexShader->setCallBackFunc(callback_AttachVertexShader);
@@ -261,6 +276,10 @@ void initGUI()
 	psldVarWF1->setCallBackFunc(clbk_WF1changed);
 	psldVarWF2->setCallBackFunc(clbk_WF2changed);
 	psldVarWF3->setCallBackFunc(clbk_WF3changed);
+
+	psldVarLA->setCallBackFunc(clbk_LAchanged);
+	psldVarLF->setCallBackFunc(clbk_LFchanged);
+
 	//GUIManager::addElement(pcbxUseShaders);
 	//GUIManager::addElement(pcbxVertexShader);
 	//GUIManager::addElement(pcbxGeometryShader);
@@ -277,6 +296,8 @@ void initGUI()
 	GUIManager::addElement(psldVarWF1);
 	GUIManager::addElement(psldVarWF2);
 	GUIManager::addElement(psldVarWF3);
+	GUIManager::addElement(psldVarLA);
+	GUIManager::addElement(psldVarLF);
 	GUIManager::addElement(fpsLabel);
 	GUIManager::setColor(0.f, 0.f, 0.f, 0.f);
 }

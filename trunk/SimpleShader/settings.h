@@ -28,4 +28,6 @@ extern v3			g_WindDirection;
 extern float		g_WindStrength ;
 extern v4			g_WoodAmplitude;
 extern v4			g_WoodFrequency;
+extern float		g_LeafAmplitude;
+extern float		g_LeafFrequency;
 #endif
