@@ -36,8 +36,8 @@ CoordSystem::CoordSystem(const v3 &vector){
 void CoordSystem::repair(){
 	v3 a = r.cross(s);
 	v3 b = r.cross(a);
-	s = a;
-	t = b;
+	s = -b;
+	t = -a;
 }
 
 bool CoordSystem::check(){
