@@ -238,6 +238,12 @@ void animateLeafVertex(in vec3 origin, inout vec3 position)
 	
 	// rotate normal/tangent/binormal
 
+
+	tangent = leafDirection;
+	normal = cross(tangent, binormal);
+	binormal = cross(normal, tangent);
+
+
 	position = origin + position.y*tangent + position.x*binormal;
 	/*
 	//vec2 looksvposition = wind_direction.xz * TimeOffsetLeaves;
