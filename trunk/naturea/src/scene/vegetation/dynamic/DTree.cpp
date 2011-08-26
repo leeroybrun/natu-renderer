@@ -868,14 +868,15 @@ BBox * DTree::getBBox()
 	return bbox;
 }
 
-void DTree::createSlices(v3 & direction, int num, int resolution_x, int resolution_y){
+void DTree::createSlices(v3 & direction, int num, int resolution_x, int resolution_y, bool half){
 // get "slice thickness"
 	BBox * box = getBBox();
 	float distance = -10.f;
 	v3 position = direction * distance;
-	float diameter = box->getDiameter();
+	float diameter = box->getMinSize();
 	float radius = diameter*0.5f;
 	float thickness = diameter/(float(num));
+	if (half) thickness*=0.5;
 	float left = -0.5, right= 0.5, bottom= 0.0, top= 1.0, near, far;
 	float positionDist = position.length();
 	DTreeSlice * slice;
@@ -925,6 +926,11 @@ void DTree::createSlices(v3 & direction, int num, int resolution_x, int resoluti
 		// setup near & far plane
 			near = positionDist-radius + i * thickness;
 			far = near + thickness;
+			// last interval must be to infinity if half slicing
+			if (half && i==num-1)
+			{
+				far = positionDist-radius + 2*(i+1) * thickness;
+			}
 		// setup camera to orthoprojection with respect to slice interval
 			glMatrixMode(GL_PROJECTION);
 			glPushMatrix();
