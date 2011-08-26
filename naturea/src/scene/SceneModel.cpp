@@ -3,12 +3,15 @@
 SceneModel::SceneModel(){
 	textureManager = NULL;
 	transformMatrix.setIdentity();
+	bbox = NULL;
 }
 SceneModel::SceneModel(TextureManager *texManager, ShaderManager *shManager){
 	textureManager = texManager;
 	shaderManager  = shManager;
 	transformMatrix.setIdentity();
+	bbox = NULL;
 }
+
 
 
 SceneModel::~SceneModel()

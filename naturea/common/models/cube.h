@@ -145,7 +145,7 @@ static void drawCube()
 		glVertexPointer(3, GL_FLOAT, 0, BUFFER_OFFSET(0));
 		glNormalPointer(GL_FLOAT, 0, BUFFER_OFFSET(3*NUM_CUBE_VERTICES*sizeof(GLfloat)));
 		//glDrawArrays(GL_QUADS, 0, NUM_CUBE_VERTICES);
-	   glDrawElements(GL_QUADS, NUM_CUBE_INDICES, GL_UNSIGNED_BYTE, BUFFER_OFFSET(0)); 
+	   glDrawElements(GL_QUADS, NUM_CUBE_INDICES, GL_UNSIGNED_INT, BUFFER_OFFSET(0)); 
 	//                  CUBE_INDEX_ARRAY);
 
 	   glDisableClientState(GL_VERTEX_ARRAY);

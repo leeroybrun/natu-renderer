@@ -158,6 +158,7 @@
     <ClInclude Include="src\settings.h" />
     <ClInclude Include="src\utility\EBO.h" />
     <ClInclude Include="src\utility\Mesh.h" />
+    <ClInclude Include="src\utility\Ray.h" />
     <ClInclude Include="src\utility\Shader.h" />
     <ClInclude Include="src\utility\ShaderManager.h" />
     <ClInclude Include="src\utility\Texture.h" />
@@ -216,6 +217,7 @@
     <ClCompile Include="src\scene\water\WaterSurface.cpp" />
     <ClCompile Include="src\utility\EBO.cpp" />
     <ClCompile Include="src\utility\Mesh.cpp" />
+    <ClCompile Include="src\utility\Ray.cpp" />
     <ClCompile Include="src\utility\Shader.cpp" />
     <ClCompile Include="src\utility\ShaderManager.cpp" />
     <ClCompile Include="src\utility\Texture.cpp" />
