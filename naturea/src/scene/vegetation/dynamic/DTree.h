@@ -64,7 +64,7 @@ public:
 
 
 	BBox * getBBox(void);
-	void createSlices(v3 & direction, int num=2, int resolution_x=DYN_TREE::SLICE_RESOLUTION_X, int resolution_y=DYN_TREE::SLICE_RESOLUTION_Y);
+	void createSlices(v3 & direction, int num=2, int resolution_x=DYN_TREE::SLICE_RESOLUTION_X, int resolution_y=DYN_TREE::SLICE_RESOLUTION_Y, bool half=true);
 
 
 private:
