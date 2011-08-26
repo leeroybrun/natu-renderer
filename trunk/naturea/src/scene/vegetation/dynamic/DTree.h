@@ -8,6 +8,24 @@
 #include "../../../utility/EBO.h"
 #include "../../../utility/VBO.h"
 
+class DTreeSlice{
+public:
+	DTreeSlice(){
+		colormap	= NULL;
+		normalmap	= NULL;
+		depthmap	= NULL;
+	}
+	~DTreeSlice(){
+		SAFE_DELETE_PTR(	colormap	);
+		SAFE_DELETE_PTR(	normalmap	);
+		SAFE_DELETE_PTR(	depthmap	);
+	}
+	Texture * colormap;
+	Texture * normalmap;
+	Texture * depthmap;
+};
+
+
 class DTree :
 	public Vegetation
 {
@@ -39,18 +57,22 @@ public:
 
 	void update(double time);
 
-	void bakeToVBO();
+	void bakeToVBO(void);
 
-	void fixTexType();
+	void fixTexType(void);
 	v3	 transformTexCoords(v3 &origTexCoords);
 
 
+	BBox * getBBox(void);
+	void createSlices(v3 & direction, int num=2, int resolution_x=DYN_TREE::SLICE_RESOLUTION_X, int resolution_y=DYN_TREE::SLICE_RESOLUTION_Y);
 
 
 private:
 	DTreeBranch			*trunk;
 	vector<DTreeBranch*> branches;
 	vector<DTreeLeaf*>	 leaves;
+
+	vector<DTreeSlice*>	slices;
 
 	Shader *			branchShader;
 	Shader *			leafShader;

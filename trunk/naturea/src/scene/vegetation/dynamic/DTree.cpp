@@ -5,15 +5,15 @@ DTree::DTree(TextureManager *texManager, ShaderManager *shManager):Vegetation(te
 {
 }
 DTree::DTree(DTree* copy):
-	Vegetation(copy->textureManager, copy->shaderManager)
+Vegetation(copy->textureManager, copy->shaderManager)
 {
-//	textureId	= copy->textureId;
-//	vboId		= copy->vboId;
-//	shader		= copy->shader;
-//	shaderId	= copy->shaderId;
-//	LCmatrixLoc = copy->LCmatrixLoc;
-//	fastModeLoc	= copy->fastModeLoc;
-//	shadowMappingEnabledLoc = copy->shadowMappingEnabledLoc;
+	//	textureId	= copy->textureId;
+	//	vboId		= copy->vboId;
+	//	shader		= copy->shader;
+	//	shaderId	= copy->shaderId;
+	//	LCmatrixLoc = copy->LCmatrixLoc;
+	//	fastModeLoc	= copy->fastModeLoc;
+	//	shadowMappingEnabledLoc = copy->shadowMappingEnabledLoc;
 
 
 }
@@ -27,6 +27,11 @@ bool DTree::loadOBJT(string filename)
 	printf(" DYN_TREE load %s\n", filename.c_str());
 	OBJTfile file;
 	file.loadFromFile(filename.c_str());
+
+	// setup bbox 
+	//TODO: get proper coords of bbox from OBJT / model itself
+	bbox = getBBox();
+
 	// process branches
 	map <int, DTreeBranch*> m_branches;
 	map <int, StEntity>::iterator iter;
@@ -46,7 +51,7 @@ bool DTree::loadOBJT(string filename)
 		id		= (*iter).first;
 		entity	= (*iter).second;
 		branchCount++;
-		
+
 		// parent
 		if (entity.isSetParent && entity.id!=entity.parentId){
 			parent = m_branches[entity.parentId];
@@ -87,7 +92,7 @@ bool DTree::loadOBJT(string filename)
 			objectCS.s = v3(0.0, 1.0, 0.0);
 			objectCS.t = v3(0.0, 0.0, 1.0);
 		}
-		
+
 		// origin
 		if (entity.isSetOrigin){
 			cs.origin = entity.origin;
@@ -217,7 +222,7 @@ void DTree::createBranchesVBO()
 	}
 	// ebo
 	ebo_data = new GLuint	[iCnt];
-	
+
 	// fill arrays
 	int k, offset;
 	int indexPtr = 0, dataPtr=0, v=0, id=0;
@@ -268,7 +273,7 @@ void DTree::createBranchesVBO()
 		// copy branch indices...
 		int * branchIndices = branches[i]->indexPtr;
 		int branchIndexCnt = branches[i]->indicesCount;
-		
+
 		for (k=0; k<branchIndexCnt; k++){
 			ebo_data[indexPtr] = branchIndices[k]+offset; 
 			indexPtr++;
@@ -286,7 +291,7 @@ void DTree::createBranchesVBO()
 		GL_FLOAT, 
 		ATTRIB_NAMES::POSITION,
 		true
-	);
+		);
 	branchesVBO->addVertexAttribute( dataSet );
 	// normal
 	dataSet = new VBODataSet(
@@ -295,7 +300,7 @@ void DTree::createBranchesVBO()
 		GL_FLOAT, 
 		ATTRIB_NAMES::NORMAL,
 		false
-	);
+		);
 	branchesVBO->addVertexAttribute( dataSet );
 
 	// tangent
@@ -305,7 +310,7 @@ void DTree::createBranchesVBO()
 		GL_FLOAT, 
 		ATTRIB_NAMES::TANGENT,
 		false
-	);
+		);
 	branchesVBO->addVertexAttribute( dataSet );
 
 	// texCoord0
@@ -315,7 +320,7 @@ void DTree::createBranchesVBO()
 		GL_FLOAT, 
 		ATTRIB_NAMES::TEXCOORD0,
 		false
-	);
+		);
 	branchesVBO->addVertexAttribute( dataSet );
 
 	// weights
@@ -325,7 +330,7 @@ void DTree::createBranchesVBO()
 		GL_FLOAT, 
 		ATTRIB_NAMES::WEIGHT,
 		false
-	);	
+		);	
 	branchesVBO->addVertexAttribute( dataSet );
 
 	// branch index
@@ -335,23 +340,23 @@ void DTree::createBranchesVBO()
 		GL_FLOAT, 
 		ATTRIB_NAMES::BRANCH_ID,
 		false
-	);	
+		);	
 	branchesVBO->addVertexAttribute( dataSet );
 
 	branchesVBO->compileData(GL_STATIC_DRAW);
-	
+
 	// element buffer object
 	branchesEBO = new EBO();
 	branchesEBO->create(GL_UNSIGNED_INT, GL_TRIANGLES, iCnt, ebo_data, GL_STATIC_DRAW);
 	branchesEBO->linkVBO(branchesVBO);
-	
+
 }
 
 void DTree::createLeavesVBO()
 {
 	// recalc coord systems...
 	int i, sizeL = leaves.size();
-	
+
 	DTreeLeaf * leaf;
 	for (i=0; i<sizeL; i++){
 		leaf = leaves[i];
@@ -445,7 +450,7 @@ void DTree::createLeavesVBO()
 		GL_FLOAT, 
 		ATTRIB_NAMES::POSITION,
 		true
-	);
+		);
 	leavesVBO->addVertexAttribute( dataSet );
 	// normal
 	dataSet = new VBODataSet(
@@ -454,7 +459,7 @@ void DTree::createLeavesVBO()
 		GL_FLOAT, 
 		ATTRIB_NAMES::NORMAL,
 		false
-	);
+		);
 	leavesVBO->addVertexAttribute( dataSet );
 
 	// tangent
@@ -464,7 +469,7 @@ void DTree::createLeavesVBO()
 		GL_FLOAT, 
 		ATTRIB_NAMES::TANGENT,
 		false
-	);
+		);
 	leavesVBO->addVertexAttribute( dataSet );
 
 	// texCoord0
@@ -474,7 +479,7 @@ void DTree::createLeavesVBO()
 		GL_FLOAT, 
 		ATTRIB_NAMES::TEXCOORD0,
 		false
-	);
+		);
 	leavesVBO->addVertexAttribute( dataSet );
 
 	// weights
@@ -484,7 +489,7 @@ void DTree::createLeavesVBO()
 		GL_FLOAT, 
 		ATTRIB_NAMES::WEIGHT,
 		false
-	);	
+		);	
 	leavesVBO->addVertexAttribute( dataSet );
 
 	// branch index
@@ -494,9 +499,9 @@ void DTree::createLeavesVBO()
 		GL_FLOAT, 
 		ATTRIB_NAMES::BRANCH_ID,
 		false
-	);	
+		);	
 	leavesVBO->addVertexAttribute( dataSet );
-	
+
 	leavesVBO->compileData(GL_STATIC_DRAW);
 
 }
@@ -570,15 +575,15 @@ void DTree::createDataTexture()
 		}
 	}
 	dataTexture = new Texture(  
-								GL_TEXTURE_2D,
-								GL_RGBA32F,
-								GL_RGBA,
-								GL_FLOAT,
-								data,
-								texDimY, 
-								texDimX,
-								DYN_TREE::DATA_TEXTURE_NAME
-							);
+		GL_TEXTURE_2D,
+		GL_RGBA32F,
+		GL_RGBA,
+		GL_FLOAT,
+		data,
+		texDimY, 
+		texDimX,
+		DYN_TREE::DATA_TEXTURE_NAME
+		);
 	delete [] data;
 	data = NULL;
 }
@@ -629,12 +634,12 @@ int DTree::linearizeHierarchy(){
 };
 
 void DTree::recalcCoordSystems()
-	
+
 {
 	/*
 	*	Express original coord system in terms of parent coord system...
 	*/
-	
+
 	int i, size=branches.size();
 	DTreeBranch * branch;
 	for (i=0; i<size; i++){
@@ -643,7 +648,7 @@ void DTree::recalcCoordSystems()
 			branch->cs = branch->parent->originalCS.getSystemInThisSystem(branch->originalCS);
 		}
 	}
-	
+
 }
 
 void DTree::fillParentDataForEachBranch()
@@ -669,7 +674,7 @@ void DTree::fillParentDataForEachBranch()
 				branch->rightVectors[actBranch->level] = cSys->s;
 				branch->tVectors    [actBranch->level] = cSys->t;
 				actBranch = (DTreeBranch*)(actBranch->parent);
-				
+
 			} else {
 				branch->upVectors	[actBranch->level] = cSys->r;
 				branch->rightVectors[actBranch->level] = cSys->s;
@@ -681,11 +686,6 @@ void DTree::fillParentDataForEachBranch()
 }
 
 
-
-
-
-
-
 Vegetation* DTree::getCopy(){
 	DTree * copy = new DTree(this);
 	return copy;
@@ -694,10 +694,11 @@ Vegetation* DTree::getCopy(){
 void DTree::draw(){
 	glDisable(GL_CULL_FACE);
 	glPushMatrix();
-	glTranslatef(0.0, 5.0, 0.0);
 	glScalef( 1.f , -1.f, 1.f);
-	glScalef(10.0, 10.0, 10.0);
-	
+	// draw bbox
+	bbox->draw();
+
+
 	// bind textures
 	dataTexture->bind(GL_TEXTURE1);
 	branchNoiseTexture->bind(GL_TEXTURE2);
@@ -719,7 +720,7 @@ void DTree::draw(){
 	backTranslucencyMap	->bind(GL_TEXTURE10);
 	backHalfLife2Map	->bind(GL_TEXTURE11);
 
-	
+
 
 	// draw leaves
 	leavesVBO->draw(leafShader, GL_QUADS, 0);
@@ -739,11 +740,11 @@ void DTree::draw(){
 	glPopMatrix();
 	glEnable(GL_CULL_FACE);
 }
-	
+
 void DTree::drawForLOD(){
 
 }
-	 
+
 void DTree::init(){
 
 	printf("DYN_TREE init\n");
@@ -814,7 +815,7 @@ void DTree::init(){
 	branchShader->registerUniform("wood_frequencies", UniformType::F4, g_tree_wood_frequencies.data);
 	//branchShader->registerUniform("leaf_amplitude", UniformType::F1, & g_tree_wood_amplitudes.data);
 	//branchShader->registerUniform("leaf_frequency", UniformType::F1, & g_tree_wood_amplitudes.data);
-	
+
 	leafShader->registerUniform("branch_count", UniformType::F1, & this->branchCountF);
 	leafShader->registerUniform("time", UniformType::F1, & g_float_time);
 	leafShader->registerUniform("wind_direction", UniformType::F3, & g_tree_wind_direction.data);
@@ -842,19 +843,120 @@ void DTree::init(){
 	printf("branch count = %f\n", branchCount);
 	printf("DYN_TREE done (branch VBOid:%i, branchEBOid:%i, leafVBOid:%i)\n", branchesVBO->getID(), branchesEBO->getID(), leavesVBO->getID());
 }
-	
+
 void DTree::update(double time){
 
 }
-	 
+
 void DTree::bakeToVBO(){
 
 }
-	
+
 void DTree::fixTexType(){
 
 }
 
 v3	 DTree::transformTexCoords(v3 &origTexCoords){
 	return origTexCoords;
+}
+
+BBox * DTree::getBBox()
+{
+	if (bbox==NULL){
+		bbox = new BBox(v3(-0.5, -1.0, -0.5),v3(0.5, 0.0, 0.5), v3(0.0, 1.0, 0.0));
+	}
+	return bbox;
+}
+
+void DTree::createSlices(v3 & direction, int num, int resolution_x, int resolution_y){
+// get "slice thickness"
+	BBox * box = getBBox();
+	float distance = -10.f;
+	v3 position = direction * distance;
+	float diameter = box->getDiameter();
+	float radius = diameter*0.5f;
+	float thickness = diameter/(float(num));
+	float left = -0.5, right= 0.5, bottom= 0.0, top= 1.0, near, far;
+	float positionDist = position.length();
+	DTreeSlice * slice;
+	int i;
+
+	// clear previous slices
+		for ( i = 0; i < slices.size(); i++){
+			delete slices[i];
+		}
+		slices.clear();
+
+	
+	
+		GLuint fbo = 0;
+		
+
+	for ( i = 0; i< num; i++){
+		// create FBO
+			glGenFramebuffersEXT(1, &fbo);
+			glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fbo);
+		// each slice
+			slice = new DTreeSlice();
+		// create & setup textures
+			slice->colormap = new Texture(GL_TEXTURE_2D, GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE, NULL, resolution_x, resolution_y, "color_map");
+
+			slice->depthmap = new Texture(GL_TEXTURE_2D, GL_DEPTH_COMPONENT32F, GL_DEPTH_COMPONENT, GL_FLOAT, NULL, resolution_x, resolution_y, "depth_map");
+
+			slice->normalmap = new Texture(GL_TEXTURE_2D, GL_RGB, GL_RGB, GL_UNSIGNED_BYTE, NULL, resolution_x, resolution_y, "normal_map");
+
+
+		// attach textures to FBO attachments
+
+			glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_2D, slice->colormap->id  , 0);
+			glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT1_EXT, GL_TEXTURE_2D, 0 , 0);
+			glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT2_EXT, GL_TEXTURE_2D, slice->normalmap->id , 0);
+			glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT , GL_TEXTURE_2D, slice->depthmap->id  , 0);
+			//glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+			assert(glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT)==GL_FRAMEBUFFER_COMPLETE_EXT);
+			assert( glGetError() == GL_NO_ERROR );
+			printf("TREE_SLICE %i framebuffer initialized successfully\n", i);
+
+			glClearColor(0.f, 0.f, 0.f, 0.f);
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+			GLenum buffers[3] = {GL_COLOR_ATTACHMENT0_EXT,GL_COLOR_ATTACHMENT1_EXT, GL_COLOR_ATTACHMENT2_EXT};
+			glDrawBuffersARB(3, buffers);
+
+		// setup near & far plane
+			near = positionDist-radius + i * thickness;
+			far = near + thickness;
+		// setup camera to orthoprojection with respect to slice interval
+			glMatrixMode(GL_PROJECTION);
+			glPushMatrix();
+				glLoadIdentity();
+				glViewport(0, 0, resolution_x, resolution_y);
+				//system("PAUSE");
+				glOrtho(left, right, bottom, top, near, far);
+				
+			glMatrixMode(GL_MODELVIEW);
+				glPushMatrix();
+				glLoadIdentity();
+				gluLookAt( position.x, position.y, position.z, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
+		// render offscreen
+		// draw tree now...
+			draw();
+
+		glMatrixMode(GL_PROJECTION);
+			glPopMatrix();
+		glMatrixMode(GL_MODELVIEW);
+			glPopMatrix();
+		//
+		// add slice
+		slices.push_back(slice);
+
+		// return to normal screen rendering
+		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+		glDrawBuffer(GL_BACK);
+		glViewport(0,0,g_WinWidth, g_WinHeight);
+	// delete framebuffer
+		glDeleteFramebuffersEXT(1, &fbo);
+
+	} // for each slice
+	
+
 }

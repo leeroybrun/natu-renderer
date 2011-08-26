@@ -163,6 +163,9 @@
     <ClInclude Include="common\models\cube.h">
       <Filter>Common</Filter>
     </ClInclude>
+    <ClInclude Include="src\utility\Ray.h">
+      <Filter>Core</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Scene">
@@ -347,6 +350,9 @@
       <Filter>Core</Filter>
     </ClCompile>
     <ClCompile Include="src\utility\EBO.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\utility\Ray.cpp">
       <Filter>Core</Filter>
     </ClCompile>
   </ItemGroup>

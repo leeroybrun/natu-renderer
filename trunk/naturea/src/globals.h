@@ -91,5 +91,6 @@ extern float	g_tree_leaf_frequency;
 
 extern int		g_tree_slice_count;
 
-
+extern v3		g_snapshot_direction;
+extern int		g_slice_count;
 #endif

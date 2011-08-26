@@ -37,8 +37,8 @@ float grassmin = GRASS_MIN_HEIGHT;
 float grassmax = GRASS_MAX_HEIGHT;
 
 CameraMode g_cameraMode = FREE;
-int g_WinWidth				= 800;   // Window width
-int g_WinHeight				= 600;   // Window height
+int g_WinWidth				= 1024	;   // Window width
+int g_WinHeight				= 1024;   // Window height
 double g_time				= 0.0;
 float g_float_time			= 0.0f;
 CTimer						timer;
@@ -75,6 +75,9 @@ m4 g_LightPMatrix;
 Light* g_shadowLight;
 int		g_multisample_count			= 0;
 GLuint	g_screen_multi_framebuffer	= 0;
+
+v3 g_snapshot_direction		= v3(0.0, 0.0, -1.0);
+int g_slice_count			= 3;
 
 int	g_GrassCount			= GRASS_COUNT;
 int	g_Tree1Count			= TREE1_COUNT;
@@ -279,6 +282,11 @@ void cbInitGL()
    //loadNewModelCB(&g_ModelFileName);
 }
 
+void TW_CALL cbMakeSlices(void* clientData)
+{
+	world.snapTree(g_snapshot_direction);
+} 
+
 void TW_CALL cbSetTree2Count(const void *value, void *clientData)
 { 
 	g_Tree2Count = *(const int*)value; // for instance
@@ -392,8 +400,16 @@ void initGUI()
     
    TwWindowSize(g_WinWidth, g_WinHeight);
    TwBar *controlBar = TwNewBar("Controls");
-   TwDefine(" Controls position='10 10' size='250 370' refresh=0.1 \
+   TwDefine(" Controls position='0 0' size='250 450' refresh=0.3 \
             valueswidth=80 ");
+   TwAddVarRW(controlBar, "snapshotDir", TW_TYPE_DIR3F, &g_snapshot_direction, 
+               "group='Tree'  label='slices direction' help='direction of snapshot' ");
+   TwAddVarRW(controlBar, "snapshotSlices", TW_TYPE_INT32, &g_slice_count, 
+               "group='Tree' label='count of slices'  help='count of slices to generate' ");
+   TwAddButton(controlBar, "make_slices", cbMakeSlices, NULL, " group='Tree' label='make slices' ");
+
+   
+
    TwAddVarRW(controlBar, "parallax", TW_TYPE_BOOLCPP, &g_ParallaxMappingEnabled, 
                " help='Parallax mapping enabled' ");
    TwAddVarRW(controlBar, "parallaxScale", TW_TYPE_FLOAT, &g_ParallaxScale, 

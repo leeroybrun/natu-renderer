@@ -178,7 +178,24 @@ void Camera::draw() {
 
 void Camera::shoot()
 {
-  
+	/*
+	
+	float distance = -10.f;
+	v3 position = g_snapshot_direction * distance;
+	//v3 p(position+human_movement);
+	glMatrixMode(GL_PROJECTION);
+				glLoadIdentity();
+				glViewport(0, 0, g_WinWidth, g_WinHeight);
+				glOrtho(-0.5, 0.5, 0.0, 1.0, 0, 10);
+			glMatrixMode(GL_MODELVIEW);
+				glLoadIdentity();
+				gluLookAt(	position.x	, position.y	, position.z,
+							0.0			, 0.0			, 0.0		,
+							0.0			, 1.0			, 0.0		);
+		// render offscreen
+		// draw tree now...
+
+  /*/
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
   glViewport(0, 0, g_WinWidth, g_WinHeight);
@@ -189,7 +206,7 @@ void Camera::shoot()
   gluLookAt(p.x				, p.y				, p.z				,
 			p.x+direction.x	, p.y+direction.y	, p.z + direction.z	,
 			upVector.x		, upVector.y		, upVector.z		);
-
+//*/
 }
 
 void Camera::setup(v3 & pos, v3 & dir, v3 &up, int *w, int *h, float fo, float n, float fa)

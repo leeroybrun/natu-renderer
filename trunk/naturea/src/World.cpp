@@ -136,7 +136,7 @@ void World::draw()
 	
 	//p_testModel->draw();
 	//drawModels();
-	p_test_model->draw();
+	//p_test_model->draw();
 
 	glEnable(GL_BLEND);
 	glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -167,7 +167,12 @@ void World::drawWithAlpha(){
 	p_grass_growth->draw();
 	p_tree1_growth->draw();
 	p_tree2_growth->draw();
-	p_dtree->draw();
+
+	glPushMatrix();
+		glTranslatef(0.0, 5.0, 0.0);
+		glScalef(10.0, 10.0, 10.0);
+		p_dtree->draw();
+	glPopMatrix();
 }
 
 void World::drawUnderWater(){
