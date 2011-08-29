@@ -136,7 +136,13 @@ void World::draw()
 	
 	//p_testModel->draw();
 	//drawModels();
-	//p_test_model->draw();
+	glPushMatrix();
+
+		glTranslatef(10.0, 0.0, 0.0);
+
+		p_test_model->draw();
+
+	glPopMatrix();
 
 	glEnable(GL_BLEND);
 	glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);

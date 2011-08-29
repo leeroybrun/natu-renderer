@@ -254,6 +254,8 @@
     <None Include="shaders\skybox\skybox_vs.glsl" />
     <None Include="shaders\terrain\terrain_fs.glsl" />
     <None Include="shaders\terrain\terrain_vs.glsl" />
+    <None Include="shaders\test2_fs.glsl" />
+    <None Include="shaders\test2_vs.glsl" />
     <None Include="shaders\test_fs.glsl" />
     <None Include="shaders\test_vs.glsl" />
     <None Include="shaders\tree\tree_fs.glsl" />

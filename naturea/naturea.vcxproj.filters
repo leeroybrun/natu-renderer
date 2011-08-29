@@ -225,6 +225,9 @@
     <Filter Include="DATA\textures">
       <UniqueIdentifier>{5a99edea-6264-4a11-8306-a7bee9c1dbab}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Shaders\testing">
+      <UniqueIdentifier>{92ca7892-38f4-4a1a-aa84-bfae51e5bf49}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp" />
@@ -429,12 +432,6 @@
     <None Include="shaders\dynamic_tree\leaf_vs.glsl">
       <Filter>Shaders\dynaTree</Filter>
     </None>
-    <None Include="shaders\test_fs.glsl">
-      <Filter>Shaders</Filter>
-    </None>
-    <None Include="shaders\test_vs.glsl">
-      <Filter>Shaders</Filter>
-    </None>
     <None Include="models\OBJT\Javor.objt">
       <Filter>DATA\models</Filter>
     </None>
@@ -605,6 +602,18 @@
     </None>
     <None Include="textures\dynamic_tree\habel\sky_sun.png">
       <Filter>DATA\textures</Filter>
+    </None>
+    <None Include="shaders\test_vs.glsl">
+      <Filter>Shaders\testing</Filter>
+    </None>
+    <None Include="shaders\test_fs.glsl">
+      <Filter>Shaders\testing</Filter>
+    </None>
+    <None Include="shaders\test2_fs.glsl">
+      <Filter>Shaders\testing</Filter>
+    </None>
+    <None Include="shaders\test2_vs.glsl">
+      <Filter>Shaders\testing</Filter>
     </None>
   </ItemGroup>
 </Project>

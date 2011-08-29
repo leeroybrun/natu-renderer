@@ -955,6 +955,12 @@ void DTree::createSlices(v3 & direction, int num, int resolution_x, int resoluti
 		// add slice
 		slices.push_back(slice);
 
+		// generate mipmaps where needed
+		slice->colormap->generateMipmaps();
+		//slice->normalmap->generateMipmaps();
+		slice->depthmap->generateMipmaps();
+
+
 		// return to normal screen rendering
 		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
 		glDrawBuffer(GL_BACK);
