@@ -840,7 +840,7 @@ void DTree::init(){
 	branchesVBO->compileWithShader(branchShader);
 	leavesVBO->compileWithShader(leafShader);
 
-	printf("branch count = %f\n", branchCount);
+	printf("branch count = %i\n", branchCount);
 	printf("DYN_TREE done (branch VBOid:%i, branchEBOid:%i, leafVBOid:%i)\n", branchesVBO->getID(), branchesEBO->getID(), leavesVBO->getID());
 }
 

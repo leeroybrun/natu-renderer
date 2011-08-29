@@ -363,12 +363,17 @@ void World::init()
 		p_dtree->loadOBJT( DYN_TREE::OBJT_FILENAME );
 		p_dtree->init();
 	printf("----- END DYNAMIC TREE INIT ");
+
+	// generate initial slices for tree
+	p_dtree->createSlices(p_activeCamera->getDirection(), 3);
 	
 //===============================================================================
 // TEST OBJECT INIT
 //===============================================================================
 	p_test_model = new TestModel();
 	p_test_model->init();
+	delete p_test_model->colorMap;
+	p_test_model->colorMap = p_dtree->slices[2]->colormap;
 
 	/*
 	cubeShader = new Shader("cube");
