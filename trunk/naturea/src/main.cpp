@@ -37,8 +37,8 @@ float grassmin = GRASS_MIN_HEIGHT;
 float grassmax = GRASS_MAX_HEIGHT;
 
 CameraMode g_cameraMode = FREE;
-int g_WinWidth				= 1024	;   // Window width
-int g_WinHeight				= 1024;   // Window height
+int g_WinWidth				= 800	;   // Window width
+int g_WinHeight				= 600;   // Window height
 double g_time				= 0.0;
 float g_float_time			= 0.0f;
 CTimer						timer;
@@ -117,6 +117,14 @@ v4		g_tree_wood_frequencies	= v4(0.0, 0.0, 0.0, 0.0);
 float	g_tree_leaf_amplitude	= 0.8;
 float	g_tree_leaf_frequency	= 2.0;
 int		g_tree_slice_count		= 3;
+float	g_tree_wave_amplitude	= 0.05;
+float	g_tree_wave_frequency	= 1.0;
+v3		g_tree_movementVectorA	= v3(1.0, 0.0, 0.0);
+v3		g_tree_movementVectorB  = v3(1.0, 0.0, 0.0);
+float	g_tree_wave_y_offset	= 0.0;
+float	g_tree_wave_increase_factor = 1.0;
+		
+
 
 
 World world;
@@ -400,13 +408,21 @@ void initGUI()
     
    TwWindowSize(g_WinWidth, g_WinHeight);
    TwBar *controlBar = TwNewBar("Controls");
-   TwDefine(" Controls position='0 0' size='250 450' refresh=0.3 \
+   TwDefine(" Controls position='0 0' size='250 550' refresh=0.3 \
             valueswidth=80 ");
    TwAddVarRW(controlBar, "snapshotDir", TW_TYPE_DIR3F, &g_snapshot_direction, 
-               "group='Tree'  label='slices direction' help='direction of snapshot' ");
+               "group='LOD'  label='slices direction' help='direction of snapshot' ");
    TwAddVarRW(controlBar, "snapshotSlices", TW_TYPE_INT32, &g_slice_count, 
-               "group='Tree' label='count of slices'  help='count of slices to generate' ");
-   TwAddButton(controlBar, "make_slices", cbMakeSlices, NULL, " group='Tree' label='make slices' ");
+               "group='LOD' label='count of slices'  help='count of slices to generate' ");
+    TwAddButton(controlBar, "make_slices", cbMakeSlices, NULL, " group='Tree' label='make slices' ");
+   TwAddVarRW(controlBar, "wave_amplitude", TW_TYPE_FLOAT, &g_tree_wave_amplitude, "group='LOD' label='distortion amplitude' min=0 max=5 step=0.005 ");
+   TwAddVarRW(controlBar, "wave_frequency", TW_TYPE_FLOAT, &g_tree_wave_frequency, "group='LOD' label='distortion frequency' min=0 max=5 step=0.005");
+   TwAddVarRW(controlBar, "wave_y_offset", TW_TYPE_FLOAT, &g_tree_wave_y_offset, "group='LOD' label='distortion y offset' min=0 max=10 step=0.005");
+   TwAddVarRW(controlBar, "wave_increase_factor", TW_TYPE_FLOAT, &g_tree_wave_increase_factor, "group='LOD' label='distortion increase' min=0 max=5 step=0.005");
+   TwAddVarRW(controlBar, "wave_movA", TW_TYPE_DIR3F, &g_tree_movementVectorA, "group='LOD' label='distortion mov vector A' ");
+   TwAddVarRW(controlBar, "wave_movB", TW_TYPE_DIR3F, &g_tree_movementVectorB, "group='LOD' label='distortion mov vector B' ");
+
+  
 
    
 

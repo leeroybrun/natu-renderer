@@ -13,8 +13,11 @@ TestModel::~TestModel(void)
 void TestModel::draw()
 {
 	glPushMatrix();
-	glTranslatef(0.0, 8.0, 0.0);
-	glScalef(3.0,3.0,3.0);
+	
+	glTranslatef(0.0, 10.0, 0.0);
+	glScalef(8.0,8.0,8.0);
+	glRotatef(90, 0.0, 0.0, 1.0);
+	glRotatef(90, 0.0, 1.0, 0.0);
 	glDisable(GL_CULL_FACE);
 
 	colorMap		->bind(GL_TEXTURE0);
@@ -86,6 +89,15 @@ void TestModel::init()
 	shader->linkTexture(colorMap			);
 	shader->linkTexture(displacementMap		);
 	shader->registerUniform("time", UniformType::F1, & g_float_time);
+
+	shader->registerUniform("wave_amplitude"		, UniformType::F1, & g_tree_wave_amplitude		);
+	shader->registerUniform("wave_frequency"		, UniformType::F1, & g_tree_wave_frequency		);
+	shader->registerUniform("movementVectorA"		, UniformType::F2, & g_tree_movementVectorA		);
+	shader->registerUniform("movementVectorB"		, UniformType::F2, & g_tree_movementVectorB		);
+	shader->registerUniform("wave_y_offset"			, UniformType::F1, & g_tree_wave_y_offset			);
+	shader->registerUniform("wave_increase_factor"	, UniformType::F1, & g_tree_wave_increase_factor	);
+
+
 	/*
 	shader = new Shader("test");
 	shader->loadShader("shaders/test_vs.glsl", "shaders/test_fs.glsl");

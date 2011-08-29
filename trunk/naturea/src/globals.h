@@ -89,8 +89,21 @@ extern v4		g_tree_wood_frequencies;
 extern float	g_tree_leaf_amplitude;
 extern float	g_tree_leaf_frequency;
 
+/**********************************************
+* LOD TREE
+*/
 extern int		g_tree_slice_count;
+
+extern float	g_tree_wave_amplitude;
+extern float	g_tree_wave_frequency;
+extern v3		g_tree_movementVectorA;
+extern v3		g_tree_movementVectorB;
+extern float	g_tree_wave_y_offset;
+extern float	g_tree_wave_increase_factor;
 
 extern v3		g_snapshot_direction;
 extern int		g_slice_count;
+
+
+
 #endif
