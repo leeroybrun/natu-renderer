@@ -23,6 +23,8 @@ public:
 	void activate();
 	void deactivate();
 
+	void generateMipmaps();
+
 	void show(GLint x, GLint y, GLsizei width, GLsizei height);
 
 	GLint		format;

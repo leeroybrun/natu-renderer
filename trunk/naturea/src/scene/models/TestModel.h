@@ -20,6 +20,11 @@ public:
 
 	Shader				*shader;
 	VBO					*vbo;
+
+	Texture*			colorMap;
+	Texture*			displacementMap;
+	Texture*			weightMap;
+
 	Texture*			frontDecalMap;
 	Texture*			frontNormalMap;
 	Texture*			frontTranslucencyMap;
