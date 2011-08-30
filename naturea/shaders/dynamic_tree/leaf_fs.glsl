@@ -224,9 +224,9 @@ void colorize(out vec4 outColor, in vec3 normal, in vec3 tangent, in vec3 bitang
 	{
 		// Calculate translucency intensity.
 		
-		translucency =	dot(ts_lightDir, vec3(-SQRT6, -SQRT2, SQRT3)) * halflife2_color.x +
-					    dot(ts_lightDir, vec3(-SQRT6,  SQRT2, SQRT3)) * halflife2_color.y +
-						dot(ts_lightDir, vec3( SQRT23,   0.0, SQRT3)) * halflife2_color.z;
+		translucency =	dot(ts_lightDir, vec3(-SQRT6, -SQRT2,  SQRT3)) * halflife2_color.x +
+					    dot(ts_lightDir, vec3(-SQRT6,  SQRT2,  SQRT3)) * halflife2_color.y +
+						dot(ts_lightDir, vec3( SQRT23,   0.0,  SQRT3)) * halflife2_color.z;
 		translucency = max(translucency, 0.0);
 		
 		// Calculate specularity.
@@ -236,9 +236,9 @@ void colorize(out vec4 outColor, in vec3 normal, in vec3 tangent, in vec3 bitang
 	else
 	{
 		// Calculate translucency intensity.
-		translucency =	dot(ts_lightDir, vec3(-SQRT6, -SQRT2,  SQRT3)) * halflife2_color.x +
-						dot(ts_lightDir, vec3(-SQRT6,  SQRT2,  SQRT3)) * halflife2_color.y +
-						dot(ts_lightDir, vec3( SQRT23,   0.0,  SQRT3)) * halflife2_color.z;
+		translucency =	dot(ts_lightDir, vec3(-SQRT6, -SQRT2,  -SQRT3)) * halflife2_color.x +
+						dot(ts_lightDir, vec3(-SQRT6,  SQRT2,  -SQRT3)) * halflife2_color.y +
+						dot(ts_lightDir, vec3( SQRT23,   0.0,  -SQRT3)) * halflife2_color.z;
 		translucency = max(translucency, 0.0);
 
 		// Calculate specularity.
@@ -249,7 +249,7 @@ void colorize(out vec4 outColor, in vec3 normal, in vec3 tangent, in vec3 bitang
 	}
 
 	// Calculate diffuse lighting.
-	diffuse_term = max(0.0, dot(ts_lightDir, ts_normal));
+	diffuse_term = max(0.0, dot(-ts_lightDir, ts_normal));
 	diffuse_term = min(diffuse_term, shadow_intensity);
 
 	// --- End Lighting ---
@@ -272,7 +272,7 @@ void colorize(out vec4 outColor, in vec3 normal, in vec3 tangent, in vec3 bitang
 	
 	
 	vec4 final_specular = specularity * shadow_intensity * gl_FrontLightProduct[0].diffuse * MultiplySpecular;
-	//outColor.rgb = vec3(decal_color)  + specularity * vec3(1.0, .0, .0);	
+	//outColor = vec4(vec3(translucency),1.0);// * final_ambient.rgb + 0.0001*(final_diffuse.rgb + final_specular.rgb + final_translucency);	
 	outColor.rgb = final_ambient.rgb + final_diffuse.rgb + final_specular.rgb + final_translucency; //
 	outColor.a = decal_color.a;
 }
