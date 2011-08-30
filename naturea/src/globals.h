@@ -100,6 +100,9 @@ extern v3		g_tree_movementVectorA;
 extern v3		g_tree_movementVectorB;
 extern float	g_tree_wave_y_offset;
 extern float	g_tree_wave_increase_factor;
+extern float	g_tree_time_offset_1;
+extern float	g_tree_time_offset_2;
+
 
 extern v3		g_snapshot_direction;
 extern int		g_slice_count;

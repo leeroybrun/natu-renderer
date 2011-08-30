@@ -138,7 +138,7 @@ void World::draw()
 	//drawModels();
 	glPushMatrix();
 
-		glTranslatef(10.0, 0.0, 0.0);
+		glTranslatef(0.0, 0.0, 10.0);
 
 		p_test_model->draw();
 
@@ -365,7 +365,8 @@ void World::init()
 	printf("----- END DYNAMIC TREE INIT ");
 
 	// generate initial slices for tree
-	p_dtree->createSlices(p_activeCamera->getDirection(), 3);
+	int sliceCount = 6;
+	p_dtree->createSlices(p_activeCamera->getDirection(), sliceCount);
 	
 //===============================================================================
 // TEST OBJECT INIT
@@ -373,8 +374,8 @@ void World::init()
 	p_test_model = new TestModel();
 	p_test_model->init();
 	delete p_test_model->colorMap;
-	p_test_model->colorMap = p_dtree->slices[2]->colormap;
-
+	p_test_model->colorMap = p_dtree->slices[sliceCount-1]->colormap;
+	p_test_model->colorMap2 = p_dtree->slices[sliceCount-2]->colormap;
 	/*
 	cubeShader = new Shader("cube");
 	cubeShader->loadShader("shaders/cube_vs.glsl", "shaders/cube_fs.glsl");

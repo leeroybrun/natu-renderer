@@ -21,7 +21,11 @@ public:
 	Shader				*shader;
 	VBO					*vbo;
 
+	float				tree_time_offset;
+	Uniform*			u_time_offset;				
+
 	Texture*			colorMap;
+	Texture*			colorMap2;
 	Texture*			displacementMap;
 	Texture*			weightMap;
 

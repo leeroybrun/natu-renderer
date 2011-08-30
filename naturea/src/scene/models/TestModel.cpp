@@ -3,6 +3,7 @@
 
 TestModel::TestModel(void)
 {
+	tree_time_offset = 0;
 }
 
 
@@ -23,6 +24,48 @@ void TestModel::draw()
 	colorMap		->bind(GL_TEXTURE0);
 	displacementMap	->bind(GL_TEXTURE1);
 
+	u_time_offset->data = &	g_tree_time_offset_1;
+
+	/*frontDecalMap		->bind(GL_TEXTURE0);
+	frontNormalMap		->bind(GL_TEXTURE1);
+	frontTranslucencyMap->bind(GL_TEXTURE2);
+	frontHalfLife2Map	->bind(GL_TEXTURE3);
+	backDecalMap		->bind(GL_TEXTURE4);
+	backNormalMap		->bind(GL_TEXTURE5);
+	backTranslucencyMap	->bind(GL_TEXTURE6);
+	backHalfLife2Map	->bind(GL_TEXTURE7);
+	*/
+	vbo->draw(shader, GL_QUADS, 0);
+	/*
+	frontDecalMap		->unbind();
+	frontNormalMap		->unbind();
+	frontTranslucencyMap->unbind();
+	frontHalfLife2Map	->unbind();
+	backDecalMap		->unbind();
+	backNormalMap		->unbind();
+	backTranslucencyMap	->unbind();
+	backHalfLife2Map	->unbind();
+	*/
+	colorMap		->unbind();
+	displacementMap	->unbind();
+	glEnable(GL_CULL_FACE);
+
+	glPopMatrix();
+
+	// 2nd slice
+
+	glPushMatrix();
+	
+	glTranslatef(-1.0, 10.0, 0.0);
+	glScalef(8.0,8.0,8.0);
+	glRotatef(90, 0.0, 0.0, 1.0);
+	glRotatef(90, 0.0, 1.0, 0.0);
+	glDisable(GL_CULL_FACE);
+
+	colorMap2		->bind(GL_TEXTURE0);
+	displacementMap	->bind(GL_TEXTURE1);
+
+	u_time_offset->data = &	g_tree_time_offset_2;
 
 	/*frontDecalMap		->bind(GL_TEXTURE0);
 	frontNormalMap		->bind(GL_TEXTURE1);
@@ -96,8 +139,8 @@ void TestModel::init()
 	shader->registerUniform("movementVectorB"		, UniformType::F2, & g_tree_movementVectorB		);
 	shader->registerUniform("wave_y_offset"			, UniformType::F1, & g_tree_wave_y_offset			);
 	shader->registerUniform("wave_increase_factor"	, UniformType::F1, & g_tree_wave_increase_factor	);
-
-
+	int i = shader->registerUniform("time_offset"	, UniformType::F1, & tree_time_offset);
+	u_time_offset = shader->getUniform(i);
 	/*
 	shader = new Shader("test");
 	shader->loadShader("shaders/test_vs.glsl", "shaders/test_fs.glsl");

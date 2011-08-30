@@ -463,4 +463,8 @@ int		Shader::registerUniform(string inShaderName, UniformType type, void * data)
 	uniforms.push_back(u);
 	return o;
 }
-	
+
+Uniform * Shader::getUniform(int index){
+	return uniforms[index];
+}
+

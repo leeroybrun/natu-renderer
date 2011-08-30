@@ -75,6 +75,8 @@ public:
 	void	setBoolean(int locIndex, bool value);
 	void	setTexture(int location, int texUnitNumber);
 
+	Uniform * getUniform(int index);
+
 	GLint	timeLocation;
 	vector<GLint>	 locations;
 	vector<GLint>	 attributeLocations;
