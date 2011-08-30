@@ -28,7 +28,7 @@ void main()
 	vec2 texCoord = gl_TexCoord[0].st+(texCoordA+texCoordB)*wave_amplitude;// texture2D(displacementMap, ).st;
 	
 	vec4 color = texture2D(colorMap, texCoord);
-	if (color.a<0.5){discard;}
+	if (color.a<0.3){discard;}
 	gl_FragData[0] = color;
 	gl_FragData[1] = color * vec4(0.5, 0.5, 0.5, 1.0);
 
