@@ -695,8 +695,9 @@ void DTree::draw(){
 	glDisable(GL_CULL_FACE);
 	glPushMatrix();
 	glScalef( 1.f , -1.f, 1.f);
+	
 	// draw bbox
-	bbox->draw();
+	//bbox->draw();
 
 
 	// bind textures

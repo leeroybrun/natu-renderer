@@ -117,13 +117,18 @@ v4		g_tree_wood_frequencies	= v4(0.0, 0.0, 0.0, 0.0);
 float	g_tree_leaf_amplitude	= 0.8;
 float	g_tree_leaf_frequency	= 2.0;
 int		g_tree_slice_count		= 3;
-float	g_tree_wave_amplitude	= 0.05;
-float	g_tree_wave_frequency	= 1.0;
-v3		g_tree_movementVectorA	= v3(1.0, 0.0, 0.0);
+float	g_tree_wave_amplitude	= 0.005;
+float	g_tree_wave_frequency	= 0.5;
+v3		g_tree_movementVectorA	= v3(0.0, 1.0, 0.0);
 v3		g_tree_movementVectorB  = v3(1.0, 0.0, 0.0);
 float	g_tree_wave_y_offset	= 0.0;
 float	g_tree_wave_increase_factor = 1.0;
-		
+float	g_tree_time_offset_1	= 0.0;
+float	g_tree_time_offset_2	= 0.5;		
+
+float g_CPU_fps;
+float CPU_render_time;
+
 
 
 
@@ -145,72 +150,79 @@ void TW_CALL copyStdStringToClient(std::string& dst, const std::string& src);
 //-----------------------------------------------------------------------------
 void cbDisplay()
 {
-   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); 
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); 
 
-   // Setup OpenGL states according to user settings
-   glAlphaFunc(GL_GEQUAL, g_AlphaThreshold);
+	// Setup OpenGL states according to user settings
+	glAlphaFunc(GL_GEQUAL, g_AlphaThreshold);
 
-   glPolygonMode(GL_FRONT_AND_BACK, g_WireMode ? GL_LINE : GL_FILL);
-   //if (g_FaceCulling) glEnable(GL_CULL_FACE); else glDisable(GL_CULL_FACE);
+	glPolygonMode(GL_FRONT_AND_BACK, g_WireMode ? GL_LINE : GL_FILL);
+	//if (g_FaceCulling) glEnable(GL_CULL_FACE); else glDisable(GL_CULL_FACE);
 
 	// Setup camera
-   //glLoadIdentity();
-   //glTranslatef(0.5f, -1.0f, -g_SceneTraZ);
-   //pgr2AddQuaternionRotationToTransformation(g_SceneRot);
-   //glScalef(g_SceneScale, g_SceneScale, g_SceneScale);
+	//glLoadIdentity();
+	//glTranslatef(0.5f, -1.0f, -g_SceneTraZ);
+	//pgr2AddQuaternionRotationToTransformation(g_SceneRot);
+	//glScalef(g_SceneScale, g_SceneScale, g_SceneScale);
 
-   
-   g_time=timer.RealTime();
-   g_float_time = g_time;
-   world.update(g_time);
-   /*
-   if (pqAvailable){
-	   glBeginQuery(GL_PRIMITIVES_GENERATED, pqid);
-   }
-   */
 
-   // if timer query available
-   if (tqAvailable){
-	    // measure on GPU
+	g_time=timer.RealTime();
+	g_float_time = g_time;
+	world.update(g_time);
+	/*
+	if (pqAvailable){
+	glBeginQuery(GL_PRIMITIVES_GENERATED, pqid);
+	}
+	*/
+
+	// if timer query available
+	if (tqAvailable){
+		// measure on GPU
 		//if (result_available){
-			glBeginQuery(GL_TIME_ELAPSED, tqid);
+		glBeginQuery(GL_TIME_ELAPSED, tqid);
 		//}
-		world.draw();		
-		//if (result_available)
-			glEndQuery(GL_TIME_ELAPSED);
-		
+
+		/*
 		GLuint64EXT time = 0;
 		glGetQueryObjectui64vEXT(tqid, GL_QUERY_RESULT, &time); // blocking CPU
-		g_Statistics.fps = 1000000000.0/ double(time);
+		g_Statistics.fps = 1000000000.0/ double(time);*/
 		//printf("FPS: %f\n",g_Statistics.fps);
 		//glGetQueryObjectiv(tqid, GL_QUERY_RESULT_AVAILABLE, &result_available);
 		//printf("avail: %s\n",result_available?"yes":"no");
-   } else {
-	    world.draw();
-		// must block CPU to measure time here
-		glFinish();
-		double timeDiff = timer.RealTime() - g_time;
-		g_Statistics.fps = 1.0 / (timeDiff);
-   }
-   /*
-    if (pqAvailable){
-		glEndQuery(GL_PRIMITIVES_GENERATED);
-		GLuint64EXT count = 0;
-		glGetQueryObjectui64vEXT(pqid, GL_QUERY_RESULT, &count); // blocking CPU
-		g_Statistics.primitives = count;
+	} 
+	world.draw();
+	// block CPU to measure time here
+	glFinish();
+	
+
+	if (tqAvailable){
+		//if (result_available)
+		glEndQuery(GL_TIME_ELAPSED);
+
+		GLuint64EXT time = 0;
+		glGetQueryObjectui64vEXT(tqid, GL_QUERY_RESULT, &time); // blocking CPU
+		g_Statistics.fps = 1000000000.0/ double(time);
 	}
-   */
+	double timeDiff = timer.RealTime() - g_time;
+	g_CPU_fps = 1.0 / (timeDiff);
+	/*
+	if (pqAvailable){
+	glEndQuery(GL_PRIMITIVES_GENERATED);
+	GLuint64EXT count = 0;
+	glGetQueryObjectui64vEXT(pqid, GL_QUERY_RESULT, &count); // blocking CPU
+	g_Statistics.primitives = count;
+	}
+	*/
 }
 
 void initApp()
 {
 #if TEST
 	// TEST START
-	
+
 	// do whatever u want... 
 
 	system("PAUSE");
-	
+
 	exit(1);
 	// TEST END
 #endif
@@ -228,7 +240,7 @@ void initApp()
 		tqAvailable = true;
 		glGenQueries(1, &tqid);
 	}
-	
+
 	pqAvailable = true;
 	glGenQueries(1, &pqid);
 
@@ -258,36 +270,36 @@ void deinitApp()
 //-----------------------------------------------------------------------------
 void cbInitGL()
 {
-   // Init app GUI
-   initGUI();
+	// Init app GUI
+	initGUI();
 
-   // Set OpenGL state variables
-   glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-   glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-   
-   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	// Set OpenGL state variables
+	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glMaterialfv(GL_FRONT_AND_BACK,  GL_AMBIENT, material_amd);
 	glMaterialfv(GL_FRONT_AND_BACK,  GL_DIFFUSE, material_amd);
 	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, material_spe);
 	glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 128);
-   glEnable(GL_DEPTH_TEST);
+	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);
 	glShadeModel(GL_SMOOTH);
 	glEnable(GL_LINE_SMOOTH);
 	glEnable(GL_LIGHTING);
 	glEnable(GL_CULL_FACE);
 	glPointSize(1.f);
-   glLineWidth(1.0f);
+	glLineWidth(1.0f);
 
-  
+
 	glGetIntegerv(GL_MAX_SAMPLES, &g_multisample_count);
 
-	
-   // init app
-   initApp();
 
-   // Load model
-   //loadNewModelCB(&g_ModelFileName);
+	// init app
+	initApp();
+
+	// Load model
+	//loadNewModelCB(&g_ModelFileName);
 }
 
 void TW_CALL cbMakeSlices(void* clientData)
@@ -322,7 +334,7 @@ void TW_CALL cbSetGrassCount(const void *value, void *clientData)
 }
 void TW_CALL cbGetGrassCount(void *value, void *clientData)
 { 
-    *(int *)value = world.grass_planter.count;  // for instance
+	*(int *)value = world.grass_planter.count;  // for instance
 }
 
 //tree2
@@ -333,7 +345,7 @@ void TW_CALL cbSetTree2Min(const void *value, void *clientData)
 }
 void TW_CALL cbGetTree2Min(void *value, void *clientData)
 { 
-    *(float *)value = world.tree2_planter.height_min;  // for instance
+	*(float *)value = world.tree2_planter.height_min;  // for instance
 }
 
 void TW_CALL cbSetTree2Max(const void *value, void *clientData)
@@ -343,7 +355,7 @@ void TW_CALL cbSetTree2Max(const void *value, void *clientData)
 }
 void TW_CALL cbGetTree2Max(void *value, void *clientData)
 { 
-    *(float *)value = world.tree2_planter.height_max;  // for instance
+	*(float *)value = world.tree2_planter.height_max;  // for instance
 }
 
 // tree1
@@ -354,7 +366,7 @@ void TW_CALL cbSetTree1Min(const void *value, void *clientData)
 }
 void TW_CALL cbGetTree1Min(void *value, void *clientData)
 { 
-    *(float *)value = world.tree1_planter.height_min;  // for instance
+	*(float *)value = world.tree1_planter.height_min;  // for instance
 }
 
 void TW_CALL cbSetTree1Max(const void *value, void *clientData)
@@ -364,7 +376,7 @@ void TW_CALL cbSetTree1Max(const void *value, void *clientData)
 }
 void TW_CALL cbGetTree1Max(void *value, void *clientData)
 { 
-    *(float *)value = world.tree1_planter.height_max;  // for instance
+	*(float *)value = world.tree1_planter.height_max;  // for instance
 }
 
 
@@ -376,7 +388,7 @@ void TW_CALL cbSetGrassMin(const void *value, void *clientData)
 }
 void TW_CALL cbGetGrassMin(void *value, void *clientData)
 { 
-    *(float *)value = world.grass_planter.height_min;  // for instance
+	*(float *)value = world.grass_planter.height_min;  // for instance
 }
 
 void TW_CALL cbSetGrassMax(const void *value, void *clientData)
@@ -386,7 +398,7 @@ void TW_CALL cbSetGrassMax(const void *value, void *clientData)
 }
 void TW_CALL cbGetGrassMax(void *value, void *clientData)
 { 
-    *(float *)value = world.grass_planter.height_max;  // for instance
+	*(float *)value = world.grass_planter.height_max;  // for instance
 }
 
 //-----------------------------------------------------------------------------
@@ -396,205 +408,210 @@ void TW_CALL cbGetGrassMax(void *value, void *clientData)
 void initGUI()
 {
 #ifdef USE_ANTTWEAKBAR
-   // Initialize AntTweakBar GUI
-   if (!TwInit(TW_OPENGL, NULL))
-   {
-      assert(0);
-   }
+	// Initialize AntTweakBar GUI
+	if (!TwInit(TW_OPENGL, NULL))
+	{
+		assert(0);
+	}
 
-   // Define the required callback function to copy a std::string 
-   // (see TwCopyStdStringToClientFunc documentation)
-   TwCopyStdStringToClientFunc(copyStdStringToClient); 
-    
-   TwWindowSize(g_WinWidth, g_WinHeight);
-   TwBar *controlBar = TwNewBar("Controls");
-   TwDefine(" Controls position='0 0' size='250 550' refresh=0.3 \
-            valueswidth=80 ");
-   TwAddVarRW(controlBar, "snapshotDir", TW_TYPE_DIR3F, &g_snapshot_direction, 
-               "group='LOD'  label='slices direction' help='direction of snapshot' ");
-   TwAddVarRW(controlBar, "snapshotSlices", TW_TYPE_INT32, &g_slice_count, 
-               "group='LOD' label='count of slices'  help='count of slices to generate' ");
-    TwAddButton(controlBar, "make_slices", cbMakeSlices, NULL, " group='Tree' label='make slices' ");
-   TwAddVarRW(controlBar, "wave_amplitude", TW_TYPE_FLOAT, &g_tree_wave_amplitude, "group='LOD' label='distortion amplitude' min=0 max=5 step=0.005 ");
-   TwAddVarRW(controlBar, "wave_frequency", TW_TYPE_FLOAT, &g_tree_wave_frequency, "group='LOD' label='distortion frequency' min=0 max=5 step=0.005");
-   TwAddVarRW(controlBar, "wave_y_offset", TW_TYPE_FLOAT, &g_tree_wave_y_offset, "group='LOD' label='distortion y offset' min=0 max=10 step=0.005");
-   TwAddVarRW(controlBar, "wave_increase_factor", TW_TYPE_FLOAT, &g_tree_wave_increase_factor, "group='LOD' label='distortion increase' min=0 max=5 step=0.005");
-   TwAddVarRW(controlBar, "wave_movA", TW_TYPE_DIR3F, &g_tree_movementVectorA, "group='LOD' label='distortion mov vector A' ");
-   TwAddVarRW(controlBar, "wave_movB", TW_TYPE_DIR3F, &g_tree_movementVectorB, "group='LOD' label='distortion mov vector B' ");
+	// Define the required callback function to copy a std::string 
+	// (see TwCopyStdStringToClientFunc documentation)
+	TwCopyStdStringToClientFunc(copyStdStringToClient); 
 
-  
+	TwWindowSize(g_WinWidth, g_WinHeight);
+	TwBar *controlBar = TwNewBar("Controls");
+	TwDefine(" Controls position='0 0' size='250 550' refresh=0.3 \
+			 valueswidth=80 ");
+	TwAddVarRW(controlBar, "snapshotDir", TW_TYPE_DIR3F, &g_snapshot_direction, 
+		"group='LOD'  label='slices direction' help='direction of snapshot' ");
+	TwAddVarRW(controlBar, "snapshotSlices", TW_TYPE_INT32, &g_slice_count, 
+		"group='LOD' label='count of slices'  help='count of slices to generate' ");
+	TwAddButton(controlBar, "make_slices", cbMakeSlices, NULL, " group='Tree' label='make slices' ");
+	TwAddVarRW(controlBar, "wave_amplitude", TW_TYPE_FLOAT, &g_tree_wave_amplitude, "group='LOD' label='distortion amplitude' min=0 max=5 step=0.001 ");
+	TwAddVarRW(controlBar, "wave_frequency", TW_TYPE_FLOAT, &g_tree_wave_frequency, "group='LOD' label='distortion frequency' min=0 max=5 step=0.001");
+	TwAddVarRW(controlBar, "wave_y_offset", TW_TYPE_FLOAT, &g_tree_wave_y_offset, "group='LOD' label='distortion y offset' min=0 max=10 step=0.001");
+	TwAddVarRW(controlBar, "wave_increase_factor", TW_TYPE_FLOAT, &g_tree_wave_increase_factor, "group='LOD' label='distortion increase' min=0 max=5 step=0.001");
+	TwAddVarRW(controlBar, "time_offset1", TW_TYPE_FLOAT, &g_tree_time_offset_1, "group='LOD' label='distortion time offset 1' min=-10 max=10 step=0.001");
+	TwAddVarRW(controlBar, "time_offset2", TW_TYPE_FLOAT, &g_tree_time_offset_2, "group='LOD' label='distortion time offset 2' min=-10 max=10 step=0.001");
 
-   
-
-   TwAddVarRW(controlBar, "parallax", TW_TYPE_BOOLCPP, &g_ParallaxMappingEnabled, 
-               " help='Parallax mapping enabled' ");
-   TwAddVarRW(controlBar, "parallaxScale", TW_TYPE_FLOAT, &g_ParallaxScale, 
-               " help='Parallax scale value' step=0.001");
-   TwAddVarRW(controlBar, "parallaxBias", TW_TYPE_FLOAT, &g_ParallaxBias, 
-               " help='Parallax bias value' step=0.001");
-	
+	TwAddVarRW(controlBar, "wave_movA", TW_TYPE_DIR3F, &g_tree_movementVectorA, "group='LOD' label='distortion mov vector A' ");
+	TwAddVarRW(controlBar, "wave_movB", TW_TYPE_DIR3F, &g_tree_movementVectorB, "group='LOD' label='distortion mov vector B' ");
 
 
-   // camera mode
-    TwEnumVal cam_mode[] = 
-   { 
-	  { CameraMode::FREE				 , "Free"					},
-	  { CameraMode::TERRAIN_RESTRICTED   , "Terrain restricted"     },
-	  { CameraMode::TERRAIN_CONNECTED    , "Terrain connected"      },
-      { CameraMode::WALK				 , "Walk"					}
-
-   };
-
-   TwType transport_type = TwDefineEnum("Camera mode", cam_mode, 
-                                        4);
-   TwAddVarRW(controlBar, "camera mode", transport_type, &g_cameraMode, 
-               " group='Camera' keyIncr=c \
-               help='Change camera movement mode.' ");
-
-   TwAddVarRO(controlBar, "fps", TW_TYPE_FLOAT, &(g_Statistics.fps), 
-	   " label='fps' group=Statistics help='frames per second' ");
-   TwAddVarRO(controlBar, "primitives", TW_TYPE_INT32, &(g_Statistics.primitives), 
-	   " label='primitives' group=Statistics help='primitives generated' ");
-   
-   /*
-   // house 1
-   TwAddVarRO(controlBar, "house1_lod", TW_TYPE_INT32, &(g_Statistics.house1_lod), 
-	   " label='house1_lod' group=Statistics help='house level of detail' ");
-   TwAddVarRO(controlBar, "house1_samples", TW_TYPE_INT32, &(g_Statistics.house1_samples), 
-	   " label='house1_samples' group=Statistics help='house samples generated on bbox' ");
-   // house2
-   TwAddVarRO(controlBar, "house2_lod", TW_TYPE_INT32, &(g_Statistics.house2_lod), 
-	   " label='house2_lod' group=Statistics help='house level of detail' ");
-   TwAddVarRO(controlBar, "house2_samples", TW_TYPE_INT32, &(g_Statistics.house2_samples), 
-	   " label='house2_samples' group=Statistics help='house samples generated on bbox' ");
-   // bridge
-   TwAddVarRO(controlBar, "bridge_lod", TW_TYPE_INT32, &(g_Statistics.bridge_lod), 
-	   " label='bridge_lod' group=Statistics help='bridge level of detail' ");
-   TwAddVarRO(controlBar, "bridge_samples", TW_TYPE_INT32, &(g_Statistics.bridge_samples), 
-	   " label='bridge_samples' group=Statistics help='bridge samples generated on bbox' ");
-   // tower 1
-   TwAddVarRO(controlBar, "tower1_lod", TW_TYPE_INT32, &(g_Statistics.tower1_lod), 
-	   " label='tower1_lod' group=Statistics help='tower1 level of detail' ");
-   TwAddVarRO(controlBar, "tower1_samples", TW_TYPE_INT32, &(g_Statistics.tower1_samples), 
-	   " label='tower1_samples' group=Statistics help='tower1 samples generated on bbox' ");
-   // tower 2
-   TwAddVarRO(controlBar, "tower2_lod", TW_TYPE_INT32, &(g_Statistics.tower2_lod), 
-	   " label='tower2_lod' group=Statistics help='tower2 level of detail' ");
-   TwAddVarRO(controlBar, "tower2_samples", TW_TYPE_INT32, &(g_Statistics.tower2_samples), 
-	   " label='tower2_samples' group=Statistics help='tower2 samples generated on bbox' ");
-   // eggbox
-   TwAddVarRO(controlBar, "eggbox_lod", TW_TYPE_INT32, &(g_Statistics.eggbox_lod), 
-	   " label='eggbox_lod' group=Statistics help='eggbox level of detail' ");
-   TwAddVarRO(controlBar, "eggbox_samples", TW_TYPE_INT32, &(g_Statistics.eggbox_samples), 
-	   " label='eggbox_samples' group=Statistics help='eggbox samples generated on bbox' ");
-   // haywagon
-   TwAddVarRO(controlBar, "haywagon_lod", TW_TYPE_INT32, &(g_Statistics.haywagon_lod), 
-	   " label='haywagon_lod' group=Statistics help='haywagon level of detail' ");
-   TwAddVarRO(controlBar, "haywagon_samples", TW_TYPE_INT32, &(g_Statistics.haywagon_samples), 
-	   " label='haywagon_samples' group=Statistics help='haywagon samples generated on bbox' ");
-   // well
-   TwAddVarRO(controlBar, "well_lod", TW_TYPE_INT32, &(g_Statistics.well_lod), 
-	   " label='well_lod' group=Statistics help='well level of detail' ");
-   TwAddVarRO(controlBar, "well_samples", TW_TYPE_INT32, &(g_Statistics.well_samples), 
-	   " label='well_samples' group=Statistics help='well samples generated on bbox' ");
-  */
 
 
-   
-   
-   
-   
-   /*TwAddVarRW(controlBar, "x_translate", TW_TYPE_FLOAT, &(g_light_position.x), 
-	   " label='x' group=Light help='x translation' ");
-   TwAddVarRW(controlBar, "y_translate", TW_TYPE_FLOAT, &(g_light_position.y), 
-	   " label='y' group=Light help='y translation' ");
-   TwAddVarRW(controlBar, "z_translate", TW_TYPE_FLOAT, &(g_light_position.z), 
-	   " label='z' group=Light help='z translation' ");   
-	   */
-   TwAddVarRW(controlBar, "godrays", TW_TYPE_BOOLCPP, &(g_godraysEnabled), 
-	   " label='God rays enabled' group=Light help='enable/disable god rays' ");  
-   TwAddVarRW(controlBar, "light_direction", TW_TYPE_DIR3F, &(g_light_position), 
-	   " label='light direction' group=Light help='adjust direction of light' ");  
+
+	TwAddVarRW(controlBar, "parallax", TW_TYPE_BOOLCPP, &g_ParallaxMappingEnabled, 
+		" help='Parallax mapping enabled' ");
+	TwAddVarRW(controlBar, "parallaxScale", TW_TYPE_FLOAT, &g_ParallaxScale, 
+		" help='Parallax scale value' step=0.001");
+	TwAddVarRW(controlBar, "parallaxBias", TW_TYPE_FLOAT, &g_ParallaxBias, 
+		" help='Parallax bias value' step=0.001");
 
 
-   TwAddVarRW(controlBar, "fbos", TW_TYPE_BOOLCPP, &(g_showTextures), 
-	   " label='Show FBOs' group=Debug help='enable/disable FBO display' "); 
+
+	// camera mode
+	TwEnumVal cam_mode[] = 
+	{ 
+		{ CameraMode::FREE				 , "Free"					},
+		{ CameraMode::TERRAIN_RESTRICTED   , "Terrain restricted"     },
+		{ CameraMode::TERRAIN_CONNECTED    , "Terrain connected"      },
+		{ CameraMode::WALK				 , "Walk"					}
+
+	};
+
+	TwType transport_type = TwDefineEnum("Camera mode", cam_mode, 
+		4);
+	TwAddVarRW(controlBar, "camera mode", transport_type, &g_cameraMode, 
+		" group='Camera' keyIncr=c \
+		help='Change camera movement mode.' ");
+
+	TwAddVarRO(controlBar, "GPU_fps", TW_TYPE_FLOAT, &(g_Statistics.fps), 
+		" label='GPU fps' group=Statistics help='frames per second (measured on GPU)' ");
+	TwAddVarRO(controlBar, "CPU_fps", TW_TYPE_FLOAT, &(g_CPU_fps), 
+		" label='CPU fps' group=Statistics help='frames per second (measured on GPU)' ");
+	/* TwAddVarRO(controlBar, "primitives", TW_TYPE_INT32, &(g_Statistics.primitives), 
+	" label='primitives' group=Statistics help='primitives generated' ");
+	*/   
+	/*
+	// house 1
+	TwAddVarRO(controlBar, "house1_lod", TW_TYPE_INT32, &(g_Statistics.house1_lod), 
+	" label='house1_lod' group=Statistics help='house level of detail' ");
+	TwAddVarRO(controlBar, "house1_samples", TW_TYPE_INT32, &(g_Statistics.house1_samples), 
+	" label='house1_samples' group=Statistics help='house samples generated on bbox' ");
+	// house2
+	TwAddVarRO(controlBar, "house2_lod", TW_TYPE_INT32, &(g_Statistics.house2_lod), 
+	" label='house2_lod' group=Statistics help='house level of detail' ");
+	TwAddVarRO(controlBar, "house2_samples", TW_TYPE_INT32, &(g_Statistics.house2_samples), 
+	" label='house2_samples' group=Statistics help='house samples generated on bbox' ");
+	// bridge
+	TwAddVarRO(controlBar, "bridge_lod", TW_TYPE_INT32, &(g_Statistics.bridge_lod), 
+	" label='bridge_lod' group=Statistics help='bridge level of detail' ");
+	TwAddVarRO(controlBar, "bridge_samples", TW_TYPE_INT32, &(g_Statistics.bridge_samples), 
+	" label='bridge_samples' group=Statistics help='bridge samples generated on bbox' ");
+	// tower 1
+	TwAddVarRO(controlBar, "tower1_lod", TW_TYPE_INT32, &(g_Statistics.tower1_lod), 
+	" label='tower1_lod' group=Statistics help='tower1 level of detail' ");
+	TwAddVarRO(controlBar, "tower1_samples", TW_TYPE_INT32, &(g_Statistics.tower1_samples), 
+	" label='tower1_samples' group=Statistics help='tower1 samples generated on bbox' ");
+	// tower 2
+	TwAddVarRO(controlBar, "tower2_lod", TW_TYPE_INT32, &(g_Statistics.tower2_lod), 
+	" label='tower2_lod' group=Statistics help='tower2 level of detail' ");
+	TwAddVarRO(controlBar, "tower2_samples", TW_TYPE_INT32, &(g_Statistics.tower2_samples), 
+	" label='tower2_samples' group=Statistics help='tower2 samples generated on bbox' ");
+	// eggbox
+	TwAddVarRO(controlBar, "eggbox_lod", TW_TYPE_INT32, &(g_Statistics.eggbox_lod), 
+	" label='eggbox_lod' group=Statistics help='eggbox level of detail' ");
+	TwAddVarRO(controlBar, "eggbox_samples", TW_TYPE_INT32, &(g_Statistics.eggbox_samples), 
+	" label='eggbox_samples' group=Statistics help='eggbox samples generated on bbox' ");
+	// haywagon
+	TwAddVarRO(controlBar, "haywagon_lod", TW_TYPE_INT32, &(g_Statistics.haywagon_lod), 
+	" label='haywagon_lod' group=Statistics help='haywagon level of detail' ");
+	TwAddVarRO(controlBar, "haywagon_samples", TW_TYPE_INT32, &(g_Statistics.haywagon_samples), 
+	" label='haywagon_samples' group=Statistics help='haywagon samples generated on bbox' ");
+	// well
+	TwAddVarRO(controlBar, "well_lod", TW_TYPE_INT32, &(g_Statistics.well_lod), 
+	" label='well_lod' group=Statistics help='well level of detail' ");
+	TwAddVarRO(controlBar, "well_samples", TW_TYPE_INT32, &(g_Statistics.well_samples), 
+	" label='well_samples' group=Statistics help='well samples generated on bbox' ");
+	*/
 
 
-   TwAddVarRW(controlBar, "wind_direction", TW_TYPE_DIR3F, & g_tree_wind_direction.data, "group='Tree'");
-   TwAddVarRW(controlBar, "wind_strength", TW_TYPE_FLOAT, & g_tree_wind_strength, " group='Tree' min=0 max=5 step=0.01 ");
-   TwAddVarRW(controlBar, "wood0_frequency", TW_TYPE_FLOAT, & g_tree_wood_frequencies.x, " group='Tree' min=0 max=100 step=0.05 ");
-   TwAddVarRW(controlBar, "wood0_amplitude", TW_TYPE_FLOAT, &  g_tree_wood_amplitudes.x, " group='Tree' min=0 max=10 step=0.01 ");
-   TwAddVarRW(controlBar, "wood1_frequency", TW_TYPE_FLOAT, & g_tree_wood_frequencies.y, " group='Tree' min=0 max=100 step=0.05 ");
-   TwAddVarRW(controlBar, "wood1_amplitude", TW_TYPE_FLOAT, &  g_tree_wood_amplitudes.y, " group='Tree' min=0 max=10 step=0.01 ");
-   TwAddVarRW(controlBar, "wood2_frequency", TW_TYPE_FLOAT, & g_tree_wood_frequencies.z, " group='Tree' min=0 max=100 step=0.05 ");
-   TwAddVarRW(controlBar, "wood2_amplitude", TW_TYPE_FLOAT, &  g_tree_wood_amplitudes.z, " group='Tree' min=0 max=10 step=0.01 ");
-   TwAddVarRW(controlBar, "wood3_frequency", TW_TYPE_FLOAT, & g_tree_wood_frequencies.w, " group='Tree' min=0 max=100 step=0.05 ");
-   TwAddVarRW(controlBar, "wood3_amplitude", TW_TYPE_FLOAT, &  g_tree_wood_amplitudes.w, " group='Tree' min=0 max=10 step=0.01 ");
-   
-   
-   
-   TwAddVarRW(controlBar, "leaf_frequency", TW_TYPE_FLOAT, & g_tree_leaf_frequency, " group='Tree' min=0 max=100 step=0.1 ");
-   TwAddVarRW(controlBar, "leaf_amplitude", TW_TYPE_FLOAT, & g_tree_leaf_amplitude, " group='Tree' min=0 max=10 step=0.01 ");
-   TwAddVarRW(controlBar, "slice_count", TW_TYPE_INT32, & g_tree_slice_count, " group='Tree' min=0 max=10 step=1 ");
-   
 
-   
-   
-   // TwAddVarRW(controlBar, "slice_count", TW_TYPE_INT32, & g_tree_slice_count, " group='Tree' min=0 max=10 step=1 ");
-   
 
-   TwAddVarCB(controlBar, "Tree 2 count", TW_TYPE_INT16, cbSetTree2Count, cbGetTree2Count, NULL, " group='Vegetation' min=0 max=10000 step=1 ");
-   TwAddVarCB(controlBar, "Tree 1 count", TW_TYPE_INT16, cbSetTree1Count, cbGetTree1Count, NULL, " group='Vegetation' min=0 max=10000 step=1 ");
-   TwAddVarCB(controlBar, "Grass count", TW_TYPE_INT16, cbSetGrassCount, cbGetGrassCount, NULL, " group='Vegetation' min=0 max=10000 step=1 ");
 
-    TwAddVarRW(controlBar, "Change1", TW_TYPE_FLOAT, &g_terrain_border_values.x, " group='Surfaces' label='Snow height' min=-5 max=30 step=0.5 help='Snow height' ");
+
+	/*TwAddVarRW(controlBar, "x_translate", TW_TYPE_FLOAT, &(g_light_position.x), 
+	" label='x' group=Light help='x translation' ");
+	TwAddVarRW(controlBar, "y_translate", TW_TYPE_FLOAT, &(g_light_position.y), 
+	" label='y' group=Light help='y translation' ");
+	TwAddVarRW(controlBar, "z_translate", TW_TYPE_FLOAT, &(g_light_position.z), 
+	" label='z' group=Light help='z translation' ");   
+	*/
+	TwAddVarRW(controlBar, "godrays", TW_TYPE_BOOLCPP, &(g_godraysEnabled), 
+		" label='God rays enabled' group=Light help='enable/disable god rays' ");  
+	TwAddVarRW(controlBar, "light_direction", TW_TYPE_DIR3F, &(g_light_position), 
+		" label='light direction' group=Light help='adjust direction of light' ");  
+
+
+	TwAddVarRW(controlBar, "fbos", TW_TYPE_BOOLCPP, &(g_showTextures), 
+		" label='Show FBOs' group=Debug help='enable/disable FBO display' "); 
+
+
+	TwAddVarRW(controlBar, "wind_direction", TW_TYPE_DIR3F, & g_tree_wind_direction.data, "group='Tree'");
+	TwAddVarRW(controlBar, "wind_strength", TW_TYPE_FLOAT, & g_tree_wind_strength, " group='Tree' min=0 max=5 step=0.01 ");
+	TwAddVarRW(controlBar, "wood0_frequency", TW_TYPE_FLOAT, & g_tree_wood_frequencies.x, " group='Tree' min=0 max=100 step=0.05 ");
+	TwAddVarRW(controlBar, "wood0_amplitude", TW_TYPE_FLOAT, &  g_tree_wood_amplitudes.x, " group='Tree' min=0 max=10 step=0.01 ");
+	TwAddVarRW(controlBar, "wood1_frequency", TW_TYPE_FLOAT, & g_tree_wood_frequencies.y, " group='Tree' min=0 max=100 step=0.05 ");
+	TwAddVarRW(controlBar, "wood1_amplitude", TW_TYPE_FLOAT, &  g_tree_wood_amplitudes.y, " group='Tree' min=0 max=10 step=0.01 ");
+	TwAddVarRW(controlBar, "wood2_frequency", TW_TYPE_FLOAT, & g_tree_wood_frequencies.z, " group='Tree' min=0 max=100 step=0.05 ");
+	TwAddVarRW(controlBar, "wood2_amplitude", TW_TYPE_FLOAT, &  g_tree_wood_amplitudes.z, " group='Tree' min=0 max=10 step=0.01 ");
+	TwAddVarRW(controlBar, "wood3_frequency", TW_TYPE_FLOAT, & g_tree_wood_frequencies.w, " group='Tree' min=0 max=100 step=0.05 ");
+	TwAddVarRW(controlBar, "wood3_amplitude", TW_TYPE_FLOAT, &  g_tree_wood_amplitudes.w, " group='Tree' min=0 max=10 step=0.01 ");
+
+
+
+	TwAddVarRW(controlBar, "leaf_frequency", TW_TYPE_FLOAT, & g_tree_leaf_frequency, " group='Tree' min=0 max=100 step=0.1 ");
+	TwAddVarRW(controlBar, "leaf_amplitude", TW_TYPE_FLOAT, & g_tree_leaf_amplitude, " group='Tree' min=0 max=10 step=0.01 ");
+	TwAddVarRW(controlBar, "slice_count", TW_TYPE_INT32, & g_tree_slice_count, " group='Tree' min=0 max=10 step=1 ");
+
+
+
+
+	// TwAddVarRW(controlBar, "slice_count", TW_TYPE_INT32, & g_tree_slice_count, " group='Tree' min=0 max=10 step=1 ");
+
+
+	TwAddVarCB(controlBar, "Tree 2 count", TW_TYPE_INT16, cbSetTree2Count, cbGetTree2Count, NULL, " group='Vegetation' min=0 max=10000 step=1 ");
+	TwAddVarCB(controlBar, "Tree 1 count", TW_TYPE_INT16, cbSetTree1Count, cbGetTree1Count, NULL, " group='Vegetation' min=0 max=10000 step=1 ");
+	TwAddVarCB(controlBar, "Grass count", TW_TYPE_INT16, cbSetGrassCount, cbGetGrassCount, NULL, " group='Vegetation' min=0 max=10000 step=1 ");
+
+	TwAddVarRW(controlBar, "Change1", TW_TYPE_FLOAT, &g_terrain_border_values.x, " group='Surfaces' label='Snow height' min=-5 max=30 step=0.5 help='Snow height' ");
 	TwAddVarRW(controlBar, "Change1a", TW_TYPE_FLOAT, &g_terrain_border_widths.x, " group='Surfaces' label='Snow-rock transition' min=0 max=5 step=0.5 help='Transition 1' ");
 
-    TwAddVarRW(controlBar, "Change2", TW_TYPE_FLOAT, &g_terrain_border_values.y, " group='Surfaces' label='Rock height' min=-5 max=30 step=0.5 help='Rock height' ");
+	TwAddVarRW(controlBar, "Change2", TW_TYPE_FLOAT, &g_terrain_border_values.y, " group='Surfaces' label='Rock height' min=-5 max=30 step=0.5 help='Rock height' ");
 	TwAddVarRW(controlBar, "Change2a", TW_TYPE_FLOAT, &g_terrain_border_widths.y, " group='Surfaces' label='Rock-grass transition' min=0 max=5 step=0.5 help='Transition 2' ");
 
-    TwAddVarRW(controlBar, "Change3", TW_TYPE_FLOAT, &g_terrain_border_values.z, " group='Surfaces' label='Grass height' min=-5 max=30 step=0.5 help='Grass height' ");
+	TwAddVarRW(controlBar, "Change3", TW_TYPE_FLOAT, &g_terrain_border_values.z, " group='Surfaces' label='Grass height' min=-5 max=30 step=0.5 help='Grass height' ");
 	TwAddVarRW(controlBar, "Change3a", TW_TYPE_FLOAT, &g_terrain_border_widths.z, " group='Surfaces' label='Grass-clay transition' min=0 max=5 step=0.5 help='Transition 3' ");
 
-    TwAddVarRW(controlBar, "Change4", TW_TYPE_FLOAT, &g_terrain_border_values.w, " group='Surfaces' label='Clay height' min=-5 max=30 step=0.5 help='Clay height' ");
+	TwAddVarRW(controlBar, "Change4", TW_TYPE_FLOAT, &g_terrain_border_values.w, " group='Surfaces' label='Clay height' min=-5 max=30 step=0.5 help='Clay height' ");
 	TwAddVarRW(controlBar, "Change4a", TW_TYPE_FLOAT, &g_terrain_border_widths.w, " group='Surfaces' label='Clay-ground transition' min=0 max=5 step=0.5 help='Transition 4' ");
 
-   TwAddVarCB(controlBar, "Tree2 MIN", TW_TYPE_FLOAT, cbSetTree2Min, cbGetTree2Min, NULL, " group='Levels' min=-5 max=30 step=1 ");
-   TwAddVarCB(controlBar, "Tree2 MAX", TW_TYPE_FLOAT, cbSetTree2Max, cbGetTree2Max, NULL, " group='Levels' min=-5 max=30 step=1 ");
+	TwAddVarCB(controlBar, "Tree2 MIN", TW_TYPE_FLOAT, cbSetTree2Min, cbGetTree2Min, NULL, " group='Levels' min=-5 max=30 step=1 ");
+	TwAddVarCB(controlBar, "Tree2 MAX", TW_TYPE_FLOAT, cbSetTree2Max, cbGetTree2Max, NULL, " group='Levels' min=-5 max=30 step=1 ");
 
-   TwAddVarCB(controlBar, "Tree1 MIN", TW_TYPE_FLOAT, cbSetTree1Min, cbGetTree1Min, NULL, " group='Levels' min=-5 max=30 step=1 ");
-   TwAddVarCB(controlBar, "Tree1 MAX", TW_TYPE_FLOAT, cbSetTree1Max, cbGetTree1Max, NULL, " group='Levels' min=-5 max=30 step=1 ");
+	TwAddVarCB(controlBar, "Tree1 MIN", TW_TYPE_FLOAT, cbSetTree1Min, cbGetTree1Min, NULL, " group='Levels' min=-5 max=30 step=1 ");
+	TwAddVarCB(controlBar, "Tree1 MAX", TW_TYPE_FLOAT, cbSetTree1Max, cbGetTree1Max, NULL, " group='Levels' min=-5 max=30 step=1 ");
 
-   TwAddVarCB(controlBar, "Grass MIN", TW_TYPE_FLOAT, cbSetGrassMin, cbGetGrassMin, NULL, " group='Levels' min=-5 max=30 step=1 ");
-   TwAddVarCB(controlBar, "Grass MAX", TW_TYPE_FLOAT, cbSetGrassMax, cbGetGrassMax, NULL, " group='Levels' min=-5 max=30 step=1 ");
+	TwAddVarCB(controlBar, "Grass MIN", TW_TYPE_FLOAT, cbSetGrassMin, cbGetGrassMin, NULL, " group='Levels' min=-5 max=30 step=1 ");
+	TwAddVarCB(controlBar, "Grass MAX", TW_TYPE_FLOAT, cbSetGrassMax, cbGetGrassMax, NULL, " group='Levels' min=-5 max=30 step=1 ");
 
-  
-   //TwAddVarRW(controlBar, "vertex_normals", TW_TYPE_BOOLCPP, 
-   //   &g_ShowVertexNormals, " label='vertex normals' \
-   //   group=Render help='Show vertex normal, tangent, binormal.' ");
-   //
-   //TwAddVarRW(controlBar, "face_normals", TW_TYPE_BOOLCPP, &g_FaceNormals, 
-   //   " label='face normals' group=Render help='Show face normals.' ");
-   //TwAddVarRW(controlBar, "transparency", TW_TYPE_BOOLCPP, &g_Transparency, 
-   //   " label='transparency' group=Render \
-   //   help='Render transparent meshes.'");
-   //TwAddVarRW(controlBar, "wiremode", TW_TYPE_BOOLCPP, &g_WireMode,
-   //   " label='wire mode' group=Render help='Toggle wire mode.' ");
-   //TwAddVarRW(controlBar, "face_culling", TW_TYPE_BOOLCPP, &g_FaceCulling,
-   //   " label='face culling' group=Render  help='Toggle face culling.' ");
-   //TwAddVarRW(controlBar, "alpha_threshold", TW_TYPE_FLOAT, &g_AlphaThreshold,
-   //   " label='alpha threshold' group=Render min=0 max=1 step=0.01 \
-   //    help='Alpha test threshold.' ");
-   //TwAddVarRW(controlBar, "Translate", TW_TYPE_FLOAT, &g_SceneTraZ, 
-   //   " group='Scene' label='translate Z' min=1 max=1000 step=0.5 \
-   //    help='Scene translation.' ");
-   //TwAddVarRW(controlBar, "Scale", TW_TYPE_FLOAT, &g_SceneScale, 
-   //   " group='Scene' label='scale' min=0 max=10 step=0.01 \
-   //    help='Scene scale.' ");
-   //TwAddVarRW(controlBar, "SceneRotation", TW_TYPE_QUAT4F, &g_SceneRot, 
-   //   " group='Scene' label='Scene rotation' open \
-   //   help='Change the scene orientation.' ");
+
+	//TwAddVarRW(controlBar, "vertex_normals", TW_TYPE_BOOLCPP, 
+	//   &g_ShowVertexNormals, " label='vertex normals' \
+	//   group=Render help='Show vertex normal, tangent, binormal.' ");
+	//
+	//TwAddVarRW(controlBar, "face_normals", TW_TYPE_BOOLCPP, &g_FaceNormals, 
+	//   " label='face normals' group=Render help='Show face normals.' ");
+	//TwAddVarRW(controlBar, "transparency", TW_TYPE_BOOLCPP, &g_Transparency, 
+	//   " label='transparency' group=Render \
+	//   help='Render transparent meshes.'");
+	//TwAddVarRW(controlBar, "wiremode", TW_TYPE_BOOLCPP, &g_WireMode,
+	//   " label='wire mode' group=Render help='Toggle wire mode.' ");
+	//TwAddVarRW(controlBar, "face_culling", TW_TYPE_BOOLCPP, &g_FaceCulling,
+	//   " label='face culling' group=Render  help='Toggle face culling.' ");
+	//TwAddVarRW(controlBar, "alpha_threshold", TW_TYPE_FLOAT, &g_AlphaThreshold,
+	//   " label='alpha threshold' group=Render min=0 max=1 step=0.01 \
+	//    help='Alpha test threshold.' ");
+	//TwAddVarRW(controlBar, "Translate", TW_TYPE_FLOAT, &g_SceneTraZ, 
+	//   " group='Scene' label='translate Z' min=1 max=1000 step=0.5 \
+	//    help='Scene translation.' ");
+	//TwAddVarRW(controlBar, "Scale", TW_TYPE_FLOAT, &g_SceneScale, 
+	//   " group='Scene' label='scale' min=0 max=10 step=0.01 \
+	//    help='Scene scale.' ");
+	//TwAddVarRW(controlBar, "SceneRotation", TW_TYPE_QUAT4F, &g_SceneRot, 
+	//   " group='Scene' label='Scene rotation' open \
+	//   help='Change the scene orientation.' ");
 #endif
 }
 
@@ -607,7 +624,7 @@ void initGUI()
 //-----------------------------------------------------------------------------
 void TW_CALL copyStdStringToClient(std::string& dst, const std::string& src)
 {
-    dst = src;
+	dst = src;
 } 
 
 
@@ -618,23 +635,23 @@ void TW_CALL copyStdStringToClient(std::string& dst, const std::string& src)
 void TW_CALL loadNewModelCB(void* clientData)
 {
 	/*
-   const std::string* file_name = &g_ModelFileName;//(const std::string *)(clientData);
-   printf("RELOAD MODEL\n");
-   if (!file_name->empty())
-   {
-      PGR2Model* pOldModel = g_pModel;
-	  printf("LOAD: %s\n", (*file_name).c_str());
-      g_pModel = PGR2Model::loadFromFile(file_name->c_str());
-      if (g_pModel != NULL)
-      {
-         delete pOldModel;
-      }
-      else
-      {
-         g_pModel = pOldModel;
-      }
-   }
-   */
+	const std::string* file_name = &g_ModelFileName;//(const std::string *)(clientData);
+	printf("RELOAD MODEL\n");
+	if (!file_name->empty())
+	{
+	PGR2Model* pOldModel = g_pModel;
+	printf("LOAD: %s\n", (*file_name).c_str());
+	g_pModel = PGR2Model::loadFromFile(file_name->c_str());
+	if (g_pModel != NULL)
+	{
+	delete pOldModel;
+	}
+	else
+	{
+	g_pModel = pOldModel;
+	}
+	}
+	*/
 } 
 
 
@@ -644,9 +661,9 @@ void TW_CALL loadNewModelCB(void* clientData)
 //-----------------------------------------------------------------------------
 void cbWindowSizeChanged(int width, int height)
 {
-   g_WinWidth  = width;
-   g_WinHeight = height;
-   world.windowSizeChanged(width,height);
+	g_WinWidth  = width;
+	g_WinHeight = height;
+	world.windowSizeChanged(width,height);
 }
 void activateANTMouse()
 {
@@ -670,30 +687,30 @@ void cbKeyboardChanged(int key, int action)
 			return;
 		}
 	}
-   switch (key)
-   {
-      // DA use 'z' instead of 't'
-	   /*
-      case 'z' : g_SceneTraZ  += 0.5f;                                   break;
-      case 'Z' : g_SceneTraZ  -= (g_SceneTraZ > 0.5) ? 0.5f : 0.0f;      break;
-      case 's' : g_SceneScale *= 1.01;                                   break;
-      case 'S' : g_SceneScale *= 0.99;                                   break;
-      case 'v' : g_ShowVertexNormals = !g_ShowVertexNormals;             break;
-      case 'f' : g_FaceNormals != g_FaceNormals;                         break;
-      case 't' : g_Transparency = !g_Transparency;                       break;
-      case 'w' : g_WireMode    = !g_WireMode;                            break;
-      case 'c' : g_FaceCulling = !g_FaceCulling;                         break;
-      case 'a' : if(g_AlphaThreshold < 0.99f) g_AlphaThreshold += 0.01f; break;
-      case 'A' : if(g_AlphaThreshold > 0.01f) g_AlphaThreshold -= 0.01f; break;
-	  */
-	  case ' ' : 
-		  g_MouseModeANT = !g_MouseModeANT;
-		  if (g_MouseModeANT){
+	switch (key)
+	{
+		// DA use 'z' instead of 't'
+		/*
+		case 'z' : g_SceneTraZ  += 0.5f;                                   break;
+		case 'Z' : g_SceneTraZ  -= (g_SceneTraZ > 0.5) ? 0.5f : 0.0f;      break;
+		case 's' : g_SceneScale *= 1.01;                                   break;
+		case 'S' : g_SceneScale *= 0.99;                                   break;
+		case 'v' : g_ShowVertexNormals = !g_ShowVertexNormals;             break;
+		case 'f' : g_FaceNormals != g_FaceNormals;                         break;
+		case 't' : g_Transparency = !g_Transparency;                       break;
+		case 'w' : g_WireMode    = !g_WireMode;                            break;
+		case 'c' : g_FaceCulling = !g_FaceCulling;                         break;
+		case 'a' : if(g_AlphaThreshold < 0.99f) g_AlphaThreshold += 0.01f; break;
+		case 'A' : if(g_AlphaThreshold > 0.01f) g_AlphaThreshold -= 0.01f; break;
+		*/
+	case ' ' : 
+		g_MouseModeANT = !g_MouseModeANT;
+		if (g_MouseModeANT){
 			activateANTMouse();
-		  } else {
+		} else {
 			activateGLFWMouse();
-		  }
-		  break;
+		}
+		break;
 	}
 }
 
@@ -707,8 +724,8 @@ bool g_MouseRotationEnabled = false;
 //-----------------------------------------------------------------------------
 void GLFWCALL cbMouseButtonChanged(int button, int action)
 {
-   g_MouseRotationEnabled = ((button == GLFW_MOUSE_BUTTON_LEFT) && 
-                             (action == GLFW_PRESS));
+	g_MouseRotationEnabled = ((button == GLFW_MOUSE_BUTTON_LEFT) && 
+		(action == GLFW_PRESS));
 }
 
 
@@ -718,9 +735,9 @@ void GLFWCALL cbMouseButtonChanged(int button, int action)
 //-----------------------------------------------------------------------------
 void cbMousePositionChanged(int x, int y)
 {
-   
-   world.p_activeCamera->handleMouseMove(x,y);
-   glfwSetMousePos(g_WinWidth/2, g_WinHeight/2);
+
+	world.p_activeCamera->handleMouseMove(x,y);
+	glfwSetMousePos(g_WinWidth/2, g_WinHeight/2);
 }
 
 
@@ -731,21 +748,21 @@ void cbMousePositionChanged(int x, int y)
 //-----------------------------------------------------------------------------
 int main(int argc, char* argv[]) 
 {
-   int output = common_main(g_WinWidth, g_WinHeight,
-                      "[PGR2] Semestral project",
-                      cbInitGL,              // init GL callback function
-                      cbDisplay,             // display callback function
-                      cbWindowSizeChanged,   // window resize callback function
-                      cbKeyboardChanged,     // keyboard callback function
+	int output = common_main(g_WinWidth, g_WinHeight,
+		"[PGR2] Semestral project",
+		cbInitGL,              // init GL callback function
+		cbDisplay,             // display callback function
+		cbWindowSizeChanged,   // window resize callback function
+		cbKeyboardChanged,     // keyboard callback function
 #ifdef USE_ANTTWEAKBAR
-                      cbMouseButtonChanged,                  // mouse button callback function
-                      cbMousePositionChanged                  // mouse motion callback function
+		cbMouseButtonChanged,                  // mouse button callback function
+		cbMousePositionChanged                  // mouse motion callback function
 #else
-                      cbMouseButtonChanged,  // mouse button callback function
-                      cbMousePositionChanged // mouse motion callback function
+		cbMouseButtonChanged,  // mouse button callback function
+		cbMousePositionChanged // mouse motion callback function
 #endif
-                      );
-   deinitApp();
+		);
+	deinitApp();
 
-   return output;
+	return output;
 }
