@@ -128,7 +128,7 @@ float	g_tree_time_offset_2	= 0.5;
 
 float	g_leaves_MultiplyAmbient			= 0.7;
 float	g_leaves_MultiplyDiffuse			= 0.7;
-float	g_leaves_MultiplySpecular			= 0.4;
+float	g_leaves_MultiplySpecular			= 1.4;
 float	g_leaves_MultiplyTranslucency		= 0.6;
 float	g_leaves_ReduceTranslucencyInShadow	= 0.9;
 float	g_leaves_shadow_intensity			= 1.0;

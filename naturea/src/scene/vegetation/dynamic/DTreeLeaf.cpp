@@ -47,11 +47,26 @@ void DTreeLeaf::init()
 	}
 
 	// create quad...
-
 	v3 normal	= cs.t;
-	v3 binormal = cs.s;
 	v3 tangent	= cs.r;
+	if (normal.y<0){
+		// flip coord system
+		normal.y = -normal.y;
+	}
+	
+	v3 binormal = normal.cross(tangent);
+	
 
+	v3 p1 = v3(-size/2.f, 0.0, 0.0);
+	v3 p2 = v3( size/2.f, 0.0, 0.0);
+	v3 p3 = v3( size/2.f, size, 0.0);
+	v3 p4 = v3(-size/2.f, size, 0.0);
+	v3 t1 = v3(0.0, 0.0);
+	v3 t2 = v3(1.0, 0.0);
+	v3 t3 = v3(1.0, 1.0);
+	v3 t4 = v3(0.0, 1.0);
+
+	/*
 	v3 p1 = v3(-size/2.f, 0.0, 0.0);
 	v3 p2 = v3(-size/2.f, size, 0.0);
 	v3 p3 = v3( size/2.f, size, 0.0);
@@ -60,7 +75,7 @@ void DTreeLeaf::init()
 	v3 t2 = v3(0.0, 0.0);
 	v3 t3 = v3(1.0, 0.0);
 	v3 t4 = v3(1.0, 1.0);
-
+	*/
 	Vertex *v;
 	v = new Vertex(p1, p1, normal, tangent);
 	v->textureCoords = t1;
