@@ -16,13 +16,13 @@ uniform sampler2D backHalfLife2Map;
 //uniform float MultiplyTranslucency;
 //uniform float ReduceTranslucencyInShadow;
 
-const float MultiplyAmbient=0.8;
-const float MultiplyDiffuse=0.6;
-const float MultiplySpecular=0.3;
-const float MultiplyTranslucency=0.8;
-const float ReduceTranslucencyInShadow=0.9;
-const float shadow_intensity = 1.0;
-const vec3  LightDiffuseColor = vec3(0.2, 0.2, 0.2);
+uniform float MultiplyAmbient			  ;
+uniform float MultiplyDiffuse			  ;
+uniform float MultiplySpecular			  ;
+uniform float MultiplyTranslucency		  ;
+uniform float ReduceTranslucencyInShadow  ;
+uniform float shadow_intensity			  ;
+uniform vec3  LightDiffuseColor			  ;
 
 
 #define SQRT6  0.40824829046386301636621401245098
@@ -189,7 +189,7 @@ void colorize(out vec4 outColor, in vec3 normal, in vec3 tangent, in vec3 bitang
 	
 	// --- Alpha Testing ---
 
-	if (decal_color.a < 0.5)
+	if (decal_color.a < 0.9)
 	{
 		discard;
 	}
@@ -230,7 +230,7 @@ void colorize(out vec4 outColor, in vec3 normal, in vec3 tangent, in vec3 bitang
 		translucency = max(translucency, 0.0);
 		
 		// Calculate specularity.
-		specularity = getModifiedCookTorranceSpecularity(-ts_lightDir, ts_viewDir, -ts_normal, REF_INDEX, ROUGHNESS);
+		specularity = getModifiedCookTorranceSpecularity(ts_lightDir, ts_viewDir, ts_normal, REF_INDEX, ROUGHNESS);
 		//specularity = getPhongSpecularity(IN.direction_to_light, IN.view_vector, ts_normal);
 	}
 	else
@@ -268,12 +268,15 @@ void colorize(out vec4 outColor, in vec3 normal, in vec3 tangent, in vec3 bitang
 	
 	vec4 final_ambient = decal_color * cpvcolor * gl_LightSource[0].ambient  * MultiplyAmbient;
 	vec4 final_diffuse = decal_color * diffuse_term * gl_FrontLightProduct[0].diffuse * MultiplyDiffuse;
+	//vec4 final_diffuse = decal_color * diffuse_term * MultiplyDiffuse;
+	
 	//vec4 final_diffuse = decal_color * diffuse_term *  MultiplyDiffuse;
 	
 	
 	vec4 final_specular = specularity * shadow_intensity * gl_FrontLightProduct[0].diffuse * MultiplySpecular;
 	//outColor = vec4(vec3(translucency),1.0);// * final_ambient.rgb + 0.0001*(final_diffuse.rgb + final_specular.rgb + final_translucency);	
-	outColor.rgb = final_ambient.rgb + final_diffuse.rgb + final_specular.rgb + final_translucency; //
+	//outColor.rgb = final_ambient.rgb + final_diffuse.rgb + final_specular.rgb + final_translucency; //
+	outColor.rgb = decal_color.rgb; 
 	outColor.a = decal_color.a;
 }
 

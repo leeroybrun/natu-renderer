@@ -103,6 +103,13 @@ extern float	g_tree_wave_increase_factor;
 extern float	g_tree_time_offset_1;
 extern float	g_tree_time_offset_2;
 
+extern float	g_leaves_MultiplyAmbient				;
+extern float	g_leaves_MultiplyDiffuse				;
+extern float	g_leaves_MultiplySpecular				;
+extern float	g_leaves_MultiplyTranslucency			;
+extern float	g_leaves_ReduceTranslucencyInShadow		;
+extern float	g_leaves_shadow_intensity				;
+extern v3		g_leaves_LightDiffuseColor				;
 
 extern v3		g_snapshot_direction;
 extern int		g_slice_count;
