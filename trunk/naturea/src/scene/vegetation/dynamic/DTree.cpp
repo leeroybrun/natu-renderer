@@ -909,12 +909,18 @@ void DTree::createSlices(v3 & direction, int num, int resolution_x, int resoluti
 		// each slice
 			slice = new DTreeSlice();
 		// create & setup textures
-			slice->colormap = new Texture(GL_TEXTURE_2D, GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE, NULL, resolution_x, resolution_y, "color_map");
+			slice->colormap = new Texture(GL_TEXTURE_2D, GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE, NULL, resolution_x, resolution_y, "colorMap");
+			slice->colormap->textureUnit = GL_TEXTURE0;
+			slice->colormap->textureUnitNumber = 0;
 
-			slice->depthmap = new Texture(GL_TEXTURE_2D, GL_DEPTH_COMPONENT32F, GL_DEPTH_COMPONENT, GL_FLOAT, NULL, resolution_x, resolution_y, "depth_map");
+			slice->depthmap = new Texture(GL_TEXTURE_2D, GL_DEPTH_COMPONENT32F, GL_DEPTH_COMPONENT, GL_FLOAT, NULL, resolution_x, resolution_y, "depthMap");
+			slice->depthmap->textureUnit = GL_TEXTURE2;
+			slice->depthmap->textureUnitNumber = 2;
 
-			slice->normalmap = new Texture(GL_TEXTURE_2D, GL_RGB, GL_RGB, GL_UNSIGNED_BYTE, NULL, resolution_x, resolution_y, "normal_map");
 
+			slice->normalmap = new Texture(GL_TEXTURE_2D, GL_RGB, GL_RGB, GL_UNSIGNED_BYTE, NULL, resolution_x, resolution_y, "normalMap");
+			slice->normalmap->textureUnit = GL_TEXTURE3;
+			slice->normalmap->textureUnitNumber = 3;
 
 		// attach textures to FBO attachments
 
@@ -965,9 +971,9 @@ void DTree::createSlices(v3 & direction, int num, int resolution_x, int resoluti
 		slices.push_back(slice);
 
 		// generate mipmaps where needed
-		slice->colormap->generateMipmaps();
+		//slice->colormap->generateMipmaps();
 		//slice->normalmap->generateMipmaps();
-		slice->depthmap->generateMipmaps();
+		//slice->depthmap->generateMipmaps();
 
 
 		// return to normal screen rendering

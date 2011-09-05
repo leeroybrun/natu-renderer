@@ -102,9 +102,8 @@ void TestModel::drawForLOD()
 void TestModel::init()
 {
 	// init textures...
-	colorMap			=new Texture("colorMap");
+	
 	displacementMap		=new Texture("displacementMap");
-	colorMap			->load("textures/matte.png", true, false, GL_REPEAT, GL_LINEAR, GL_LINEAR_MIPMAP_LINEAR);
 	displacementMap		->load("textures/UVmap.png", true, false, GL_REPEAT, GL_LINEAR, GL_LINEAR_MIPMAP_LINEAR);
 	/*
 	frontDecalMap		=new Texture("frontDecalMap");

@@ -259,14 +259,16 @@ void animateLeafVertex(in vec3 origin, inout vec3 position, inout vec3 o_normal,
 	amplitude *= leaf_amplitude;
 	//float scaleL = 0.04;
 
-	vec3 bitangent = cross (normalize(o_normal), normalize(o_tangent));
+	vec3 bitangent = cross(normalize(o_normal), normalize(o_tangent));
 
 	// rotate tangent & binormal
-	o_tangent = normalize (tangent + o_normal*amplitude.x);
+	bitangent = normalize (bitangent + o_normal*amplitude.x);
 	o_normal = normalize (cross(o_tangent, bitangent));
-	bitangent = normalize (bitangent + o_normal*(0.5 *amplitude.y + 0.5 * amplitude.z));
+	o_tangent = normalize (tangent + o_normal*amplitude.y*0.5);
+	
+	
 	o_normal = normalize(cross(o_tangent, bitangent));
-	o_tangent = normalize(cross (bitangent, o_normal));
+	//o_tangent = normalize(cross (bitangent, o_normal));
 	
 	
 
@@ -391,11 +393,10 @@ void main()
     TBN_Matrix[2] =  gl_NormalMatrix * normal_vs; 
 
 	// Transform view vector into tangent space.
-	vec3 view_vector = vec3(gl_ModelViewMatrix * gl_Vertex);
-	ts_viewDir_v = normalize( view_vector * TBN_Matrix) ;
+	
 	
 	// Calculate vector to light in tangent space. (directional light)
-	ts_lightDir_v = normalize(gl_LightSource[0].position.xyz * TBN_Matrix );
+	ts_lightDir_v = normalize(( gl_LightSource[0].position).xyz * TBN_Matrix );
 
 
 	vertex = leafOrigin + (vertex.x*bitangent + vertex.y*tangent_vs);
@@ -403,11 +404,13 @@ void main()
 	tangent_vs = gl_NormalMatrix * tangent_vs;
 	
 	vPos = gl_ModelViewMatrix * vec4(vertex,1.0);
-	
-	gl_FrontColor = vec4(oVec,1.0);
+	ts_viewDir_v = normalize( vPos.xyz * TBN_Matrix) ;
     //animateBranchVertex(vertex); // with branch motion
 	// animateLeafVertex(vertex); // own motion of leaf
+	
 	gl_TexCoord[0] = vec4(texCoords0, 0.0, 0.0);
+	// flip Y coords
+	gl_TexCoord[0].y = 1.0 - gl_TexCoord[0].y;
 	//gl_FrontColor = color;
     gl_Position = gl_ModelViewProjectionMatrix * vec4(vertex,1.0);
 
