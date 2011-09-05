@@ -817,14 +817,22 @@ void DTree::init(){
 	//branchShader->registerUniform("leaf_amplitude", UniformType::F1, & g_tree_wood_amplitudes.data);
 	//branchShader->registerUniform("leaf_frequency", UniformType::F1, & g_tree_wood_amplitudes.data);
 
-	leafShader->registerUniform("branch_count", UniformType::F1, & this->branchCountF);
-	leafShader->registerUniform("time", UniformType::F1, & g_float_time);
-	leafShader->registerUniform("wind_direction", UniformType::F3, & g_tree_wind_direction.data);
-	leafShader->registerUniform("wind_strength", UniformType::F1, & g_tree_wind_strength);
-	leafShader->registerUniform("wood_amplitudes", UniformType::F4, & g_tree_wood_amplitudes.data);
-	leafShader->registerUniform("wood_frequencies", UniformType::F4, & g_tree_wood_frequencies.data);
-	leafShader->registerUniform("leaf_amplitude", UniformType::F1, & g_tree_leaf_amplitude);
-	leafShader->registerUniform("leaf_frequency", UniformType::F1, & g_tree_leaf_frequency);
+	leafShader->registerUniform("branch_count",				UniformType::F1,	& this->branchCountF);
+	leafShader->registerUniform("time",						UniformType::F1,	& g_float_time);
+	leafShader->registerUniform("wind_direction",			UniformType::F3,	& g_tree_wind_direction.data);
+	leafShader->registerUniform("wind_strength",			UniformType::F1,	& g_tree_wind_strength);
+	leafShader->registerUniform("wood_amplitudes",			UniformType::F4,	& g_tree_wood_amplitudes.data);
+	leafShader->registerUniform("wood_frequencies",			UniformType::F4,	& g_tree_wood_frequencies.data);
+	leafShader->registerUniform("leaf_amplitude",			UniformType::F1,	& g_tree_leaf_amplitude);
+	leafShader->registerUniform("leaf_frequency",			UniformType::F1,	& g_tree_leaf_frequency);
+	leafShader->registerUniform("MultiplyAmbient",			UniformType::F1,	& g_leaves_MultiplyAmbient);
+	leafShader->registerUniform("MultiplyDiffuse",			UniformType::F1,	& g_leaves_MultiplyDiffuse);
+	leafShader->registerUniform("MultiplySpecular",			UniformType::F1,	& g_leaves_MultiplySpecular);
+	leafShader->registerUniform("MultiplyTranslucency",		UniformType::F1,	& g_leaves_MultiplyTranslucency);
+	leafShader->registerUniform("ReduceTranslucencyInShadow", UniformType::F1,	& g_leaves_ReduceTranslucencyInShadow);
+	leafShader->registerUniform("shadow_intensity",			UniformType::F1,	& g_leaves_shadow_intensity);
+	leafShader->registerUniform("LightDiffuseColor",		UniformType::F3,	& g_leaves_LightDiffuseColor.data);
+
 
 
 	// create branch data texture

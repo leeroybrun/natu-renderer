@@ -126,6 +126,15 @@ float	g_tree_wave_increase_factor = 1.0;
 float	g_tree_time_offset_1	= 0.0;
 float	g_tree_time_offset_2	= 0.5;		
 
+float	g_leaves_MultiplyAmbient			= 0.7;
+float	g_leaves_MultiplyDiffuse			= 0.7;
+float	g_leaves_MultiplySpecular			= 0.4;
+float	g_leaves_MultiplyTranslucency		= 0.6;
+float	g_leaves_ReduceTranslucencyInShadow	= 0.9;
+float	g_leaves_shadow_intensity			= 1.0;
+v3		g_leaves_LightDiffuseColor			= v3(0.2, 0.2, 0.2);
+
+
 float g_CPU_fps;
 float CPU_render_time;
 
@@ -437,8 +446,14 @@ void initGUI()
 	TwAddVarRW(controlBar, "wave_movA", TW_TYPE_DIR3F, &g_tree_movementVectorA, "group='LOD' label='distortion mov vector A' ");
 	TwAddVarRW(controlBar, "wave_movB", TW_TYPE_DIR3F, &g_tree_movementVectorB, "group='LOD' label='distortion mov vector B' ");
 
-
-
+	TwAddVarRW(controlBar, "MultiplyAmbient",			TW_TYPE_FLOAT,		&g_leaves_MultiplyAmbient			, "group='Leaves' label='k ambient' min=0 max=5 step=0.001 ");
+	TwAddVarRW(controlBar, "MultiplyDiffuse",			TW_TYPE_FLOAT,		&g_leaves_MultiplyDiffuse			, "group='Leaves' label='k diffuse' min=0 max=5 step=0.001");
+	TwAddVarRW(controlBar, "MultiplySpecular",			TW_TYPE_FLOAT,		&g_leaves_MultiplySpecular			, "group='Leaves' label='k specular' min=0 max=10 step=0.001");
+	TwAddVarRW(controlBar, "MultiplyTranslucency",		TW_TYPE_FLOAT,		&g_leaves_MultiplyTranslucency		, "group='Leaves' label='k translucency' min=0 max=5 step=0.001");
+	TwAddVarRW(controlBar, "ReduceTranslucencyInShadow", TW_TYPE_FLOAT,		&g_leaves_ReduceTranslucencyInShadow, "group='Leaves' label='transl in shadow' min=-10 max=10 step=0.001");
+	TwAddVarRW(controlBar, "shadow_intensity",			TW_TYPE_FLOAT,		&g_leaves_shadow_intensity			, "group='Leaves' label='shadow intensity' min=-10 max=10 step=0.001");
+	TwAddVarRW(controlBar, "LightDiffuseColor",			TW_TYPE_COLOR3F,	&g_leaves_LightDiffuseColor.data	, "group='Leaves' label='light diffuse color' ");
+	
 
 
 	TwAddVarRW(controlBar, "parallax", TW_TYPE_BOOLCPP, &g_ParallaxMappingEnabled, 
