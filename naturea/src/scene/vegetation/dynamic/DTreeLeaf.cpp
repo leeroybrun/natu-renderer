@@ -49,6 +49,7 @@ void DTreeLeaf::init()
 	// create quad...
 	v3 normal	= cs.t;
 	v3 tangent	= cs.r;
+	
 	if (normal.y<0){
 		// flip coord system
 		normal.y = -normal.y;
