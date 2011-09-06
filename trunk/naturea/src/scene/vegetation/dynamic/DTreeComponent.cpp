@@ -11,14 +11,24 @@ DTreeComponent::DTreeComponent(tc* _parent, CoordSystem &_cs, float _x):
 	}
 	binormalID= -1;
 	tangentID = -1;
-	vertPtr = normalPtr = binormalPtr = NULL;
+	vertPtr = normalPtr = binormalPtr = tangentPtr = dataTextureCoords = col1TextureCoords = col2TextureCoords = NULL;
 	indexPtr = NULL;
-
 }
 
 DTreeComponent::~DTreeComponent(void)
 {
-	children.clear();
+	int i;
+	for (i = 0; i< vertices.size(); i++){
+		SAFE_DELETE_PTR( vertices[i] );
+	}
+	SAFE_DELETE_ARRAY_PTR( vertPtr				);
+	SAFE_DELETE_ARRAY_PTR( normalPtr 			);
+	SAFE_DELETE_ARRAY_PTR( binormalPtr 			);
+	SAFE_DELETE_ARRAY_PTR( tangentPtr 			);
+	SAFE_DELETE_ARRAY_PTR( dataTextureCoords	);
+	SAFE_DELETE_ARRAY_PTR( col1TextureCoords	);
+	SAFE_DELETE_ARRAY_PTR( col2TextureCoords	);
+	SAFE_DELETE_ARRAY_PTR( indexPtr 			);
 }
 
 // methods

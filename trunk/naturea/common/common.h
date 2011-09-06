@@ -32,12 +32,13 @@ typedef void (GLFWCALL * TMousePositionChangedCallback)(int,int);
 typedef void (GLFWCALL * TMouseWheelChangedCallback)(int);
 typedef void (GLFWCALL * TKeyboardChangedCallback)(int,int);
 typedef void (GLFWCALL * TThreadCallback)(void *);
-//typedef int  (GLFWCALL * TWindowClosedCallback)(void);
+typedef void (GLFWCALL * TWindowClosedCallback)(void);
 //typedef void (GLFWCALL * TCharacterChangedCallback)(int,int);
 
 
 // INTERNAL USER CALLBACK FUNCTION POINTERS____________________________________
 TDisplayCallback              g_cbUserDisplay               = NULL;
+TWindowClosedCallback		  g_cbUserDeinit				= NULL;
 TWindowSizeChangedCallback    g_cbUserWindowSizeChanged     = NULL;
 TMouseButtonChangedCallback   g_cbUserMouseButtonChanged    = NULL;
 TMousePositionChangedCallback g_cbUserMousePositionChanged  = NULL;
@@ -143,6 +144,7 @@ void GLFWCALL _cbMousePositionChanged(int x, int y)
 int common_main(int window_width, int window_height, 
                 const char* window_title,
                 TInitGLCallback               cbUserInitGL,
+				TWindowClosedCallback		  cbWindowClosed,
                 TDisplayCallback              cbUserDisplay,
                 TWindowSizeChangedCallback    cbUserWindowSizeChanged,
                 TKeyboardChangedCallback      cbUserKeyboardChanged,
@@ -151,6 +153,7 @@ int common_main(int window_width, int window_height,
 {
    // Setup user callback functions
    assert(cbUserDisplay && cbUserInitGL);
+   g_cbUserDeinit				 = cbWindowClosed;
    g_cbUserDisplay               = cbUserDisplay;
    g_cbUserWindowSizeChanged     = cbUserWindowSizeChanged;
    g_cbUserKeyboardChanged       = cbUserKeyboardChanged;
@@ -188,7 +191,7 @@ int common_main(int window_width, int window_height,
    glfwSetMouseButtonCallback(_cbMouseButtonChanged);
    glfwSetMousePosCallback(_cbMousePositionChanged);
 //   glfwSetKeyCallback(cbKeyboardChanged);
-  
+   //glfwSetWindow
    // Main loop
    while(glfwGetWindowParam(GLFW_OPENED) && !glfwGetKey(GLFW_KEY_ESC))
    {
@@ -205,6 +208,13 @@ int common_main(int window_width, int window_height,
       glfwSwapBuffers();
    }
  
+   // deinit app...
+	if ( g_cbUserDeinit)
+      {
+		  printf("deinit APPLICATION, clear openGL ... \n");
+          g_cbUserDeinit();
+      }
+
    // Terminate AntTweakBar and GLFW
 #ifdef USE_ANTTWEAKBAR
    TwTerminate();

@@ -3,7 +3,30 @@
 
 DTree::DTree(TextureManager *texManager, ShaderManager *shManager):Vegetation(texManager, shManager)
 {
-}
+	branchShader			 = NULL;
+	leafShader				 = NULL;
+							 
+	dataTexture				 = NULL;
+	lColorTexture			 = NULL;
+	frontDecalMap			 = NULL;
+	frontNormalMap			 = NULL;
+	frontTranslucencyMap	 = NULL;
+	frontHalfLife2Map		 = NULL;
+	backDecalMap			 = NULL;
+	backNormalMap			 = NULL;
+	backTranslucencyMap		 = NULL;
+	backHalfLife2Map		 = NULL;
+							 
+	bColorTexture			 = NULL;
+	bNormalTexture			 = NULL;
+							
+	branchNoiseTexture		 = NULL;
+	leafNoiseTexture		 = NULL;
+
+	branchesVBO				 = NULL;
+	leavesVBO				 = NULL;
+	branchesEBO				 = NULL;
+}					
 DTree::DTree(DTree* copy):
 Vegetation(copy->textureManager, copy->shaderManager)
 {
@@ -20,6 +43,47 @@ Vegetation(copy->textureManager, copy->shaderManager)
 
 DTree::~DTree(void)
 {
+	SAFE_DELETE_PTR(	branchShader			);
+	SAFE_DELETE_PTR(	leafShader				);
+
+	SAFE_DELETE_PTR(	dataTexture				);
+	SAFE_DELETE_PTR(	lColorTexture			);
+	SAFE_DELETE_PTR(	frontDecalMap			);
+	SAFE_DELETE_PTR(	frontNormalMap			);
+	SAFE_DELETE_PTR(	frontTranslucencyMap	);
+	SAFE_DELETE_PTR(	frontHalfLife2Map		);
+	SAFE_DELETE_PTR(	backDecalMap			);
+	SAFE_DELETE_PTR(	backNormalMap			);
+	SAFE_DELETE_PTR(	backTranslucencyMap		);
+	SAFE_DELETE_PTR(	backHalfLife2Map		);
+
+	SAFE_DELETE_PTR(	bColorTexture			);
+	SAFE_DELETE_PTR(	bNormalTexture			);
+
+	SAFE_DELETE_PTR(	branchNoiseTexture		);
+	SAFE_DELETE_PTR(	leafNoiseTexture		);
+
+	SAFE_DELETE_PTR(	branchesVBO				);
+	SAFE_DELETE_PTR(	leavesVBO				);
+	SAFE_DELETE_PTR(	branchesEBO				);
+
+	int i = 0;
+	for (i = 0; i< slices.size(); i++){
+		SAFE_DELETE_PTR( slices[i] );
+	}
+	slices.clear();
+	for (i = 0; i< branches.size(); i++){
+		SAFE_DELETE_PTR( branches[i] );
+	}
+	branches.clear();
+	for (i = 0; i< leaves.size(); i++){
+		SAFE_DELETE_PTR( leaves[i] );
+	}
+	leaves.clear();
+
+	//SAFE_DELETE_PTR( trunk );
+	
+
 }
 
 bool DTree::loadOBJT(string filename)
@@ -885,7 +949,7 @@ void DTree::createSlices(v3 & direction, int num, int resolution_x, int resoluti
 	Shader * dataProcessShader = new Shader("data_pre-processor");
 	dataProcessShader->loadShader(DYN_TREE::SHADER_PREPROCESS_V, DYN_TREE::SHADER_PREPROCESS_F);
 	GLint	gl_location = dataProcessShader->getGLLocation("branchMap");
-
+	int		loc_win_size = dataProcessShader->getLocation("window_size");
 	// dummy depth map
 	Texture * depthmap = new Texture(GL_TEXTURE_2D, GL_DEPTH_COMPONENT32F, GL_DEPTH_COMPONENT, GL_FLOAT, NULL, resolution_x, resolution_y, "dummy_depthMap");
 	depthmap->textureUnit = GL_TEXTURE7;
@@ -1021,7 +1085,9 @@ void DTree::createSlices(v3 & direction, int num, int resolution_x, int resoluti
 			// activate shader
 			//slice->branchmap->bind(GL_TEXTURE0);
 			dataProcessShader->use(true);
+
 			dataProcessShader->setTexture(gl_location, slice->branchmap->textureUnitNumber);			
+			dataProcessShader->setUniform2f(loc_win_size, g_window_sizes.x, g_window_sizes.y);
 			slice->branchmap->show(0,0, g_window_sizes.x, g_window_sizes.y);
 			dataProcessShader->use(false);
 			//slice->branchmap->unbind();
@@ -1041,5 +1107,6 @@ void DTree::createSlices(v3 & direction, int num, int resolution_x, int resoluti
 		glDeleteFramebuffersEXT(1, &fbo);
 	} // for each slice
 	
-
+	SAFE_DELETE_PTR ( depthmap );
+	SAFE_DELETE_PTR ( dataProcessShader );
 }

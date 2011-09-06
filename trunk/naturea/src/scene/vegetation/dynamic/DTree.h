@@ -18,11 +18,13 @@ public:
 		datamap		= NULL;
 	}
 	~DTreeSlice(){
+		printf("deleting slice\n");
 		SAFE_DELETE_PTR(	colormap	);
 		SAFE_DELETE_PTR(	normalmap	);
 		SAFE_DELETE_PTR(	depthmap	);
 		SAFE_DELETE_PTR(	branchmap	);
 		SAFE_DELETE_PTR(	datamap		);
+		printf("deleted slice\n");
 	}
 	Texture * colormap;
 	Texture * normalmap;

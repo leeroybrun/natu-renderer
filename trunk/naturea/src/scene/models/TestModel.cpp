@@ -4,11 +4,41 @@
 TestModel::TestModel(void)
 {
 	tree_time_offset = 0;
+	shader				= NULL;
+	vbo					= NULL;
+	colorMap 			= NULL;
+	colorMap2 			= NULL;
+	displacementMap 	= NULL;
+	weightMap 			= NULL;
+						
+	frontDecalMap 		= NULL;
+	frontNormalMap 		= NULL;
+	frontTranslucencyMap= NULL;
+	frontHalfLife2Map 	= NULL;
+	backDecalMap 		= NULL;
+	backNormalMap 		= NULL;
+	backTranslucencyMap = NULL;
+	backHalfLife2Map 	= NULL;
 }
 
 
 TestModel::~TestModel(void)
 {
+	SAFE_DELETE_PTR (shader					);
+	SAFE_DELETE_PTR (vbo					);
+	SAFE_DELETE_PTR (colorMap 				);
+	SAFE_DELETE_PTR (colorMap2 				);
+	SAFE_DELETE_PTR (displacementMap 		);
+	SAFE_DELETE_PTR (weightMap 				);
+
+	SAFE_DELETE_PTR (frontDecalMap 			);
+	SAFE_DELETE_PTR (frontNormalMap 		);
+	SAFE_DELETE_PTR (frontTranslucencyMap	);
+	SAFE_DELETE_PTR (frontHalfLife2Map 		);
+	SAFE_DELETE_PTR (backDecalMap 			);
+	SAFE_DELETE_PTR (backNormalMap 			);
+	SAFE_DELETE_PTR (backTranslucencyMap	);
+	SAFE_DELETE_PTR (backHalfLife2Map 		);
 }
 
 void TestModel::draw()

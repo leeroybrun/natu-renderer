@@ -14,6 +14,7 @@ World::World(void)
 	p_tree2_prototype	= NULL;
 	p_tree2_growth		= NULL;
 	p_dtree				= NULL;
+	p_godRays			= NULL;
 }
 
 
@@ -31,8 +32,12 @@ World::~World(void)
 	SAFE_DELETE_PTR(p_tree2_prototype);
 	SAFE_DELETE_PTR(p_tree2_growth);
 	SAFE_DELETE_PTR(p_dtree);
+
+	SAFE_DELETE_PTR( p_godRays	);
 	textureManager.~TextureManager();
 	shaderManager.~ShaderManager();
+
+
 	printf("WORLD deleted.......\n"); 
 }
 
@@ -261,6 +266,7 @@ void World::init()
 {
 	printf("INITIALIZING WORLD:\n");
 	shaderManager.init();
+	/*
 	// create LOD buffers
 	glGenTextures(1, &db_LOD_ID );
 		glBindTexture(GL_TEXTURE_2D, db_LOD_ID );
@@ -281,7 +287,7 @@ void World::init()
 		glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT,  GL_TEXTURE_2D, db_LOD_ID, 0);
 		glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_2D, cb_LOD_ID, 0);
 	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
-
+	*/
 	p_terrain = new Terrain(&textureManager,&shaderManager);
 	
 	p_activeCamera = new Camera();
