@@ -371,15 +371,12 @@ void World::init()
 	printf("----- END DYNAMIC TREE INIT ");
 
 	// generate initial slices for tree
-	int sliceCount = 3;
-	p_dtree->createSlices(p_activeCamera->getDirection(), sliceCount);
 	
 //===============================================================================
 // TEST OBJECT INIT
 //===============================================================================
 	p_test_model = new TestModel();
-	p_test_model->colorMap = p_dtree->slices[sliceCount-1]->colormap;
-	p_test_model->colorMap2 = p_dtree->slices[sliceCount-2]->colormap;
+	p_test_model->processTree(p_dtree);
 	p_test_model->init();
 	
 	/*

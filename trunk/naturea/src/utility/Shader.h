@@ -82,7 +82,7 @@ public:
 	vector<GLint>	 attributeLocations;
 	vector<string>	 attributeNames;
 private:	
-
+	bool	isRunning;
 	void   printShaderInfoLog(GLuint objectId, bool bShaderProgram);
 
 	GLuint vertexShID;
