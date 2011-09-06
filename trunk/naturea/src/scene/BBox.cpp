@@ -89,6 +89,7 @@ float BBox::getDiameter()
 
 float BBox::getLongestInsidePathFromDir(v3 &dir){
 	// from each corner shoot ray and check intersections...
+	return 0.0;
 }
 
 bool BBox::intersect(Ray *pRay)

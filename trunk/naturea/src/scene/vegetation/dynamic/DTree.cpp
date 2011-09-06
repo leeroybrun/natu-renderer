@@ -954,6 +954,10 @@ void DTree::createSlices(v3 & direction, int num, int resolution_x, int resoluti
 	Texture * depthmap = new Texture(GL_TEXTURE_2D, GL_DEPTH_COMPONENT32F, GL_DEPTH_COMPONENT, GL_FLOAT, NULL, resolution_x, resolution_y, "dummy_depthMap");
 	depthmap->textureUnit = GL_TEXTURE7;
 	depthmap->textureUnitNumber = 7;
+	// dummy color map
+	Texture * colormap = new Texture(GL_TEXTURE_2D, GL_RGB, GL_RGB, GL_UNSIGNED_BYTE, NULL, resolution_x, resolution_y, "dummy_colorMap");
+	colormap->textureUnit = GL_TEXTURE8;
+	colormap->textureUnitNumber = 8;
 
 // get "slice thickness"
 	BBox * box = getBBox();
@@ -1005,18 +1009,20 @@ void DTree::createSlices(v3 & direction, int num, int resolution_x, int resoluti
 		// attach textures to FBO attachments
 
 			glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_2D, slice->colormap->id  , 0);
-			glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT3_EXT, GL_TEXTURE_2D, slice->branchmap->id , 0);
+			glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT1_EXT, GL_TEXTURE_2D, colormap->id , 0);
 			glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT2_EXT, GL_TEXTURE_2D, slice->normalmap->id , 0);
+			glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT3_EXT, GL_TEXTURE_2D, slice->branchmap->id , 0);
 			glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT , GL_TEXTURE_2D, slice->depthmap->id  , 0);
 			//glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
-			assert(glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT)==GL_FRAMEBUFFER_COMPLETE_EXT);
-			assert( glGetError() == GL_NO_ERROR );
-			printf("TREE_SLICE %i framebuffer initialized successfully\n", i);
+			
 
 			glClearColor(0.f, 0.f, 0.f, 0.f);
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 			GLenum buffers[4] = {GL_COLOR_ATTACHMENT0_EXT, GL_COLOR_ATTACHMENT1_EXT, GL_COLOR_ATTACHMENT2_EXT, GL_COLOR_ATTACHMENT3_EXT};
 			glDrawBuffersARB(4, buffers);
+			assert(glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT)==GL_FRAMEBUFFER_COMPLETE_EXT);
+			assert( glGetError() == GL_NO_ERROR );
+			printf("TREE_SLICE %i framebuffer initialized successfully\n", i);
 			/*
 			GLenum buffers[3] = {GL_COLOR_ATTACHMENT0_EXT,GL_COLOR_ATTACHMENT1_EXT, GL_COLOR_ATTACHMENT2_EXT};
 			glDrawBuffersARB(3, buffers);
@@ -1092,19 +1098,19 @@ void DTree::createSlices(v3 & direction, int num, int resolution_x, int resoluti
 			dataProcessShader->use(false);
 			//slice->branchmap->unbind();
 			glFinish();
-		//
+		
 		
 
 		// return to normal screen rendering	
 		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
-		
+		glDeleteFramebuffersEXT(1, &fbo);
 		//*/
 		glDrawBuffer(GL_BACK);
 
 		g_window_sizes.x = g_WinWidth;
 		g_window_sizes.y = g_WinHeight;
 		glViewport(0, 0, g_window_sizes.x, g_window_sizes.y);
-		glDeleteFramebuffersEXT(1, &fbo);
+		
 	} // for each slice
 	
 	SAFE_DELETE_PTR ( depthmap );
