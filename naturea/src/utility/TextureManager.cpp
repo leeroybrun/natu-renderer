@@ -9,9 +9,11 @@ TextureManager::TextureManager(void)
 
 TextureManager::~TextureManager(void)
 {
+	printf("deleting texture manager: (%i) \n", textures.size());
 	for (int i=0; i<textures.size(); i++){
 		SAFE_DELETE_PTR(textures[i]);
 	}
+	printf("deleted texture manager\n");
 }
 
 void TextureManager::activateTexture(int texId)

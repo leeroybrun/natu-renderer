@@ -60,11 +60,6 @@ int	DTreeBranch::getLevel()
 
 DTreeBranch::~DTreeBranch(void)
 {
-	delete [] vertPtr;
-	delete [] normalPtr;
-	delete [] binormalPtr;
-	delete [] indexPtr;
-	delete [] dataTextureCoords;
 }
 
 void DTreeBranch::init()

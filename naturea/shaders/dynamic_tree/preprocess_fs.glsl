@@ -2,11 +2,13 @@
 
 uniform sampler2D branchMap;
 
+uniform vec2 window_size;
+
 //--------------------------------------------------------------------------------------
 // Defines
 //--------------------------------------------------------------------------------------
-#define EPSILON			5
-
+#define EPSILON1		20	
+#define EPSILON2		100
 //--------------------------------------------------------------------------------------
 // Fragment Shader
 // PREPROCESS
@@ -21,15 +23,18 @@ void main()
 	vec2 lookUpPos;
 	int i = 0;
 	int j = 0;
-	for (i=-EPSILON; i<EPSILON; i++){
+	
+	for (i=-EPSILON1; i<10; i++){
 
-		for (j=-EPSILON; j<EPSILON; j++){
+		for (j=-EPSILON2; j<EPSILON2; j++){
 			// find the closest filled point
-			lookUpPos =  gl_TexCoord[0].xy + (vec2(i,j)/EPSILON);
+			float x = j / window_size.x;
+			float y = i / window_size.y;
+			lookUpPos =  gl_TexCoord[0].xy + (vec2(x,y));
 			data = texture2D(branchMap, lookUpPos);
 
-			bestData = bestData + data;
-			/*
+			//bestData = bestData + data;
+			
 			if (data.a>0.5){
 				// some valid data
 
@@ -41,11 +46,11 @@ void main()
 					bestData = data;
 				}
 			}
-			*/
+			
 		}
 	}
 	
-	vec4 color = bestData*0.1;
+	vec4 color = bestData;
 	color.a = 1.0;
 
 	gl_FragData[0] = color;

@@ -144,7 +144,7 @@ float CPU_render_time;
 
 
 
-World world;
+World* p_world;
 
 #include "../common/common.h"
 // Model file name
@@ -179,7 +179,7 @@ void cbDisplay()
 
 	g_time=timer.RealTime();
 	g_float_time = g_time;
-	world.update(g_time);
+	p_world->update(g_time);
 	/*
 	if (pqAvailable){
 	glBeginQuery(GL_PRIMITIVES_GENERATED, pqid);
@@ -201,7 +201,7 @@ void cbDisplay()
 		//glGetQueryObjectiv(tqid, GL_QUERY_RESULT_AVAILABLE, &result_available);
 		//printf("avail: %s\n",result_available?"yes":"no");
 	} 
-	world.draw();
+	p_world->draw();
 	// block CPU to measure time here
 	glFinish();
 	
@@ -244,8 +244,8 @@ void initApp()
 	initCube();
 	//set plane vbo
 	initPlane();
-
-	world.init();
+	p_world = new World();
+	p_world->init();
 
 	// timer query extension?
 	if (isExtensionSupported(TIME_QUERY_EXTENSION)){
@@ -260,6 +260,7 @@ void initApp()
 }
 void deinitApp()
 {
+	SAFE_DELETE_PTR (p_world);
 	deletePlane();
 	deleteCube();
 
@@ -314,81 +315,87 @@ void cbInitGL()
 	//loadNewModelCB(&g_ModelFileName);
 }
 
+void cbDeinitGL()
+{
+	deinitApp();
+	printf("deinit GL\n");
+}
+
 void TW_CALL cbMakeSlices(void* clientData)
 {
-	world.snapTree(g_snapshot_direction);
+	p_world->snapTree(g_snapshot_direction);
 } 
 
 void TW_CALL cbSetTree2Count(const void *value, void *clientData)
 { 
 	g_Tree2Count = *(const int*)value; // for instance
-	world.tree2_planter.plantVegetationCount(g_Tree2Count);
+	p_world->tree2_planter.plantVegetationCount(g_Tree2Count);
 }
 void TW_CALL cbGetTree2Count(void *value, void *clientData)
 { 
-	*(int *)value = world.tree2_planter.count; // for instance
+	*(int *)value = p_world->tree2_planter.count; // for instance
 }
 
 void TW_CALL cbSetTree1Count(const void *value, void *clientData)
 { 
 	g_Tree1Count = *(const int*)value; // for instance
-	world.tree1_planter.plantVegetationCount(g_Tree1Count);
+	p_world->tree1_planter.plantVegetationCount(g_Tree1Count);
 }
 void TW_CALL cbGetTree1Count(void *value, void *clientData)
 { 
-	*(int *)value = world.tree1_planter.count; // for instance
+	*(int *)value = p_world->tree1_planter.count; // for instance
 }
 
 void TW_CALL cbSetGrassCount(const void *value, void *clientData)
 { 
 	g_GrassCount = *(const int*)value;  // for instance
-	world.grass_planter.plantVegetationCount(g_GrassCount);
+	p_world->grass_planter.plantVegetationCount(g_GrassCount);
 }
 void TW_CALL cbGetGrassCount(void *value, void *clientData)
 { 
-	*(int *)value = world.grass_planter.count;  // for instance
+	*(int *)value = p_world->grass_planter.count;  // for instance
 }
 
 //tree2
 void TW_CALL cbSetTree2Min(const void *value, void *clientData)
 { 
 	tree2min = *(const float*)value;  // for instance
-	world.tree2_planter.setNewMin(tree2min);
+	p_world->tree2_planter.setNewMin(tree2min);
 }
 void TW_CALL cbGetTree2Min(void *value, void *clientData)
 { 
-	*(float *)value = world.tree2_planter.height_min;  // for instance
+	*(float *)value = p_world->tree2_planter.height_min;  // for instance
 }
 
 void TW_CALL cbSetTree2Max(const void *value, void *clientData)
 { 
 	tree2max = *(const float*)value;  // for instance
-	world.tree2_planter.setNewMax(tree2max);
+	p_world->tree2_planter.setNewMax(tree2max);
 }
 void TW_CALL cbGetTree2Max(void *value, void *clientData)
 { 
-	*(float *)value = world.tree2_planter.height_max;  // for instance
+	*(float *)value = p_world->tree2_planter.height_max;  // for instance
 }
 
 // tree1
 void TW_CALL cbSetTree1Min(const void *value, void *clientData)
 { 
 	tree1min = *(const float*)value;  // for instance
-	world.tree1_planter.setNewMin(tree1min);
+	p_world->tree1_planter.setNewMin(tree1min);
 }
 void TW_CALL cbGetTree1Min(void *value, void *clientData)
 { 
-	*(float *)value = world.tree1_planter.height_min;  // for instance
+	*(float *)value = p_world->tree1_planter.height_min;  // for instance
 }
 
 void TW_CALL cbSetTree1Max(const void *value, void *clientData)
 { 
 	tree1max = *(const float*)value;  // for instance
-	world.tree1_planter.setNewMax(tree1max);
+	p_world->tree1_planter.setNewMax(tree1max);
 }
 void TW_CALL cbGetTree1Max(void *value, void *clientData)
 { 
-	*(float *)value = world.tree1_planter.height_max;  // for instance
+	*(float *)value = p_world->tree1_planter.height_max;  // for instance
 }
 
 
@@ -396,21 +403,21 @@ void TW_CALL cbGetTree1Max(void *value, void *clientData)
 void TW_CALL cbSetGrassMin(const void *value, void *clientData)
 { 
 	grassmin = *(const float*)value;  // for instance
-	world.grass_planter.setNewMin(grassmin);
+	p_world->grass_planter.setNewMin(grassmin);
 }
 void TW_CALL cbGetGrassMin(void *value, void *clientData)
 { 
-	*(float *)value = world.grass_planter.height_min;  // for instance
+	*(float *)value = p_world->grass_planter.height_min;  // for instance
 }
 
 void TW_CALL cbSetGrassMax(const void *value, void *clientData)
 { 
 	grassmax = *(const float*)value;  // for instance
-	world.grass_planter.setNewMax(grassmax);
+	p_world->grass_planter.setNewMax(grassmax);
 }
 void TW_CALL cbGetGrassMax(void *value, void *clientData)
 { 
-	*(float *)value = world.grass_planter.height_max;  // for instance
+	*(float *)value = p_world->grass_planter.height_max;  // for instance
 }
 
 //-----------------------------------------------------------------------------
@@ -683,7 +690,7 @@ void cbWindowSizeChanged(int width, int height)
 	g_WinHeight = height;
 	g_window_sizes.x = g_WinWidth;
 	g_window_sizes.y = g_WinHeight;
-	world.windowSizeChanged(width,height);
+	p_world->windowSizeChanged(width,height);
 }
 void activateANTMouse()
 {
@@ -703,7 +710,7 @@ void cbKeyboardChanged(int key, int action)
 {
 	if (!g_MouseModeANT){
 		// apply to camera first...
-		if (world.p_activeCamera->handleKeyDown(key, action)){
+		if (p_world->p_activeCamera->handleKeyDown(key, action)){
 			return;
 		}
 	}
@@ -756,7 +763,7 @@ void GLFWCALL cbMouseButtonChanged(int button, int action)
 void cbMousePositionChanged(int x, int y)
 {
 
-	world.p_activeCamera->handleMouseMove(x,y);
+	p_world->p_activeCamera->handleMouseMove(x,y);
 	glfwSetMousePos(g_WinWidth/2, g_WinHeight/2);
 }
 
@@ -769,8 +776,9 @@ void cbMousePositionChanged(int x, int y)
 int main(int argc, char* argv[]) 
 {
 	int output = common_main(g_WinWidth, g_WinHeight,
-		"[PGR2] Semestral project",
+		"NATUREA diploma thesis project",
 		cbInitGL,              // init GL callback function
+		cbDeinitGL,
 		cbDisplay,             // display callback function
 		cbWindowSizeChanged,   // window resize callback function
 		cbKeyboardChanged,     // keyboard callback function
@@ -782,7 +790,7 @@ int main(int argc, char* argv[])
 		cbMousePositionChanged // mouse motion callback function
 #endif
 		);
-	deinitApp();
+	//deinitApp();
 
 	return output;
 }
