@@ -2,6 +2,7 @@
 #include "scene\scenemodel.h"
 #include "models\elephant.h"
 #include "../../utility/VBO.h"
+#include "../../scene/vegetation/dynamic/DTree.h"
 
 class TestModel :
 	public SceneModel
@@ -18,6 +19,8 @@ public:
 
 	virtual void update(double time);
 
+	void		 processTree(DTree * tree);
+
 	Shader				*shader;
 	VBO					*vbo;
 
@@ -28,6 +31,7 @@ public:
 	Texture*			colorMap2;
 	Texture*			displacementMap;
 	Texture*			weightMap;
+	Texture*			dataMap;
 
 	Texture*			frontDecalMap;
 	Texture*			frontNormalMap;
@@ -37,5 +41,12 @@ public:
 	Texture*			backNormalMap;
 	Texture*			backTranslucencyMap;
 	Texture*			backHalfLife2Map;
+
+	vector<DTreeSlice*>	slices;
+
+	int					l_color	  ;
+	int					l_displ	  ;
+	int					l_data	  ;
+	int					l_normal  ;
 };
 

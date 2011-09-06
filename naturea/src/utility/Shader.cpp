@@ -228,7 +228,8 @@ bool Shader::loadShader(
 
 void Shader::use(bool isTurnedOn)
 {
-	if (isTurnedOn){
+	if (isTurnedOn && !isRunning){
+		isRunning = true;
 		glUseProgram(programID);
 		// attach uniforms
 		int i, size = uniforms.size();
@@ -237,7 +238,9 @@ void Shader::use(bool isTurnedOn)
 				setUniform(uniforms[i]);
 			} // else invalid location
 		}
-	} else {
+	} 
+	if (!isTurnedOn && isRunning){
+		isRunning = false;
 		glUseProgram(0);
 	}
 }

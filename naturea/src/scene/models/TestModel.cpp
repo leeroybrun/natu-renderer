@@ -10,6 +10,7 @@ TestModel::TestModel(void)
 	colorMap2 			= NULL;
 	displacementMap 	= NULL;
 	weightMap 			= NULL;
+	dataMap				= NULL;
 						
 	frontDecalMap 		= NULL;
 	frontNormalMap 		= NULL;
@@ -30,6 +31,7 @@ TestModel::~TestModel(void)
 	SAFE_DELETE_PTR (colorMap2 				);
 	SAFE_DELETE_PTR (displacementMap 		);
 	SAFE_DELETE_PTR (weightMap 				);
+	SAFE_DELETE_PTR (dataMap				);
 
 	SAFE_DELETE_PTR (frontDecalMap 			);
 	SAFE_DELETE_PTR (frontNormalMap 		);
@@ -41,87 +43,55 @@ TestModel::~TestModel(void)
 	SAFE_DELETE_PTR (backHalfLife2Map 		);
 }
 
+void TestModel::processTree(DTree * tree)
+{
+	// create slices from tree
+	v3 dir = v3(1.0, 0.0, 0.0);
+	tree->createSlices( dir, 5, 1024, 1024, false);
+
+	slices = tree->slices;	
+}
+
 void TestModel::draw()
 {
-	glPushMatrix();
-	
-	glTranslatef(0.0, 10.0, 0.0);
-	glScalef(8.0,8.0,8.0);
-	glRotatef(90, 0.0, 0.0, 1.0);
-	glRotatef(90, 0.0, 1.0, 0.0);
-	glDisable(GL_CULL_FACE);
+	int i, count = slices.size();
+	Texture * colorTexture, * dataTexture, *displacementTexture, *normalTexture;
+	displacementTexture		= displacementMap;
+	for (i=0; i<count; i++){
+		colorTexture			= slices[i]->colormap;
+		normalTexture			= slices[i]->normalmap;
+		dataTexture				= slices[i]->datamap;
 
-	colorMap		->bind(GL_TEXTURE0);
-	displacementMap	->bind(GL_TEXTURE1);
+		glPushMatrix();	
+			glTranslatef(-i*0.8, 10.0, 0.0);
+			glScalef(8.0,8.0,8.0);
+			glRotatef(90, 0.0, 0.0, 1.0);
+			glRotatef(90, 0.0, 1.0, 0.0);
+			glDisable(GL_CULL_FACE);
+			colorTexture		->bind(GL_TEXTURE0);
+			displacementTexture	->bind(GL_TEXTURE1);
+			dataTexture			->bind(GL_TEXTURE2);
+			normalTexture		->bind(GL_TEXTURE3);
 
-	u_time_offset->data = &	g_tree_time_offset_1;
+			u_time_offset->data = &	g_tree_time_offset_1;
+			// turn on shader
+			shader->use(true);
+			shader->setTexture(l_color	, colorTexture			->textureUnitNumber	);
+			shader->setTexture(l_displ	, displacementTexture	->textureUnitNumber	);
+			shader->setTexture(l_data	, dataTexture			->textureUnitNumber	);
+			shader->setTexture(l_normal	, normalTexture			->textureUnitNumber	);
+			vbo->draw(shader, GL_QUADS, 0);
 
-	/*frontDecalMap		->bind(GL_TEXTURE0);
-	frontNormalMap		->bind(GL_TEXTURE1);
-	frontTranslucencyMap->bind(GL_TEXTURE2);
-	frontHalfLife2Map	->bind(GL_TEXTURE3);
-	backDecalMap		->bind(GL_TEXTURE4);
-	backNormalMap		->bind(GL_TEXTURE5);
-	backTranslucencyMap	->bind(GL_TEXTURE6);
-	backHalfLife2Map	->bind(GL_TEXTURE7);
-	*/
-	vbo->draw(shader, GL_QUADS, 0);
-	/*
-	frontDecalMap		->unbind();
-	frontNormalMap		->unbind();
-	frontTranslucencyMap->unbind();
-	frontHalfLife2Map	->unbind();
-	backDecalMap		->unbind();
-	backNormalMap		->unbind();
-	backTranslucencyMap	->unbind();
-	backHalfLife2Map	->unbind();
-	*/
-	colorMap		->unbind();
-	displacementMap	->unbind();
-	glEnable(GL_CULL_FACE);
+			colorTexture		->unbind();
+			displacementTexture	->unbind();
+			dataTexture			->unbind();
+			normalTexture		->unbind();
+			// turn off shader
+			shader->use(false);
+			glEnable(GL_CULL_FACE);
 
-	glPopMatrix();
-
-	// 2nd slice
-
-	glPushMatrix();
-	
-	glTranslatef(-1.0, 10.0, 0.0);
-	glScalef(8.0,8.0,8.0);
-	glRotatef(90, 0.0, 0.0, 1.0);
-	glRotatef(90, 0.0, 1.0, 0.0);
-	glDisable(GL_CULL_FACE);
-
-	colorMap2		->bind(GL_TEXTURE0);
-	displacementMap	->bind(GL_TEXTURE1);
-
-	u_time_offset->data = &	g_tree_time_offset_2;
-
-	/*frontDecalMap		->bind(GL_TEXTURE0);
-	frontNormalMap		->bind(GL_TEXTURE1);
-	frontTranslucencyMap->bind(GL_TEXTURE2);
-	frontHalfLife2Map	->bind(GL_TEXTURE3);
-	backDecalMap		->bind(GL_TEXTURE4);
-	backNormalMap		->bind(GL_TEXTURE5);
-	backTranslucencyMap	->bind(GL_TEXTURE6);
-	backHalfLife2Map	->bind(GL_TEXTURE7);
-	*/
-	vbo->draw(shader, GL_QUADS, 0);
-	/*
-	frontDecalMap		->unbind();
-	frontNormalMap		->unbind();
-	frontTranslucencyMap->unbind();
-	frontHalfLife2Map	->unbind();
-	backDecalMap		->unbind();
-	backNormalMap		->unbind();
-	backTranslucencyMap	->unbind();
-	backHalfLife2Map	->unbind();
-	*/
-	colorMap		->unbind();
-	displacementMap	->unbind();
-	glEnable(GL_CULL_FACE);
-
-	glPopMatrix();
+		glPopMatrix();
+	}
 }
 
 void TestModel::drawForLOD()
@@ -131,35 +101,33 @@ void TestModel::drawForLOD()
 
 void TestModel::init()
 {
+
 	// init textures...
-	
+	if (slices.size()<1){
+		// error!!!
+		printf("Slices for LOD not attached to LOD model!!! Fatal error, terminating...\n");
+		pauseAndExit();
+
+	}
+
 	displacementMap		=new Texture("displacementMap");
 	displacementMap		->load("textures/UVmap.png", true, false, GL_REPEAT, GL_LINEAR, GL_LINEAR_MIPMAP_LINEAR);
-	/*
-	frontDecalMap		=new Texture("frontDecalMap");
-	frontNormalMap		=new Texture("frontNormalMap");
-	frontTranslucencyMap=new Texture("frontTranslucencyMap");
-	frontHalfLife2Map	=new Texture("frontHalfLife2Map");
-	backDecalMap		=new Texture("backDecalMap");
-	backNormalMap		=new Texture("backNormalMap");
-	backTranslucencyMap	=new Texture("backTranslucencyMap");
-	backHalfLife2Map	=new Texture("backHalfLife2Map");
-	frontDecalMap		->load(DYN_TREE::TEX_FDM, true, false, GL_CLAMP, GL_LINEAR, GL_LINEAR_MIPMAP_LINEAR);
-	frontNormalMap		->load(DYN_TREE::TEX_FNM, true, false, GL_CLAMP, GL_LINEAR, GL_LINEAR_MIPMAP_LINEAR);
-	frontTranslucencyMap->load(DYN_TREE::TEX_FTM, true, false, GL_CLAMP, GL_LINEAR, GL_LINEAR_MIPMAP_LINEAR);
-	frontHalfLife2Map	->load(DYN_TREE::TEX_FHM, true, false, GL_CLAMP, GL_LINEAR, GL_LINEAR_MIPMAP_LINEAR);
-	backDecalMap		->load(DYN_TREE::TEX_BDM, true, false, GL_CLAMP, GL_LINEAR, GL_LINEAR_MIPMAP_LINEAR);
-	backNormalMap		->load(DYN_TREE::TEX_BNM, true, false, GL_CLAMP, GL_LINEAR, GL_LINEAR_MIPMAP_LINEAR);
-	backTranslucencyMap	->load(DYN_TREE::TEX_BTM, true, false, GL_CLAMP, GL_LINEAR, GL_LINEAR_MIPMAP_LINEAR);
-	backHalfLife2Map	->load(DYN_TREE::TEX_BHM, true, false, GL_CLAMP, GL_LINEAR, GL_LINEAR_MIPMAP_LINEAR);
-	*/
+	
+
 	// init shaders
 
 	shader = new Shader("test");
 	shader->loadShader("shaders/test2_vs.glsl", "shaders/test2_fs.glsl");
 	// link textures to shader
-	shader->linkTexture(colorMap			);
-	shader->linkTexture(displacementMap		);
+	//shader->linkTexture(colorMap			);
+	//shader->linkTexture(displacementMap		);
+	//shader->linkTexture(dataMap				);
+
+	l_color		 = shader->getGLLocation("colorMap"			);
+	l_displ		 = shader->getGLLocation("displacementMap"	);
+	l_data		 = shader->getGLLocation("dataMap"			);
+	l_normal	 = shader->getGLLocation("normalMap"		);
+
 	shader->registerUniform("time", UniformType::F1, & g_float_time);
 
 	shader->registerUniform("wave_amplitude"		, UniformType::F1, & g_tree_wave_amplitude		);
