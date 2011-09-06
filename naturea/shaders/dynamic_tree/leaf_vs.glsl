@@ -27,7 +27,7 @@ uniform vec4			wood_amplitudes;
 uniform vec4			wood_frequencies;
 uniform float			leaf_amplitude;
 uniform float			leaf_frequency;
-
+uniform vec2			window_size;
 
 attribute vec3			normal;
 attribute vec3			tangent;
@@ -42,12 +42,23 @@ varying vec3			ts_viewDir_v;
 varying vec3			ts_lightDir_v;
 varying float			level;
 
+varying vec2			b0_origin;
+varying vec2			b1_origin;
+varying vec2			b2_origin;
+varying vec3			b_lengths;
 
 varying vec4			vPos;
 vec3					normal_vs = normal;
 vec3					tangent_vs = tangent;
 vec4					color;	
 vec3					oVec=vec3(1.0, 1.0, 1.0);
+
+vec4 OS2ND(in vec4 position){
+	vec4 clipSpacePosition = gl_ModelViewProjectionMatrix * position;
+	//float wI = 1.0/clipSpacePosition.w;
+	float wI = 1.0;
+	return (clipSpacePosition*wI);
+}
 
 void animateBranchVertex(inout vec3 position)
 {
@@ -94,6 +105,10 @@ void animateBranchVertex(inout vec3 position)
     float length1 = sv1_l.w;
     float length2 = sv2_l.w;
     float length3 = sv3_l.w;
+	b_lengths.x = length0;
+	b_lengths.y = length1;
+	b_lengths.z	= length2;
+
     // sv vectors
 	vec3 sv0 = sv0_l.xyz;
     vec3 sv1 = sv1_l.xyz;
@@ -110,6 +125,7 @@ void animateBranchVertex(inout vec3 position)
 	vec3 tv;
 	vec3 center;
 	vec3 centerB = vec3(0.0, 0.0, 0.0);
+	b0_origin = OS2ND(vec4(centerB,1.0)).xy;
 	vec3 corr_r, corr_s;
 	vec2 fu, fu_deriv, s,d;
 	bs = sv0;
@@ -119,7 +135,7 @@ void animateBranchVertex(inout vec3 position)
 		// level0
 		// find t vector
 		tv	= cross(rv0,sv0);
-	
+		b_lengths.x = length(b0_origin - OS2ND(vec4(centerB+ tv*b_lengths.x, 1.0)).xy);
 		// calc wind prebend offset
 		amp0.x += dot(rv0, wind_direction) * wind_strength;
 		amp0.y += dot(sv0, wind_direction) * wind_strength;
@@ -139,6 +155,8 @@ void animateBranchVertex(inout vec3 position)
 		bs	= normalize(sv0 - tv*fu_deriv.x);
 		// bend the center point
 		centerB =  center + fu.x * sv0 + fu.y * rv0 - (corr_s+corr_r);
+		// save centerB as b1_origin
+		b1_origin = OS2ND(vec4(centerB,1.0)).xy;
 	}
     if (x_vals.y>0.0){
         // level1
@@ -148,6 +166,7 @@ void animateBranchVertex(inout vec3 position)
         rv1 = rv1.x * bs + rv1.y * br + rv1.z * bt;
         //...
 		tv	= cross(rv1,sv1);
+		b_lengths.y = length(b1_origin - OS2ND(vec4(centerB+ tv*b_lengths.y, 1.0)).xy);
 		// calc wind prebend offset
 		amp1.x += dot(rv1, wind_direction) * wind_strength;
 		amp1.y += dot(sv1, wind_direction) * wind_strength;
@@ -166,6 +185,7 @@ void animateBranchVertex(inout vec3 position)
 		oVec = vec3(abs(dot(bt,br)), abs(dot(br,bs)), abs(dot(bs,bt)));
 		
         centerB =  center + fu.x * sv1 + fu.y * rv1 - (corr_s+corr_r);
+		b2_origin = OS2ND(vec4(centerB,1.0)).xy;
     }
 
 	if (x_vals.z>0.0){
@@ -176,6 +196,7 @@ void animateBranchVertex(inout vec3 position)
         rv2 = rv2.x * bs + rv2.y * br + rv2.z * bt;
         //...
 		tv	= cross(rv2,sv2);
+		b_lengths.z = length(b2_origin - OS2ND(vec4(centerB+ tv*b_lengths.z, 1.0)).xy);
 		// calc wind prebend offset
 		amp2.x += dot(rv2, wind_direction) * wind_strength;
 		amp2.y += dot(sv2, wind_direction) * wind_strength;

@@ -14,15 +14,21 @@ public:
 		colormap	= NULL;
 		normalmap	= NULL;
 		depthmap	= NULL;
+		branchmap	= NULL;
+		datamap		= NULL;
 	}
 	~DTreeSlice(){
 		SAFE_DELETE_PTR(	colormap	);
 		SAFE_DELETE_PTR(	normalmap	);
 		SAFE_DELETE_PTR(	depthmap	);
+		SAFE_DELETE_PTR(	branchmap	);
+		SAFE_DELETE_PTR(	datamap		);
 	}
 	Texture * colormap;
 	Texture * normalmap;
 	Texture * depthmap;
+	Texture * branchmap;
+	Texture * datamap;
 };
 
 

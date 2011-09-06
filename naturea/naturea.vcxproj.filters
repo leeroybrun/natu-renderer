@@ -615,5 +615,11 @@
     <None Include="shaders\test2_vs.glsl">
       <Filter>Shaders\testing</Filter>
     </None>
+    <None Include="shaders\dynamic_tree\preprocess_fs.glsl">
+      <Filter>Shaders\dynaTree</Filter>
+    </None>
+    <None Include="shaders\dynamic_tree\preprocess_vs.glsl">
+      <Filter>Shaders\dynaTree</Filter>
+    </None>
   </ItemGroup>
 </Project>

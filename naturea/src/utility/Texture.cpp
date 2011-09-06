@@ -42,7 +42,7 @@ void Texture::show(GLint x,GLint y, GLsizei width, GLsizei height){
 	glMatrixMode(GL_PROJECTION);
 	glPushMatrix();
 	glLoadIdentity();
-	glOrtho(0, g_WinWidth, 0, g_WinHeight, -1,1);
+	glOrtho(0, g_window_sizes.x, 0, g_window_sizes.y, -1,1);
 
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
@@ -51,15 +51,18 @@ void Texture::show(GLint x,GLint y, GLsizei width, GLsizei height){
 	glDisable(GL_LIGHTING);
 	glDisable(GL_DEPTH_TEST);
 	glEnable(GL_TEXTURE_2D);
-	glActiveTexture(GL_TEXTURE0);
+
+	
+	
+	glActiveTexture(textureUnit);
 	glBindTexture(GL_TEXTURE_2D, id);
 	glColor4f(1.f,1.f,1.f,1.f);
 
 	glBegin(GL_QUADS);
-		glTexCoord2f(0.f, 0.f); glVertex2i(x,y);
-		glTexCoord2f(1.f, 0.f); glVertex2i(x+width,y);
-		glTexCoord2f(1.f, 1.f); glVertex2i(x+width,y+height);
-		glTexCoord2f(0.f, 1.f); glVertex2i(x,y+height);
+		glMultiTexCoord2f(GL_TEXTURE0, 0.f, 0.f); glVertex2i(x,y);
+		glMultiTexCoord2f(GL_TEXTURE0, 1.f, 0.f); glVertex2i(x+width,y);
+		glMultiTexCoord2f(GL_TEXTURE0, 1.f, 1.f); glVertex2i(x+width,y+height);
+		glMultiTexCoord2f(GL_TEXTURE0, 0.f, 1.f); glVertex2i(x,y+height);
 	glEnd();
 
 	glEnable(GL_LIGHTING);

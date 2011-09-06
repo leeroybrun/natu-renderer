@@ -3,8 +3,10 @@
 #include "GLEW/glew.h"
 #include "GL/glut.h"
 #include "timer.h"
+
 #include "Vector3.h"
 #include "Vector4.h"
+#include "Vector2.h"
 #include "Matrix4x4.h"
 
 enum CameraMode{
@@ -42,6 +44,7 @@ static int g_nula = 0;
 
 extern	GLint					g_WinWidth;   // Window width
 extern	GLint					g_WinHeight;   // Window height
+extern	v3						g_window_sizes;	
 extern	double					g_time;
 extern	float					g_float_time;
 extern	bool					g_godraysEnabled;
