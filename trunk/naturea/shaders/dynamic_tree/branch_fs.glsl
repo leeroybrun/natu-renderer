@@ -1,4 +1,4 @@
-#
+#version 120
 
 
 varying vec3 normal_vs;
@@ -7,8 +7,12 @@ varying float level;
 varying vec4 vPos;
 varying vec3 lightDir;
 
+varying vec2			b0_origin;
+varying vec2			b1_origin;
+varying vec2			b2_origin;
 
 uniform sampler2D color_texture;
+uniform vec2			window_size;
 
 void main()
 {	
@@ -40,5 +44,13 @@ void main()
 	//gl_FragColor = vec4(1.0/level * texture2D(color_texture, gl_TexCoord[0].xy).xyz, 1.0);
 	gl_FragData[2] = vec4(normal_vs, 0.0);
 
+
+	// calc frag distance from its branch origin... 
+	vec2 fpos = gl_FragCoord.xy;
+	fpos = fpos/window_size;
+	vec2 b0 = b0_origin * 0.5 + 0.5;
+	float dist = length(fpos - b0);
+
+	gl_FragData[3] = vec4(dist, 0.0, 0.0, 1.0);
 	//gl_FragColor = gl_Color;
 }

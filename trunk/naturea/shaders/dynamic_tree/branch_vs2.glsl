@@ -33,9 +33,22 @@ float				time_faster;
 varying vec3		normal_vs;
 varying vec3		tangent_vs;
 varying float		level;
+
+varying vec2		b0_origin;
+varying vec2		b1_origin;
+varying vec2		b2_origin;
+
+
 vec4 color;	
 varying vec4 vPos;
 vec3					oVec=vec3(1.0, 1.0, 1.0);
+
+
+vec4 OS2ND(in vec4 position){
+	vec4 clipSpacePosition = gl_ModelViewProjectionMatrix * position;
+	float wI = 1.0/clipSpacePosition.w;
+	return (clipSpacePosition*wI);
+}
 
 void animateBranchVertex(inout vec3 position)
 {
@@ -98,6 +111,7 @@ void animateBranchVertex(inout vec3 position)
 	vec3 tv;
 	vec3 center;
 	vec3 centerB = vec3(0.0, 0.0, 0.0);
+	b0_origin = OS2ND(vec4(centerB,1.0)).xy;
 	vec3 corr_r, corr_s;
 	vec2 fu, fu_deriv, s,d;
 	bs = sv0;
@@ -128,6 +142,8 @@ void animateBranchVertex(inout vec3 position)
 		bs	= normalize(sv0 - tv*fu_deriv.x);
 		// bend the center point
 		centerB =  center + fu.x * sv0 + fu.y * rv0 - (corr_s+corr_r);
+		// save centerB as b1_origin
+		b1_origin = OS2ND(vec4(centerB,1.0)).xy;
 	}
     if (x_vals.y>0.0){
         // level1
@@ -152,6 +168,8 @@ void animateBranchVertex(inout vec3 position)
         br	= normalize(rv1 - tv*fu_deriv.y);
         bs	= normalize(sv1 - tv*fu_deriv.x);
         centerB =  center + fu.x * sv1 + fu.y * rv1 - (corr_s+corr_r);
+		// save centerB as b2_origin
+		b2_origin = OS2ND(vec4(centerB,1.0)).xy;
     }
 
 	if (x_vals.z>0.0){

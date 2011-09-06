@@ -24,7 +24,7 @@ uniform float ReduceTranslucencyInShadow  ;
 uniform float shadow_intensity			  ;
 uniform vec3  LightDiffuseColor			  ;
 
-
+uniform vec2			window_size;
 #define SQRT6  0.40824829046386301636621401245098
 #define SQRT2  0.70710678118654752440084436210485
 #define SQRT3  0.57735026918962576450914878050196
@@ -36,6 +36,11 @@ varying vec4			vPos;
 varying vec3			o_normal;
 varying vec3			ts_viewDir_v;
 varying vec3			ts_lightDir_v;
+
+varying vec2			b0_origin;
+varying vec2			b1_origin;
+varying vec2			b2_origin;
+varying vec3			b_lengths;
 
 vec3			normal_vs		= normal_vs_v;
 vec3			tangent_vs		= tangent_vs_v;
@@ -322,4 +327,21 @@ void main()
 	gl_FragData[0] = color;
 	gl_FragData[1] = color * vec4(0.5, 0.5, 0.5, 1.0);
 	gl_FragData[2] = vec4(normal_vs, 0.0);
+
+	// calc leaf distance from its branch origin... 
+	vec2 fpos = gl_FragCoord.xy;
+	fpos = fpos/window_size;
+	vec2 b1 = b1_origin * 0.5 + 0.5;
+	
+
+	float dist = length(fpos - b1)/b_lengths.y;
+
+	gl_FragData[3] = vec4(dist,0.0,0.0, 1.0);
+	//gl_FragColor = gl_Color;
+
+/*
+	b0_origin;
+	b1_origin;
+	b2_origin;
+*/
 }

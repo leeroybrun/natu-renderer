@@ -233,6 +233,9 @@ namespace DYN_TREE
 	const static char * SHADER_LEAF_V			= "shaders/dynamic_tree/leaf_vs.glsl";
 	const static char * SHADER_LEAF_F			= "shaders/dynamic_tree/leaf_fs.glsl";
 
+	const static char * SHADER_PREPROCESS_V		= "shaders/dynamic_tree/preprocess_vs.glsl";
+	const static char * SHADER_PREPROCESS_F		= "shaders/dynamic_tree/preprocess_fs.glsl";
+
 
 	const static int	MAX_HIERARCHY_DEPTH		= 4;
 	const static float	LEAF_SIZE				= 0.04;

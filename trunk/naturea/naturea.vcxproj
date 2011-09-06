@@ -240,6 +240,8 @@
     <None Include="shaders\dynamic_tree\branch_vs2.glsl" />
     <None Include="shaders\dynamic_tree\leaf_fs.glsl" />
     <None Include="shaders\dynamic_tree\leaf_vs.glsl" />
+    <None Include="shaders\dynamic_tree\preprocess_fs.glsl" />
+    <None Include="shaders\dynamic_tree\preprocess_vs.glsl" />
     <None Include="shaders\godrays\godrays_fs.glsl" />
     <None Include="shaders\godrays\godrays_vs.glsl" />
     <None Include="shaders\grass\grass_fs.glsl" />

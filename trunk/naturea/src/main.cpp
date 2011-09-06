@@ -36,9 +36,15 @@ float tree1max = TREE1_MAX_HEIGHT;
 float grassmin = GRASS_MIN_HEIGHT;
 float grassmax = GRASS_MAX_HEIGHT;
 
+#include <assert.h>
+#include "../common/models/cube.h"
+#include "World.h"
+#include "globals.h"
+
 CameraMode g_cameraMode = FREE;
 int g_WinWidth				= 800	;   // Window width
 int g_WinHeight				= 600;   // Window height
+v3  g_window_sizes			= v3(g_WinWidth, g_WinHeight, 0.0);
 double g_time				= 0.0;
 float g_float_time			= 0.0f;
 CTimer						timer;
@@ -50,10 +56,7 @@ int g_Alphamaps		= 0;
 
 
 
-#include <assert.h>
-#include "../common/models/cube.h"
-#include "World.h"
-#include "globals.h"
+
 
 bool tqAvailable			= false;
 GLuint tqid					= 0;
@@ -678,6 +681,8 @@ void cbWindowSizeChanged(int width, int height)
 {
 	g_WinWidth  = width;
 	g_WinHeight = height;
+	g_window_sizes.x = g_WinWidth;
+	g_window_sizes.y = g_WinHeight;
 	world.windowSizeChanged(width,height);
 }
 void activateANTMouse()

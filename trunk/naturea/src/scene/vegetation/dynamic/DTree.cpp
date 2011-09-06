@@ -743,7 +743,8 @@ void DTree::draw(){
 }
 
 void DTree::drawForLOD(){
-
+	// TODO: optimize rendering for LOD slice generation...
+	draw();
 }
 
 void DTree::init(){
@@ -808,12 +809,14 @@ void DTree::init(){
 
 	// register uniforms
 	this->branchCountF = 0;
-	branchShader->registerUniform("branch_count", UniformType::F1, & this->branchCountF);
-	branchShader->registerUniform("time", UniformType::F1, & g_float_time);
-	branchShader->registerUniform("wind_direction", UniformType::F3, (g_tree_wind_direction.data));
-	branchShader->registerUniform("wind_strength", UniformType::F1, & g_tree_wind_strength);
-	branchShader->registerUniform("wood_amplitudes", UniformType::F4, g_tree_wood_amplitudes.data);
-	branchShader->registerUniform("wood_frequencies", UniformType::F4, g_tree_wood_frequencies.data);
+	branchShader->registerUniform("branch_count",			UniformType::F1,	& this->branchCountF);
+	branchShader->registerUniform("time",					UniformType::F1,	& g_float_time);
+	branchShader->registerUniform("wind_direction",			UniformType::F3,	& g_tree_wind_direction.data);
+	branchShader->registerUniform("wind_strength",			UniformType::F1,	& g_tree_wind_strength);
+	branchShader->registerUniform("wood_amplitudes",		UniformType::F4,	& g_tree_wood_amplitudes.data);
+	branchShader->registerUniform("wood_frequencies",		UniformType::F4,	& g_tree_wood_frequencies.data);
+	branchShader->registerUniform("window_size",			UniformType::F2,	& g_window_sizes.data);		
+
 	//branchShader->registerUniform("leaf_amplitude", UniformType::F1, & g_tree_wood_amplitudes.data);
 	//branchShader->registerUniform("leaf_frequency", UniformType::F1, & g_tree_wood_amplitudes.data);
 
@@ -832,7 +835,7 @@ void DTree::init(){
 	leafShader->registerUniform("ReduceTranslucencyInShadow", UniformType::F1,	& g_leaves_ReduceTranslucencyInShadow);
 	leafShader->registerUniform("shadow_intensity",			UniformType::F1,	& g_leaves_shadow_intensity);
 	leafShader->registerUniform("LightDiffuseColor",		UniformType::F3,	& g_leaves_LightDiffuseColor.data);
-
+	leafShader->registerUniform("window_size",				UniformType::F2,	& g_window_sizes.data);		
 
 
 	// create branch data texture
@@ -878,6 +881,16 @@ BBox * DTree::getBBox()
 }
 
 void DTree::createSlices(v3 & direction, int num, int resolution_x, int resolution_y, bool half){
+	// init data pre-processing shader
+	Shader * dataProcessShader = new Shader("data_pre-processor");
+	dataProcessShader->loadShader(DYN_TREE::SHADER_PREPROCESS_V, DYN_TREE::SHADER_PREPROCESS_F);
+	GLint	gl_location = dataProcessShader->getGLLocation("branchMap");
+
+	// dummy depth map
+	Texture * depthmap = new Texture(GL_TEXTURE_2D, GL_DEPTH_COMPONENT32F, GL_DEPTH_COMPONENT, GL_FLOAT, NULL, resolution_x, resolution_y, "dummy_depthMap");
+	depthmap->textureUnit = GL_TEXTURE7;
+	depthmap->textureUnitNumber = 7;
+
 // get "slice thickness"
 	BBox * box = getBBox();
 	float distance = -10.f;
@@ -896,9 +909,6 @@ void DTree::createSlices(v3 & direction, int num, int resolution_x, int resoluti
 			delete slices[i];
 		}
 		slices.clear();
-
-	
-	
 		GLuint fbo = 0;
 		
 
@@ -908,6 +918,8 @@ void DTree::createSlices(v3 & direction, int num, int resolution_x, int resoluti
 			glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fbo);
 		// each slice
 			slice = new DTreeSlice();
+		// add slice
+			slices.push_back(slice);
 		// create & setup textures
 			slice->colormap = new Texture(GL_TEXTURE_2D, GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE, NULL, resolution_x, resolution_y, "colorMap");
 			slice->colormap->textureUnit = GL_TEXTURE0;
@@ -922,10 +934,14 @@ void DTree::createSlices(v3 & direction, int num, int resolution_x, int resoluti
 			slice->normalmap->textureUnit = GL_TEXTURE3;
 			slice->normalmap->textureUnitNumber = 3;
 
+			slice->branchmap = new Texture(GL_TEXTURE_2D, GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE, NULL, resolution_x, resolution_y, "branchMap");
+			slice->branchmap->textureUnit = GL_TEXTURE4;
+			slice->branchmap->textureUnitNumber = 4;
+
 		// attach textures to FBO attachments
 
 			glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_2D, slice->colormap->id  , 0);
-			//glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT1_EXT, GL_TEXTURE_2D, 0 , 0);
+			glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT3_EXT, GL_TEXTURE_2D, slice->branchmap->id , 0);
 			glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT2_EXT, GL_TEXTURE_2D, slice->normalmap->id , 0);
 			glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT , GL_TEXTURE_2D, slice->depthmap->id  , 0);
 			//glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
@@ -935,8 +951,8 @@ void DTree::createSlices(v3 & direction, int num, int resolution_x, int resoluti
 
 			glClearColor(0.f, 0.f, 0.f, 0.f);
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-			GLenum buffers[2] = {GL_COLOR_ATTACHMENT0_EXT, GL_COLOR_ATTACHMENT2_EXT};
-			glDrawBuffersARB(2, buffers);
+			GLenum buffers[4] = {GL_COLOR_ATTACHMENT0_EXT, GL_COLOR_ATTACHMENT1_EXT, GL_COLOR_ATTACHMENT2_EXT, GL_COLOR_ATTACHMENT3_EXT};
+			glDrawBuffersARB(4, buffers);
 			/*
 			GLenum buffers[3] = {GL_COLOR_ATTACHMENT0_EXT,GL_COLOR_ATTACHMENT1_EXT, GL_COLOR_ATTACHMENT2_EXT};
 			glDrawBuffersARB(3, buffers);
@@ -954,7 +970,9 @@ void DTree::createSlices(v3 & direction, int num, int resolution_x, int resoluti
 			glMatrixMode(GL_PROJECTION);
 			glPushMatrix();
 				glLoadIdentity();
-				glViewport(0, 0, resolution_x, resolution_y);
+				g_window_sizes.x = resolution_x;
+				g_window_sizes.y = resolution_y;
+				glViewport(0, 0, g_window_sizes.x, g_window_sizes.y);
 				//system("PAUSE");
 				glOrtho(left, right, bottom, top, near, far);
 				
@@ -964,15 +982,14 @@ void DTree::createSlices(v3 & direction, int num, int resolution_x, int resoluti
 				gluLookAt( position.x, position.y, position.z, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
 		// render offscreen
 		// draw tree now...
-			draw();
-
+			drawForLOD();
+			glFinish();
 		glMatrixMode(GL_PROJECTION);
 			glPopMatrix();
 		glMatrixMode(GL_MODELVIEW);
 			glPopMatrix();
 		//
-		// add slice
-		slices.push_back(slice);
+	
 
 		// generate mipmaps where needed
 		//slice->colormap->generateMipmaps();
@@ -980,13 +997,48 @@ void DTree::createSlices(v3 & direction, int num, int resolution_x, int resoluti
 		//slice->depthmap->generateMipmaps();
 
 
-		// return to normal screen rendering
 		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
-		glDrawBuffer(GL_BACK);
-		glViewport(0,0,g_WinWidth, g_WinHeight);
-	// delete framebuffer
+		// prepare data texture from branch texture
 		glDeleteFramebuffersEXT(1, &fbo);
+		
+		glGenFramebuffersEXT(1, &fbo);
+			glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fbo);
+			slice->datamap = new Texture(GL_TEXTURE_2D, GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE, NULL, resolution_x, resolution_y, "dataMap");
+			slice->datamap->textureUnit = GL_TEXTURE5;
+			slice->datamap->textureUnitNumber = 5;
+			glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_2D, slice->datamap->id , 0);
+			glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT , GL_TEXTURE_2D, depthmap->id , 0);
+			assert(glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT)==GL_FRAMEBUFFER_COMPLETE_EXT);
+			assert( glGetError() == GL_NO_ERROR );
+			printf("TREE_SLICE %i data framebuffer initialized successfully\n", i);
 
+			glClearColor(1.f, 0.f, 0.f, 1.f);
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+			//glDrawBuffer(GL_COLOR_ATTACHMENT0_EXT);
+			GLenum buffers2[1] = {GL_COLOR_ATTACHMENT0_EXT};
+			glDrawBuffersARB(1, buffers2);
+			
+			// activate shader
+			//slice->branchmap->bind(GL_TEXTURE0);
+			dataProcessShader->use(true);
+			dataProcessShader->setTexture(gl_location, slice->branchmap->textureUnitNumber);			
+			slice->branchmap->show(0,0, g_window_sizes.x, g_window_sizes.y);
+			dataProcessShader->use(false);
+			//slice->branchmap->unbind();
+			glFinish();
+		//
+		
+
+		// return to normal screen rendering	
+		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+		
+		//*/
+		glDrawBuffer(GL_BACK);
+
+		g_window_sizes.x = g_WinWidth;
+		g_window_sizes.y = g_WinHeight;
+		glViewport(0, 0, g_window_sizes.x, g_window_sizes.y);
+		glDeleteFramebuffersEXT(1, &fbo);
 	} // for each slice
 	
 
