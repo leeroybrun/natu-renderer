@@ -40,10 +40,10 @@ void main()
 	vec2 halfV2 = vec2(0.5);
 	vec2 b0 = texture2D(dataMap, gl_TexCoord[0].st).xy;
 	vec2 b1 = texture2D(dataMap, gl_TexCoord[0].st).zw;
-	//float dist0 = length(fpos - b0);
+	float dist0 = length(fpos - b0);
 	//vec2 b1 = b1_origin * 0.5 + halfV2;
-	//float dist1 = length(fpos - b1);
-	float angle = (texture2D(displacementMap, t*movVectorA).s*2.0-1.0) *wave_amplitude;
+	float dist1 = length(fpos - b1);
+	float angle = (texture2D(displacementMap, (t*b1)).s*2.0-1.0) *wave_amplitude;
 	float cosA = cos (angle); 
 	float sinA = sin (angle);
 	vec2  difVec = (fpos - b1);
