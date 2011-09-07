@@ -7,6 +7,7 @@ Shader::Shader(string shname)
 	vertexShID	 = 0;
 	geometryShID = 0;
 	fragmentShID = 0;
+	isRunning = false;
 }
 
 Shader::~Shader(void)

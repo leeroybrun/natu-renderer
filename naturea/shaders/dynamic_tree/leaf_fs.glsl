@@ -325,14 +325,7 @@ void main()
 	gl_FragData[2] = vec4(normal_vs, 0.0);
 
 	// calc leaf distance from its branch origin... 
-	vec2 fpos = gl_FragCoord.xy;
-	fpos = fpos/window_size;
-	vec2 b2 = b2_origin * 0.5 + 0.5;
-	
-
-	float dist = length(fpos - b2)/b_lengths.z;
-
-	gl_FragData[3] = vec4(b2_origin*0.5+vec2(0.5),0.0, 1.0);
+	gl_FragData[3] = vec4(b0_origin*0.5+vec2(0.5),b1_origin*0.5+vec2(0.5));
 	//gl_FragColor = gl_Color;
 
 /*

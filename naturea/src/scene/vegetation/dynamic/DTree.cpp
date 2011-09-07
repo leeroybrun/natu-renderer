@@ -1091,7 +1091,7 @@ void DTree::createSlices(v3 & direction, int num, int resolution_x, int resoluti
 			// activate shader
 			//slice->branchmap->bind(GL_TEXTURE0);
 			dataProcessShader->use(true);
-
+			slice->branchmap->bind(slice->branchmap->textureUnit);
 			dataProcessShader->setTexture(gl_location, slice->branchmap->textureUnitNumber);			
 			dataProcessShader->setUniform2f(loc_win_size, g_window_sizes.x, g_window_sizes.y);
 			slice->branchmap->show(0,0, g_window_sizes.x, g_window_sizes.y);

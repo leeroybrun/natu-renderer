@@ -46,11 +46,11 @@ void main()
 
 
 	// calc frag distance from its branch origin... 
-	vec2 fpos = gl_FragCoord.xy;
+/*	vec2 fpos = gl_FragCoord.xy;
 	fpos = fpos/window_size;
 	vec2 b0 = b0_origin * 0.5 + 0.5;
 	float dist = length(fpos - b0);
-
-	gl_FragData[3] = vec4(dist, 0.0, 0.0, 1.0);
+	*/
+	gl_FragData[3] = vec4(b0_origin*0.5+vec2(0.5),b1_origin*0.5+vec2(0.5));
 	//gl_FragColor = gl_Color;
 }
