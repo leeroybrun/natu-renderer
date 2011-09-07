@@ -112,6 +112,7 @@ void animateBranchVertex(inout vec3 position)
 	vec3 center;
 	vec3 centerB = vec3(0.0, 0.0, 0.0);
 	b0_origin = OS2ND(vec4(centerB,1.0)).xy;
+	b1_origin = vec2(0.0);
 	vec3 corr_r, corr_s;
 	vec2 fu, fu_deriv, s,d;
 	bs = sv0;
@@ -143,9 +144,10 @@ void animateBranchVertex(inout vec3 position)
 		// bend the center point
 		centerB =  center + fu.x * sv0 + fu.y * rv0 - (corr_s+corr_r);
 		// save centerB as b1_origin
-		b1_origin = OS2ND(vec4(centerB,1.0)).xy;
+		
 	}
     if (x_vals.y>0.0){
+		b1_origin = OS2ND(vec4(centerB,1.0)).xy;
         // level1
 		level = 1.0;
 	    // bend branch system according to the parent branch bending
@@ -169,10 +171,11 @@ void animateBranchVertex(inout vec3 position)
         bs	= normalize(sv1 - tv*fu_deriv.x);
         centerB =  center + fu.x * sv1 + fu.y * rv1 - (corr_s+corr_r);
 		// save centerB as b2_origin
-		b2_origin = OS2ND(vec4(centerB,1.0)).xy;
+		
     }
 
 	if (x_vals.z>0.0){
+		b2_origin = OS2ND(vec4(centerB,1.0)).xy;
         // level2
 		level = 2.0;
 	    // bend branch system according to the parent branch bending

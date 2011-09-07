@@ -215,7 +215,7 @@ void colorize(out vec4 outColor, in vec3 normal, in vec3 tangent, in vec3 bitang
 	
 	// --- Alpha Testing ---
 
-	if (decal_color.a < 0.9)
+	if (decal_color.a < 0.5)
 	{
 		discard;
 	}

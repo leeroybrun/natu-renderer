@@ -42,8 +42,8 @@ float grassmax = GRASS_MAX_HEIGHT;
 #include "globals.h"
 
 CameraMode g_cameraMode = FREE;
-int g_WinWidth				= 800	;   // Window width
-int g_WinHeight				= 600;   // Window height
+int g_WinWidth				= 1280;//800	;   // Window width
+int g_WinHeight				= 720;//600;   // Window height
 v3  g_window_sizes			= v3(g_WinWidth, g_WinHeight, 0.0);
 double g_time				= 0.0;
 float g_float_time			= 0.0f;
@@ -67,7 +67,7 @@ GLint result_available		= 0;
 
 v4 g_light_position			= LIGHT_POSITION;
 v4 g_light_direction		= LIGHT_DIRECTION;
-bool g_godraysEnabled		= false;
+bool g_godraysEnabled		= true;
 bool g_fastMode				= false;
 bool g_drawingReflection	= false;
 bool g_showTextures			= false;
@@ -109,6 +109,13 @@ bool     g_WireMode             = false; // Wire mode enabled/disabled
 bool     g_FaceCulling          = true; // Face culling enabled/disabled
 GLfloat  g_AlphaThreshold       = 0.01f; // Alpha test threshold
 bool	 g_MouseModeANT			= true;
+
+bool	g_draw_dtree_lod		= true;
+bool	g_draw_low_vegetation	= true;
+bool	g_draw_dtree			= true;
+bool	g_draw_light_direction	= false;
+
+
 
 /**************************
 * DYNAMIC TREE
@@ -441,6 +448,12 @@ void initGUI()
 	TwBar *controlBar = TwNewBar("Controls");
 	TwDefine(" Controls position='0 0' size='250 550' refresh=0.3 \
 			 valueswidth=80 ");
+
+	TwAddVarRW(controlBar, "sw_tree", TW_TYPE_BOOLCPP, & g_draw_dtree, " group='Visibility' ");
+	TwAddVarRW(controlBar, "sw_lod", TW_TYPE_BOOLCPP, & g_draw_dtree_lod, " group='Visibility'  ");
+	TwAddVarRW(controlBar, "sw_veg", TW_TYPE_BOOLCPP, & g_draw_low_vegetation, " group='Visibility'  ");
+	TwAddVarRW(controlBar, "sw_light", TW_TYPE_BOOLCPP, & g_draw_light_direction, " group='Visibility'  ");
+
 	TwAddVarRW(controlBar, "snapshotDir", TW_TYPE_DIR3F, &g_snapshot_direction, 
 		"group='LOD'  label='slices direction' help='direction of snapshot' ");
 	TwAddVarRW(controlBar, "snapshotSlices", TW_TYPE_INT32, &g_slice_count, 
@@ -464,7 +477,7 @@ void initGUI()
 	TwAddVarRW(controlBar, "shadow_intensity",			TW_TYPE_FLOAT,		&g_leaves_shadow_intensity			, "group='Leaves' label='shadow intensity' min=-10 max=10 step=0.001");
 	TwAddVarRW(controlBar, "LightDiffuseColor",			TW_TYPE_COLOR3F,	&g_leaves_LightDiffuseColor.data	, "group='Leaves' label='light diffuse color' ");
 	
-
+	/*
 
 	TwAddVarRW(controlBar, "parallax", TW_TYPE_BOOLCPP, &g_ParallaxMappingEnabled, 
 		" help='Parallax mapping enabled' ");
@@ -472,7 +485,7 @@ void initGUI()
 		" help='Parallax scale value' step=0.001");
 	TwAddVarRW(controlBar, "parallaxBias", TW_TYPE_FLOAT, &g_ParallaxBias, 
 		" help='Parallax bias value' step=0.001");
-
+		*/
 
 
 	// camera mode
@@ -612,6 +625,13 @@ void initGUI()
 	TwAddVarCB(controlBar, "Grass MAX", TW_TYPE_FLOAT, cbSetGrassMax, cbGetGrassMax, NULL, " group='Levels' min=-5 max=30 step=1 ");
 
 
+	TwDefine(" Controls/Vegetation opened=false ");
+	TwDefine(" Controls/Levels opened=false ");
+	TwDefine(" Controls/Surfaces opened=false ");
+	TwDefine(" Controls/Surfaces opened=false ");
+	TwDefine(" Controls/Debug opened=false ");
+	TwDefine(" Controls/Leaves opened=false ");
+	TwDefine(" Controls/LOD opened=false ");
 	//TwAddVarRW(controlBar, "vertex_normals", TW_TYPE_BOOLCPP, 
 	//   &g_ShowVertexNormals, " label='vertex normals' \
 	//   group=Render help='Show vertex normal, tangent, binormal.' ");
