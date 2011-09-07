@@ -57,6 +57,10 @@ extern  bool					g_ParallaxMappingEnabled;
 extern  float					g_ParallaxScale;
 extern  float					g_ParallaxBias;
 
+extern	bool					g_draw_dtree_lod		;
+extern	bool					g_draw_low_vegetation	;
+extern	bool					g_draw_dtree			;
+extern	bool					g_draw_light_direction  ;
 
 extern	bool					g_ShadowMappingEnabled;
 extern	m4						g_LightMVPCameraVInverseMatrix;

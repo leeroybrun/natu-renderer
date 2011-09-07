@@ -124,7 +124,10 @@ void World::draw()
 
 
 	if (g_godraysEnabled){p_godRays->begin();}
-	p_activeLight->draw();
+	
+	if (g_draw_light_direction){
+		p_activeLight->draw();
+	}
 	p_terrain->draw();
 	/*
 	if (p_activeCamera->getPosition().y>=WATER_HEIGHT-1.0){
@@ -141,14 +144,15 @@ void World::draw()
 	
 	//p_testModel->draw();
 	//drawModels();
-	glPushMatrix();
+	if (g_draw_dtree_lod){
+		glPushMatrix();
 
-		glTranslatef(0.0, 0.0, 10.0);
+			glTranslatef(0.0, 0.0, 10.0);
 
-		p_test_model->draw();
+			p_test_model->draw();
 
-	glPopMatrix();
-
+		glPopMatrix();
+	}
 	glEnable(GL_BLEND);
 	glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	drawWithAlpha();
@@ -175,15 +179,19 @@ void World::draw()
 }
 
 void World::drawWithAlpha(){
-	p_grass_growth->draw();
-	p_tree1_growth->draw();
-	p_tree2_growth->draw();
-
-	glPushMatrix();
-		glTranslatef(0.0, 5.0, 0.0);
-		glScalef(10.0, 10.0, 10.0);
-		p_dtree->draw();
-	glPopMatrix();
+	if (g_draw_low_vegetation){
+		p_grass_growth->draw();
+		p_tree1_growth->draw();
+		p_tree2_growth->draw();
+	}
+	if (g_draw_dtree){
+		glPushMatrix();
+			glTranslatef(0.0, 5.0, 0.0);
+			glScalef(10.0, 10.0, 10.0);
+		
+			p_dtree->draw();
+		glPopMatrix();
+	}
 }
 
 void World::drawUnderWater(){

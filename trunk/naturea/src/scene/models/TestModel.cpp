@@ -9,6 +9,7 @@ TestModel::TestModel(void)
 	colorMap 			= NULL;
 	colorMap2 			= NULL;
 	displacementMap 	= NULL;
+	displacement2Map 	= NULL;
 	weightMap 			= NULL;
 	dataMap				= NULL;
 						
@@ -30,6 +31,7 @@ TestModel::~TestModel(void)
 	SAFE_DELETE_PTR (colorMap 				);
 	SAFE_DELETE_PTR (colorMap2 				);
 	SAFE_DELETE_PTR (displacementMap 		);
+	SAFE_DELETE_PTR (displacement2Map 		);
 	SAFE_DELETE_PTR (weightMap 				);
 	SAFE_DELETE_PTR (dataMap				);
 
@@ -47,7 +49,7 @@ void TestModel::processTree(DTree * tree)
 {
 	// create slices from tree
 	v3 dir = v3(-1.0, 0.0, 0.0);
-	win_resolution = v2 (1024, 1024);
+	win_resolution = v2 (512, 512);
 	tree->createSlices( dir, 5, win_resolution.x,  win_resolution.y, false);
 
 	slices = tree->slices;	
@@ -56,8 +58,9 @@ void TestModel::processTree(DTree * tree)
 void TestModel::draw()
 {
 	int i, count = slices.size();
-	Texture * colorTexture, * dataTexture, *displacementTexture, *normalTexture;
+	Texture * colorTexture, * dataTexture, *displacementTexture, *displacement2Texture, *normalTexture;
 	displacementTexture		= displacementMap;
+	displacement2Texture	= displacement2Map;
 	for (i=0; i<count; i++){
 		colorTexture			= slices[i]->colormap;
 		normalTexture			= slices[i]->normalmap;
@@ -71,6 +74,7 @@ void TestModel::draw()
 			glDisable(GL_CULL_FACE);
 			colorTexture		->bind(GL_TEXTURE0);
 			displacementTexture	->bind(GL_TEXTURE1);
+			displacement2Texture	->bind(GL_TEXTURE4);
 			dataTexture			->bind(GL_TEXTURE2);
 			normalTexture		->bind(GL_TEXTURE3);
 
@@ -79,12 +83,14 @@ void TestModel::draw()
 			shader->use(true);
 			shader->setTexture(l_color	, colorTexture			->textureUnitNumber	);
 			shader->setTexture(l_displ	, displacementTexture	->textureUnitNumber	);
+			shader->setTexture(l_displ2	, displacement2Texture	->textureUnitNumber	);
 			shader->setTexture(l_data	, dataTexture			->textureUnitNumber	);
 			shader->setTexture(l_normal	, normalTexture			->textureUnitNumber	);
 			vbo->draw(shader, GL_QUADS, 0);
 
 			colorTexture		->unbind();
 			displacementTexture	->unbind();
+			displacement2Texture	->unbind();
 			dataTexture			->unbind();
 			normalTexture		->unbind();
 			// turn off shader
@@ -114,6 +120,9 @@ void TestModel::init()
 	displacementMap		=new Texture("displacementMap");
 	displacementMap		->load(DYN_TREE::LEAF_NOISE_TEXTURE, true, false, GL_REPEAT, GL_LINEAR, GL_LINEAR_MIPMAP_LINEAR);
 	
+	displacement2Map	=new Texture("displacement2Map");
+	displacement2Map	->load(DYN_TREE::BRANCH_NOISE_TEXTURE, true, false, GL_REPEAT, GL_LINEAR, GL_LINEAR_MIPMAP_LINEAR);
+	
 
 	// init shaders
 
@@ -126,6 +135,7 @@ void TestModel::init()
 
 	l_color		 = shader->getGLLocation("colorMap"			);
 	l_displ		 = shader->getGLLocation("displacementMap"	);
+	l_displ2	 = shader->getGLLocation("displacement2Map"	);
 	l_data		 = shader->getGLLocation("dataMap"			);
 	l_normal	 = shader->getGLLocation("normalMap"		);
 
@@ -138,6 +148,13 @@ void TestModel::init()
 	shader->registerUniform("wave_y_offset"			, UniformType::F1, & g_tree_wave_y_offset			);
 	shader->registerUniform("wave_increase_factor"	, UniformType::F1, & g_tree_wave_increase_factor	);
 	shader->registerUniform("window_size"			, UniformType::F2, & win_resolution				);
+
+
+	shader->registerUniform("wood_amplitudes"		, UniformType::F4, & g_tree_wood_amplitudes.data	);
+	shader->registerUniform("wood_frequencies"		, UniformType::F4, & g_tree_wood_frequencies.data	);
+	shader->registerUniform("leaf_amplitude"		, UniformType::F1, & g_tree_leaf_amplitude	);
+	shader->registerUniform("leaf_frequency"		, UniformType::F1, & g_tree_leaf_frequency	);
+
 	int i = shader->registerUniform("time_offset"	, UniformType::F1, & tree_time_offset);
 	u_time_offset = shader->getUniform(i);
 	/*

@@ -30,6 +30,7 @@ public:
 	Texture*			colorMap;
 	Texture*			colorMap2;
 	Texture*			displacementMap;
+	Texture*			displacement2Map;
 	Texture*			weightMap;
 	Texture*			dataMap;
 
@@ -46,6 +47,7 @@ public:
 
 	int					l_color	  ;
 	int					l_displ	  ;
+	int					l_displ2  ;
 	int					l_data	  ;
 	int					l_normal  ;
 
