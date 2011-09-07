@@ -46,8 +46,9 @@ TestModel::~TestModel(void)
 void TestModel::processTree(DTree * tree)
 {
 	// create slices from tree
-	v3 dir = v3(1.0, 0.0, 0.0);
-	tree->createSlices( dir, 5, 1024, 1024, false);
+	v3 dir = v3(-1.0, 0.0, 0.0);
+	win_resolution = v2 (1024, 1024);
+	tree->createSlices( dir, 5, win_resolution.x,  win_resolution.y, false);
 
 	slices = tree->slices;	
 }
@@ -111,7 +112,7 @@ void TestModel::init()
 	}
 
 	displacementMap		=new Texture("displacementMap");
-	displacementMap		->load("textures/UVmap.png", true, false, GL_REPEAT, GL_LINEAR, GL_LINEAR_MIPMAP_LINEAR);
+	displacementMap		->load(DYN_TREE::LEAF_NOISE_TEXTURE, true, false, GL_REPEAT, GL_LINEAR, GL_LINEAR_MIPMAP_LINEAR);
 	
 
 	// init shaders
@@ -136,6 +137,7 @@ void TestModel::init()
 	shader->registerUniform("movementVectorB"		, UniformType::F2, & g_tree_movementVectorB		);
 	shader->registerUniform("wave_y_offset"			, UniformType::F1, & g_tree_wave_y_offset			);
 	shader->registerUniform("wave_increase_factor"	, UniformType::F1, & g_tree_wave_increase_factor	);
+	shader->registerUniform("window_size"			, UniformType::F2, & win_resolution				);
 	int i = shader->registerUniform("time_offset"	, UniformType::F1, & tree_time_offset);
 	u_time_offset = shader->getUniform(i);
 	/*

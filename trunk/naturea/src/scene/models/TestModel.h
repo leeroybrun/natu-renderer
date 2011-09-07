@@ -48,5 +48,7 @@ public:
 	int					l_displ	  ;
 	int					l_data	  ;
 	int					l_normal  ;
+
+	v2					win_resolution;
 };
 

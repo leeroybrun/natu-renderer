@@ -157,9 +157,9 @@ static void drawCube()
 const GLfloat PLANE_VERTEX_ARRAY2[] =
 {
 	 -0.5f, 0.0f, -0.5f,
-	 -0.5f, 0.0f,  0.5f,
+	  0.5f, 0.0f, -0.5f,
 	  0.5f, 0.0f,  0.5f,
-	  0.5f, 0.0f, -0.5f	
+	 -0.5f, 0.0f,  0.5f	
 };
 
 
@@ -181,9 +181,9 @@ const GLfloat PLANE_TEX_COORD_ARRAY[] =
 const GLfloat PLANE_TEX_COORD_ARRAY2[] =
 {
 	 0.0f, 0.0f,
-	 0.0f, 1.0f,
+	 1.0f, 0.0f,
 	 1.0f, 1.0f,
-	 1.0f, 0.0f
+	 0.0f, 1.0f
 };
 
 
