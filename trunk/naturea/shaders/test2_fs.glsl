@@ -89,13 +89,18 @@ void main()
 
 		//texCoordA = (texture2D(displacementMap, texCoordA).st*2.0 - vec2(1.0))*(wave_y_offset + gl_TexCoord[0].t*wave_increase_factor);
 		//texCoordB = (texture2D(displacementMap, texCoordB).st*2.0 - vec2(1.0))*(wave_y_offset + gl_TexCoord[0].t*wave_increase_factor);
-		texCoordA = (texture2D(displacementMap, texCoordA).st*2.0 - vec2(1.0))*gl_TexCoord[0].t;
-		texCoordB = (texture2D(displacementMap, texCoordB).st*2.0 - vec2(1.0))*gl_TexCoord[0].t;
+		texCoordA = (texture2D(displacementMap, texCoordA).st*2.0 - vec2(1.0));
+		texCoordB = (texture2D(displacementMap, texCoordB).st*2.0 - vec2(1.0));
 		
 		vec2 texCoord = newPos+(texCoordA+texCoordB)*sizeFactor*4.0*leaf_amplitude;// texture2D(displacementMap, ).st;
-	
-
-		vec4 color = texture2D(colorMap, texCoord);
+		vec4 fragmentNormal = texture2D(normalMap, texCoord);
+		float branchFlag = fragmentNormal.w + texture2D(normalMap, newPos).w;
+		vec4 color;
+		if (branchFlag>0.5){
+			color = texture2D(colorMap, newPos);
+		} else {
+			color = texture2D(colorMap, texCoord);
+		}
 		if (color.a<0.5){discard;}
 		gl_FragData[0] = color;
 		gl_FragData[1] = color * vec4(0.5, 0.5, 0.5, 1.0);

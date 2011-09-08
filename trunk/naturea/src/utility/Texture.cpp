@@ -38,6 +38,21 @@ Texture::~Texture(void)
 	printf("texture: %s deleted.\n", inShaderName.c_str());
 }
 
+void Texture::setParameterI(GLenum paramName, GLint paramValue )
+{
+	glBindTexture(GL_TEXTURE_2D, id);
+		glTexParameteri(GL_TEXTURE_2D, paramName, paramValue);
+	glBindTexture(GL_TEXTURE_2D, 0);
+}
+void Texture::setParameterF(GLenum paramName, GLfloat paramValue )
+{
+	glBindTexture(GL_TEXTURE_2D, id);
+		glTexParameterf(GL_TEXTURE_2D, paramName, paramValue);
+	glBindTexture(GL_TEXTURE_2D, 0);
+
+}
+
+
 void Texture::show(GLint x,GLint y, GLsizei width, GLsizei height){
 	glMatrixMode(GL_PROJECTION);
 	glPushMatrix();

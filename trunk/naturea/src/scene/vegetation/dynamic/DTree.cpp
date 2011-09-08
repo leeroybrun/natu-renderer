@@ -5,6 +5,8 @@ DTree::DTree(TextureManager *texManager, ShaderManager *shManager):Vegetation(te
 {
 	branchShader			 = NULL;
 	leafShader				 = NULL;
+	bLODShader				 = NULL;
+	lLODShader				 = NULL;
 							 
 	dataTexture				 = NULL;
 	lColorTexture			 = NULL;
@@ -45,6 +47,8 @@ DTree::~DTree(void)
 {
 	SAFE_DELETE_PTR(	branchShader			);
 	SAFE_DELETE_PTR(	leafShader				);
+	SAFE_DELETE_PTR(	bLODShader				);
+	SAFE_DELETE_PTR(	lLODShader				);
 
 	SAFE_DELETE_PTR(	dataTexture				);
 	SAFE_DELETE_PTR(	lColorTexture			);
@@ -808,6 +812,10 @@ void DTree::draw(){
 
 void DTree::drawForLOD(){
 	// TODO: optimize rendering for LOD slice generation...
+
+
+
+
 	draw();
 }
 
@@ -853,6 +861,12 @@ void DTree::init(){
 	branchShader->loadShader(DYN_TREE::SHADER_BRANCH_V,DYN_TREE::SHADER_BRANCH_F); 
 	leafShader = new Shader("leaf");
 	leafShader->loadShader(DYN_TREE::SHADER_LEAF_V,DYN_TREE::SHADER_LEAF_F); 
+	// LOD shaders
+	bLODShader = new Shader("LODbranch");
+	bLODShader->loadShader(DYN_TREE::SHADER_BRANCH_LOD_V,DYN_TREE::SHADER_BRANCH_LOD_F); 
+	lLODShader = new Shader("LODleaf");
+	lLODShader->loadShader(DYN_TREE::SHADER_LEAF_LOD_V,DYN_TREE::SHADER_LEAF_LOD_F); 
+
 
 	// connect textures with shader
 	branchShader->linkTexture(branchNoiseTexture);
@@ -992,16 +1006,17 @@ void DTree::createSlices(v3 & direction, int num, int resolution_x, int resoluti
 			slice->colormap = new Texture(GL_TEXTURE_2D, GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE, NULL, resolution_x, resolution_y, "colorMap");
 			slice->colormap->textureUnit = GL_TEXTURE0;
 			slice->colormap->textureUnitNumber = 0;
+			
 
 			slice->depthmap = new Texture(GL_TEXTURE_2D, GL_DEPTH_COMPONENT32F, GL_DEPTH_COMPONENT, GL_FLOAT, NULL, resolution_x, resolution_y, "depthMap");
 			slice->depthmap->textureUnit = GL_TEXTURE2;
 			slice->depthmap->textureUnitNumber = 2;
 
 
-			slice->normalmap = new Texture(GL_TEXTURE_2D, GL_RGB, GL_RGB, GL_UNSIGNED_BYTE, NULL, resolution_x, resolution_y, "normalMap");
+			slice->normalmap = new Texture(GL_TEXTURE_2D, GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE, NULL, resolution_x, resolution_y, "normalMap");
 			slice->normalmap->textureUnit = GL_TEXTURE3;
 			slice->normalmap->textureUnitNumber = 3;
-
+			
 			slice->branchmap = new Texture(GL_TEXTURE_2D, GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE, NULL, resolution_x, resolution_y, "branchMap");
 			slice->branchmap->textureUnit = GL_TEXTURE4;
 			slice->branchmap->textureUnitNumber = 4;
@@ -1063,6 +1078,9 @@ void DTree::createSlices(v3 & direction, int num, int resolution_x, int resoluti
 
 		// generate mipmaps where needed
 		//slice->colormap->generateMipmaps();
+		//slice->colormap->setParameterI(GL_TEXTURE_MIN_LOD, 0);
+		//slice->colormap->setParameterI(GL_TEXTURE_BASE_LEVEL, 0);
+		
 		//slice->normalmap->generateMipmaps();
 		//slice->depthmap->generateMipmaps();
 
