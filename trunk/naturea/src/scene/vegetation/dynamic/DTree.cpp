@@ -812,11 +812,54 @@ void DTree::draw(){
 
 void DTree::drawForLOD(){
 	// TODO: optimize rendering for LOD slice generation...
+	glDisable(GL_CULL_FACE);
+	glPushMatrix();
+	glScalef( 1.f , -1.f, 1.f);
+	
+	// draw bbox
+	//bbox->draw();
+
+
+	// bind textures
+	dataTexture->bind(GL_TEXTURE1);
+	branchNoiseTexture->bind(GL_TEXTURE2);
+	bColorTexture->bind(GL_TEXTURE4);
+
+	// draw branches
+	branchesEBO->draw(bLODShader);
+
+	bColorTexture->unbind();
+
+	// bind textures
+	leafNoiseTexture->bind(GL_TEXTURE3);
+	frontDecalMap		->bind(GL_TEXTURE4);
+	frontNormalMap		->bind(GL_TEXTURE5);
+	frontTranslucencyMap->bind(GL_TEXTURE6);
+	frontHalfLife2Map	->bind(GL_TEXTURE7);
+	backDecalMap		->bind(GL_TEXTURE8);
+	backNormalMap		->bind(GL_TEXTURE9);
+	backTranslucencyMap	->bind(GL_TEXTURE10);
+	backHalfLife2Map	->bind(GL_TEXTURE11);
 
 
 
+	// draw leaves
+	leavesVBO->draw(lLODShader, GL_QUADS, 0);
 
-	draw();
+
+	leafNoiseTexture->unbind();
+	frontDecalMap		->unbind();
+	frontNormalMap		->unbind();
+	frontTranslucencyMap->unbind();
+	frontHalfLife2Map	->unbind();
+	backDecalMap		->unbind();
+	backNormalMap		->unbind();
+	backTranslucencyMap	->unbind();
+	backHalfLife2Map	->unbind();
+	branchNoiseTexture->unbind();
+	dataTexture->unbind();
+	glPopMatrix();
+	glEnable(GL_CULL_FACE);
 }
 
 void DTree::init(){
@@ -866,11 +909,14 @@ void DTree::init(){
 	bLODShader->loadShader(DYN_TREE::SHADER_BRANCH_LOD_V,DYN_TREE::SHADER_BRANCH_LOD_F); 
 	lLODShader = new Shader("LODleaf");
 	lLODShader->loadShader(DYN_TREE::SHADER_LEAF_LOD_V,DYN_TREE::SHADER_LEAF_LOD_F); 
-
+	 
 
 	// connect textures with shader
 	branchShader->linkTexture(branchNoiseTexture);
 	branchShader->linkTexture(bColorTexture);
+	bLODShader->linkTexture(branchNoiseTexture);
+	bLODShader->linkTexture(bColorTexture);
+
 	leafShader->linkTexture(branchNoiseTexture);
 	leafShader->linkTexture(leafNoiseTexture);
 	//leafShader->linkTexture(lColorTexture);
@@ -883,6 +929,18 @@ void DTree::init(){
 	leafShader->linkTexture(backTranslucencyMap	);
 	leafShader->linkTexture(backHalfLife2Map	);
 
+	lLODShader->linkTexture(branchNoiseTexture	);
+	lLODShader->linkTexture(leafNoiseTexture	);
+	//lLODShader->linkTexture(lColorTexture);
+	lLODShader->linkTexture(frontDecalMap		);
+	lLODShader->linkTexture(frontNormalMap		);
+	lLODShader->linkTexture(frontTranslucencyMap);
+	lLODShader->linkTexture(frontHalfLife2Map	);
+	lLODShader->linkTexture(backDecalMap		);
+	lLODShader->linkTexture(backNormalMap		);
+	lLODShader->linkTexture(backTranslucencyMap	);
+	lLODShader->linkTexture(backHalfLife2Map	);
+
 
 
 	// register uniforms
@@ -894,6 +952,14 @@ void DTree::init(){
 	branchShader->registerUniform("wood_amplitudes",		UniformType::F4,	& g_tree_wood_amplitudes.data);
 	branchShader->registerUniform("wood_frequencies",		UniformType::F4,	& g_tree_wood_frequencies.data);
 	branchShader->registerUniform("window_size",			UniformType::F2,	& g_window_sizes.data);		
+
+	bLODShader->registerUniform("branch_count",				UniformType::F1,	& this->branchCountF);
+	bLODShader->registerUniform("time",						UniformType::F1,	& g_float_time);
+	bLODShader->registerUniform("wind_direction",			UniformType::F3,	& g_tree_wind_direction.data);
+	bLODShader->registerUniform("wind_strength",			UniformType::F1,	& g_tree_wind_strength);
+	bLODShader->registerUniform("wood_amplitudes",			UniformType::F4,	& g_tree_wood_amplitudes.data);
+	bLODShader->registerUniform("wood_frequencies",			UniformType::F4,	& g_tree_wood_frequencies.data);
+	bLODShader->registerUniform("window_size",				UniformType::F2,	& g_window_sizes.data);		
 
 	//branchShader->registerUniform("leaf_amplitude", UniformType::F1, & g_tree_wood_amplitudes.data);
 	//branchShader->registerUniform("leaf_frequency", UniformType::F1, & g_tree_wood_amplitudes.data);
@@ -915,23 +981,46 @@ void DTree::init(){
 	leafShader->registerUniform("LightDiffuseColor",		UniformType::F3,	& g_leaves_LightDiffuseColor.data);
 	leafShader->registerUniform("window_size",				UniformType::F2,	& g_window_sizes.data);		
 
+	lLODShader->registerUniform("branch_count",				UniformType::F1,	& this->branchCountF);
+	lLODShader->registerUniform("time",						UniformType::F1,	& g_float_time);
+	lLODShader->registerUniform("wind_direction",			UniformType::F3,	& g_tree_wind_direction.data);
+	lLODShader->registerUniform("wind_strength",			UniformType::F1,	& g_tree_wind_strength);
+	lLODShader->registerUniform("wood_amplitudes",			UniformType::F4,	& g_tree_wood_amplitudes.data);
+	lLODShader->registerUniform("wood_frequencies",			UniformType::F4,	& g_tree_wood_frequencies.data);
+	lLODShader->registerUniform("leaf_amplitude",			UniformType::F1,	& g_tree_leaf_amplitude);
+	lLODShader->registerUniform("leaf_frequency",			UniformType::F1,	& g_tree_leaf_frequency);
+	lLODShader->registerUniform("MultiplyAmbient",			UniformType::F1,	& g_leaves_MultiplyAmbient);
+	lLODShader->registerUniform("MultiplyDiffuse",			UniformType::F1,	& g_leaves_MultiplyDiffuse);
+	lLODShader->registerUniform("MultiplySpecular",			UniformType::F1,	& g_leaves_MultiplySpecular);
+	lLODShader->registerUniform("MultiplyTranslucency",		UniformType::F1,	& g_leaves_MultiplyTranslucency);
+	lLODShader->registerUniform("ReduceTranslucencyInShadow", UniformType::F1,	& g_leaves_ReduceTranslucencyInShadow);
+	lLODShader->registerUniform("shadow_intensity",			UniformType::F1,	& g_leaves_shadow_intensity);
+	lLODShader->registerUniform("LightDiffuseColor",		UniformType::F3,	& g_leaves_LightDiffuseColor.data);
+	lLODShader->registerUniform("window_size",				UniformType::F2,	& g_window_sizes.data);		
+
 
 	// create branch data texture
 	createDataTexture();
 	// link data texture
 	//dataTexture->save("dataTexture.png");
 	branchShader->linkTexture(dataTexture);
-	leafShader->linkTexture(dataTexture);
+	leafShader	->linkTexture(dataTexture);
+	bLODShader	->linkTexture(dataTexture);
+	lLODShader	->linkTexture(dataTexture);
+
 
 	// create VBO & EBO with geometry...
 	createVBOs();
 
 	// link vbos & shaders
-	branchesVBO->compileWithShader(branchShader);
-	leavesVBO->compileWithShader(leafShader);
+	branchesVBO	->compileWithShader(branchShader);
+	leavesVBO	->compileWithShader(leafShader);
 
-	printf("branch count = %i\n", branchCount);
-	printf("DYN_TREE done (branch VBOid:%i, branchEBOid:%i, leafVBOid:%i)\n", branchesVBO->getID(), branchesEBO->getID(), leavesVBO->getID());
+	branchesVBO	->compileWithShader(bLODShader);
+	leavesVBO	->compileWithShader(lLODShader);
+
+	//printf("branch count = %i\n", branchCount);
+	//printf("DYN_TREE done (branch VBOid:%i, branchEBOid:%i, leafVBOid:%i)\n", branchesVBO->getID(), branchesEBO->getID(), leavesVBO->getID());
 }
 
 void DTree::update(double time){
@@ -969,9 +1058,10 @@ void DTree::createSlices(v3 & direction, int num, int resolution_x, int resoluti
 	depthmap->textureUnit = GL_TEXTURE7;
 	depthmap->textureUnitNumber = 7;
 	// dummy color map
-	Texture * colormap = new Texture(GL_TEXTURE_2D, GL_RGB, GL_RGB, GL_UNSIGNED_BYTE, NULL, resolution_x, resolution_y, "dummy_colorMap");
-	colormap->textureUnit = GL_TEXTURE8;
-	colormap->textureUnitNumber = 8;
+
+	//Texture * colormap = new Texture(GL_TEXTURE_2D, GL_RGB, GL_RGB, GL_UNSIGNED_BYTE, NULL, resolution_x, resolution_y, "dummy_colorMap");
+	//colormap->textureUnit = GL_TEXTURE8;
+	//colormap->textureUnitNumber = 8;
 
 // get "slice thickness"
 	BBox * box = getBBox();
@@ -1006,6 +1096,8 @@ void DTree::createSlices(v3 & direction, int num, int resolution_x, int resoluti
 			slice->colormap = new Texture(GL_TEXTURE_2D, GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE, NULL, resolution_x, resolution_y, "colorMap");
 			slice->colormap->textureUnit = GL_TEXTURE0;
 			slice->colormap->textureUnitNumber = 0;
+			slice->colormap->setParameterI(GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+			slice->colormap->setParameterI(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 			
 
 			slice->depthmap = new Texture(GL_TEXTURE_2D, GL_DEPTH_COMPONENT32F, GL_DEPTH_COMPONENT, GL_FLOAT, NULL, resolution_x, resolution_y, "depthMap");
@@ -1024,7 +1116,7 @@ void DTree::createSlices(v3 & direction, int num, int resolution_x, int resoluti
 		// attach textures to FBO attachments
 
 			glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_2D, slice->colormap->id  , 0);
-			glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT1_EXT, GL_TEXTURE_2D, colormap->id , 0);
+			//glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT1_EXT, GL_TEXTURE_2D, colormap->id , 0);
 			glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT2_EXT, GL_TEXTURE_2D, slice->normalmap->id , 0);
 			glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT3_EXT, GL_TEXTURE_2D, slice->branchmap->id , 0);
 			glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT , GL_TEXTURE_2D, slice->depthmap->id  , 0);
@@ -1033,8 +1125,10 @@ void DTree::createSlices(v3 & direction, int num, int resolution_x, int resoluti
 
 			glClearColor(0.f, 0.f, 0.f, 0.f);
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-			GLenum buffers[4] = {GL_COLOR_ATTACHMENT0_EXT, GL_COLOR_ATTACHMENT1_EXT, GL_COLOR_ATTACHMENT2_EXT, GL_COLOR_ATTACHMENT3_EXT};
-			glDrawBuffersARB(4, buffers);
+			//GLenum buffers[4] = {GL_COLOR_ATTACHMENT0_EXT, GL_COLOR_ATTACHMENT1_EXT, GL_COLOR_ATTACHMENT2_EXT, GL_COLOR_ATTACHMENT3_EXT};
+			//glDrawBuffersARB(4, buffers);
+			GLenum buffers[3] = {GL_COLOR_ATTACHMENT0_EXT, GL_COLOR_ATTACHMENT2_EXT, GL_COLOR_ATTACHMENT3_EXT};
+			glDrawBuffersARB(3, buffers);
 			assert(glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT)==GL_FRAMEBUFFER_COMPLETE_EXT);
 			assert( glGetError() == GL_NO_ERROR );
 			printf("TREE_SLICE %i framebuffer initialized successfully\n", i);
@@ -1077,31 +1171,33 @@ void DTree::createSlices(v3 & direction, int num, int resolution_x, int resoluti
 	
 
 		// generate mipmaps where needed
-		//slice->colormap->generateMipmaps();
-		//slice->colormap->setParameterI(GL_TEXTURE_MIN_LOD, 0);
-		//slice->colormap->setParameterI(GL_TEXTURE_BASE_LEVEL, 0);
-		
-		//slice->normalmap->generateMipmaps();
-		//slice->depthmap->generateMipmaps();
+			//slice->colormap->generateMipmaps();
+			//slice->colormap->setParameterI(GL_TEXTURE_MIN_LOD, 0);
+			//slice->colormap->setParameterI(GL_TEXTURE_BASE_LEVEL, 0);
+			
+			//slice->normalmap->generateMipmaps();
+			//slice->depthmap->generateMipmaps();
 
 
 		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+
 		// prepare data texture from branch texture
 		glDeleteFramebuffersEXT(1, &fbo);
 		
 		glGenFramebuffersEXT(1, &fbo);
+		glDisable(GL_DEPTH_TEST);
 			glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fbo);
 			slice->datamap = new Texture(GL_TEXTURE_2D, GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE, NULL, resolution_x, resolution_y, "dataMap");
 			slice->datamap->textureUnit = GL_TEXTURE5;
 			slice->datamap->textureUnitNumber = 5;
 			glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_2D, slice->datamap->id , 0);
-			glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT , GL_TEXTURE_2D, depthmap->id , 0);
+			//glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT , GL_TEXTURE_2D, depthmap->id , 0);
 			assert(glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT)==GL_FRAMEBUFFER_COMPLETE_EXT);
 			assert( glGetError() == GL_NO_ERROR );
 			printf("TREE_SLICE %i data framebuffer initialized successfully\n", i);
 
 			glClearColor(1.f, 0.f, 0.f, 1.f);
-			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+			glClear(GL_COLOR_BUFFER_BIT);
 			//glDrawBuffer(GL_COLOR_ATTACHMENT0_EXT);
 			GLenum buffers2[1] = {GL_COLOR_ATTACHMENT0_EXT};
 			glDrawBuffersARB(1, buffers2);
@@ -1118,9 +1214,12 @@ void DTree::createSlices(v3 & direction, int num, int resolution_x, int resoluti
 			glFinish();
 		
 		
-
+			glEnable(GL_DEPTH_TEST);
 		// return to normal screen rendering	
 		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+		// branchmap not useful anymore, delete it
+		SAFE_DELETE_PTR(slice->branchmap);
+		
 		glDeleteFramebuffersEXT(1, &fbo);
 		//*/
 		glDrawBuffer(GL_BACK);

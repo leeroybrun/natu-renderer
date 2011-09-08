@@ -317,20 +317,9 @@ void main()
 	vec4 color;
 
 	colorize(color, normal_vs, tangent_vs, bitangent);
-	//color = 0.5*texture2D(frontDecalMap, gl_TexCoord[0].yx) + 0.2*texture2D(frontTranslucencyMap, gl_TexCoord[0].yx + ts_lightDir.xy );
-	//color.a = 1.0;
-	//if (texture2D(frontDecalMap, gl_TexCoord[0].yx).a<0.9) discard;
+
 	gl_FragData[0] = color;
-	gl_FragData[1] = color * vec4(0.5, 0.5, 0.5, 1.0);
-	gl_FragData[2] = vec4(normal_vs, 0.0);
-
-	// calc leaf distance from its branch origin... 
-	gl_FragData[3] = vec4(b0_origin*0.5+vec2(0.5),b1_origin*0.5+vec2(0.5));
-	//gl_FragColor = gl_Color;
-
-/*
-	b0_origin;
-	b1_origin;
-	b2_origin;
-*/
+	gl_FragData[1] = vec4(normal_vs, 0.0);
+	gl_FragData[2] = vec4(b0_origin*0.5+vec2(0.5),b1_origin*0.5+vec2(0.5));
+	
 }
