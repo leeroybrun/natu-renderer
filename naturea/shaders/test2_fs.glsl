@@ -101,7 +101,7 @@ void main()
 		} else {
 			color = texture2D(colorMap, texCoord);
 		}
-		if (color.a<0.5){discard;}
+		if (color.a<0.2){discard;}
 		gl_FragData[0] = color;
 		gl_FragData[1] = color * vec4(0.5, 0.5, 0.5, 1.0);
 

@@ -49,7 +49,8 @@ void TestModel::processTree(DTree * tree)
 {
 	// create slices from tree
 	v3 dir = v3(-1.0, 0.0, 0.0);
-	win_resolution = v2 (512, 512);
+	float res = 256;
+	win_resolution = v2 (res, res);
 	tree->createSlices( dir, 5, win_resolution.x,  win_resolution.y, false);
 
 	slices = tree->slices;	

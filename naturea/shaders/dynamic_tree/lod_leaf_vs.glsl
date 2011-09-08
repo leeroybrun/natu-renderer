@@ -71,7 +71,7 @@ void animateBranchVertex(inout vec3 position)
     //vec3 animated_vertex = position;
 	
     float ttime = time;
-    float mv_time = time* 0.01;
+    float mv_time = time * 0.01;
    
     //function for alpha = 0.1
 	//vec4 xvals_f = 0.3326*pow4(xvals,2.0) + 0.398924*pow4(xvals,4.0);
@@ -105,20 +105,16 @@ void animateBranchVertex(inout vec3 position)
     float length1 = sv1_l.w;
     float length2 = sv2_l.w;
     float length3 = sv3_l.w;
-	b_lengths.x = length0;
-	b_lengths.y = length1;
-	b_lengths.z	= length2;
-
     // sv vectors
 	vec3 sv0 = sv0_l.xyz;
     vec3 sv1 = sv1_l.xyz;
     vec3 sv2 = sv2_l.xyz;
     vec3 sv3 = sv3_l.xyz;
     // amplitudes
-	vec2 amp0 = wood_amplitudes.x * ( texture2D(branch_noise_tex, mv0 * mv_time * wood_frequencies.x).rg  * 2.0 - ONE2);
-    vec2 amp1 = wood_amplitudes.y * ( texture2D(branch_noise_tex, mv1 * mv_time * wood_frequencies.y).rg  * 2.0 - ONE2);
-    vec2 amp2 = wood_amplitudes.z * ( texture2D(branch_noise_tex, mv2 * mv_time * wood_frequencies.z).rg  * 2.0 - ONE2);
-    vec2 amp3 = wood_amplitudes.w * ( texture2D(branch_noise_tex, mv3 * mv_time * wood_frequencies.w).rg  * 2.0 - ONE2);
+	//vec2 amp0 = wood_amplitudes.x * ( texture2D(branch_noise_tex, mv0 * mv_time * wood_frequencies.x).rg  * 2.0 - ONE2);
+    //vec2 amp1 = wood_amplitudes.y * ( texture2D(branch_noise_tex, mv1 * mv_time * wood_frequencies.y).rg  * 2.0 - ONE2);
+    //vec2 amp2 = wood_amplitudes.z * ( texture2D(branch_noise_tex, mv2 * mv_time * wood_frequencies.z).rg  * 2.0 - ONE2);
+    //vec2 amp3 = wood_amplitudes.w * ( texture2D(branch_noise_tex, mv3 * mv_time * wood_frequencies.w).rg  * 2.0 - ONE2);
     // apply animation to the vertex.
 	//--------------------------------------------------------------------------------------
 	
@@ -126,135 +122,80 @@ void animateBranchVertex(inout vec3 position)
 	vec3 center;
 	vec3 centerB = vec3(0.0, 0.0, 0.0);
 	b0_origin = OS2ND(vec4(centerB,1.0)).xy;
+	b1_origin = vec2(0.0);
 	vec3 corr_r, corr_s;
 	vec2 fu, fu_deriv, s,d;
 	bs = sv0;
 	br = rv0;
+	bt = cross(br, bs);
 	if (x_vals.x>0.0){
 		level = 0.0;
 		// level0
 		// find t vector
 		tv	= cross(rv0,sv0);
-		b_lengths.x = length(b0_origin - OS2ND(vec4(centerB+ tv*b_lengths.x, 1.0)).xy);
+	
 		// calc wind prebend offset
-		amp0.x += dot(rv0, wind_direction) * wind_strength;
-		amp0.y += dot(sv0, wind_direction) * wind_strength;
+		//amp0.x += dot(rv0, wind_direction) * wind_strength;
+		//amp0.y += dot(sv0, wind_direction) * wind_strength;
 
 		// find branch origin
-		center = centerB + x_vals.x * length0 * tv;
+		centerB = centerB + x_vals.x * length0 * tv;
 		// bend function
-		fu	= xvals_f.x	* amp0;
-		fu_deriv = xvals_deriv.x / length0 * amp0 ;
-		s = sqrt(ONE2+fu_deriv*fu_deriv);
-		d = fu / fu_deriv * (s - ONE2);
-		corr_s = (tv + sv0*fu_deriv.x)/s.x * d.x;
-		corr_r = (tv + rv0*fu_deriv.y)/s.y * d.y;
 		//recalculate coord system of actual branch 
-		bt  = normalize(tv + rv0*fu_deriv.y + sv0*fu_deriv.x);
-		br	= normalize(rv0 - tv*fu_deriv.y);
-		bs	= normalize(sv0 - tv*fu_deriv.x);
-		// bend the center point
-		centerB =  center + fu.x * sv0 + fu.y * rv0 - (corr_s+corr_r);
-		// save centerB as b1_origin
-		b1_origin = OS2ND(vec4(centerB,1.0)).xy;
+		bt  = tv ; //normalize(tv);
+		br	= rv0; //normalize(rv0);
+		bs	= sv0; //normalize(sv0);
+		
+		
 	}
     if (x_vals.y>0.0){
-        // level1
-		level = 1.0;
+		b1_origin = OS2ND(vec4(centerB,1.0)).xy;
+       
 	    // bend branch system according to the parent branch bending
 		sv1 = sv1.x * bs + sv1.y * br + sv1.z * bt;
         rv1 = rv1.x * bs + rv1.y * br + rv1.z * bt;
         //...
 		tv	= cross(rv1,sv1);
-		b_lengths.y = length(b1_origin - OS2ND(vec4(centerB+ tv*b_lengths.y, 1.0)).xy);
-		// calc wind prebend offset
-		amp1.x += dot(rv1, wind_direction) * wind_strength;
-		amp1.y += dot(sv1, wind_direction) * wind_strength;
 
-        center		= centerB + x_vals.y * length1 * tv;
-        fu			= xvals_f.y	 * amp1;
-        fu_deriv	= xvals_deriv.y / length1 * amp1 ;
-        s = sqrt(ONE2+fu_deriv*fu_deriv);
-        d = fu / fu_deriv * (s - ONE2);
-        corr_s = (tv + sv1*fu_deriv.x)/s.x * d.x;
-        corr_r = (tv + rv1*fu_deriv.y)/s.y * d.y;
-        bt  = normalize(tv + rv1*fu_deriv.y + sv1*fu_deriv.x);
-        br	= normalize(rv1 - tv*fu_deriv.y);
-        bs	= normalize(sv1 - tv*fu_deriv.x);
+        centerB		= centerB + x_vals.y * length1 * tv;
+       
+        bt  = tv ; //normalize(tv);
+        br	= rv1; //normalize(rv1);
+        bs	= sv1; //normalize(sv1);
 
-		oVec = vec3(abs(dot(bt,br)), abs(dot(br,bs)), abs(dot(bs,bt)));
 		
-        centerB =  center + fu.x * sv1 + fu.y * rv1 - (corr_s+corr_r);
-		b2_origin = OS2ND(vec4(centerB,1.0)).xy;
     }
 
 	if (x_vals.z>0.0){
-        // level2
-		level = 2.0;
+		b2_origin = OS2ND(vec4(centerB,1.0)).xy;
 	    // bend branch system according to the parent branch bending
 		sv2 = sv2.x * bs + sv2.y * br + sv2.z * bt;
         rv2 = rv2.x * bs + rv2.y * br + rv2.z * bt;
         //...
 		tv	= cross(rv2,sv2);
-		b_lengths.z = length(b2_origin - OS2ND(vec4(centerB+ tv*b_lengths.z, 1.0)).xy);
 		// calc wind prebend offset
-		amp2.x += dot(rv2, wind_direction) * wind_strength;
-		amp2.y += dot(sv2, wind_direction) * wind_strength;
+		
 
-        center		= centerB + x_vals.z * length2 * tv;
-        fu			= xvals_f.z * amp2;
-        fu_deriv	= xvals_deriv.z / length2 * amp2 ;
-        s = sqrt(ONE2+fu_deriv*fu_deriv);
-        d = fu / fu_deriv * (s - ONE2);
-        corr_s = (tv + sv2*fu_deriv.x)/s.x * d.x;
-        corr_r = (tv + rv2*fu_deriv.y)/s.y * d.y;
-        bt  = normalize(tv + rv2*fu_deriv.y + sv2*fu_deriv.x);
-        br	= normalize(rv2 - tv*fu_deriv.y);
-        bs	= normalize(sv2 - tv*fu_deriv.x);
-        centerB =  center + fu.x * sv2 + fu.y * rv2 - (corr_s+corr_r);
+        centerB		= centerB + x_vals.z * length2 * tv;
+        bt  = tv ; //normalize(tv );
+        br	= rv2; //normalize(rv2);
+        bs	= sv2; //normalize(sv2);
     }
 
 	if (x_vals.w>0.0){
-        // level3
-		level = 3.0;
 		sv3 = sv3.x * bs + sv3.y * br + sv3.z * bt;
         rv3 = rv3.x * bs + rv3.y * br + rv3.z * bt;
         tv	= cross(rv3,sv3);
 		// calc wind prebend offset
-		amp3.x += dot(rv3, wind_direction) * wind_strength;
-		amp3.y += dot(sv3, wind_direction) * wind_strength;
-
-        center		= centerB + x_vals.w * length3 * tv;
-        fu			= xvals_f.w	 * amp3;
-        fu_deriv	= xvals_deriv.w/ length3 * amp3 ;
-        s = sqrt(ONE2+fu_deriv*fu_deriv);
-        d = fu / fu_deriv * (s - ONE2);
-        corr_s = (tv + sv3*fu_deriv.x)/s.x * d.x;
-        corr_r = (tv + rv3*fu_deriv.y)/s.y * d.y;
-        bt  = normalize(tv + rv3*fu_deriv.y + sv3*fu_deriv.x);
-        br	= normalize(rv3 - tv*fu_deriv.y);
-        bs	= normalize(sv3 - tv*fu_deriv.x);
-        centerB =  center + fu.x * sv3 + fu.y * rv3 - (corr_s+corr_r);
+		centerB		= centerB + x_vals.w * length3 * tv;
+        bt  = tv ; //normalize(tv );
+        br	= rv3; //normalize(rv3);
+        bs	= sv3; //normalize(sv3);
     }
 	
-	
-
-
-
-
-
-	normal_vs	= normalize(tangent);
-	tangent_vs	= normalize(normal);
-	tangent_vs	 = tangent_vs.x * bt + tangent_vs.y * bs + tangent_vs.z * br;
-	normal_vs	 = normal_vs.x  * bt + normal_vs.y  * bs + normal_vs.z  * br;
-	//tangent_vs = normalize(tangent_vs);
-	//normal_vs = normalize(normal_vs);
-	binormal = cross(tangent_vs, normal_vs);
-	tangent_vs = cross(normal_vs, binormal);
-	
-	
-	
-	position = centerB;
+	position = centerB;// + position.x*bs + position.y*br;
+	tangent_vs	 = tangent.x * bt + tangent.y * bs + tangent.z * br;
+	normal_vs	 = normal.x  * bt + normal.y  * bs + normal.z  * br;	
 }
 
 
@@ -400,7 +341,7 @@ void main()
 	animateBranchVertex(leafOrigin);
 	
 	
-	animateLeafVertex(leafOrigin, vertex, normal_vs, tangent_vs);
+	//animateLeafVertex(leafOrigin, vertex, normal_vs, tangent_vs);
 	
 	
 	normal_vs = -normal_vs;

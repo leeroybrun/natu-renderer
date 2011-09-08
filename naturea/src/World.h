@@ -15,6 +15,8 @@
 #include "scene\Atmosphere\SkyBox.h"
 #include "scene\Atmosphere\Light.h"
 #include "scene\Atmosphere\GodRays.h"
+#include "scene\Water\WaterSurface.h"
+
 
 #include "scene\Vegetation\static\Grass.h"
 #include "scene\Vegetation\static\Tree1.h"
@@ -66,6 +68,8 @@ public:
 	Camera				*p_activeCamera;
 	Light				*p_activeLight;
 	GodRays				*p_godRays;
+	WaterSurface		*p_waterSurface;
+
 
 	Grass				*p_grass_prototype;
 	Vegetation			*p_grass_growth;
