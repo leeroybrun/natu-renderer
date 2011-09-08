@@ -18,6 +18,9 @@ public:
 	void save(string filename);
 	unsigned char *  snapshot();
 
+	void setParameterI(GLenum paramName, GLint paramValue );
+	void setParameterF(GLenum paramName, GLfloat paramValue );
+
 	void bind(GLenum texUnit);
 	void unbind();
 	void activate();

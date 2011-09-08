@@ -228,10 +228,15 @@ static GLfloat material_spe[4] = {.5f, .5f, .5f, 1.0f};
 #define M_PI 3.14159265f
 namespace DYN_TREE
 {
-	const static char * SHADER_BRANCH_V			= "shaders/dynamic_tree/branch_vs2.glsl";
+	const static char * SHADER_BRANCH_V			= "shaders/dynamic_tree/branch_vs.glsl";
 	const static char * SHADER_BRANCH_F			= "shaders/dynamic_tree/branch_fs.glsl";
 	const static char * SHADER_LEAF_V			= "shaders/dynamic_tree/leaf_vs.glsl";
 	const static char * SHADER_LEAF_F			= "shaders/dynamic_tree/leaf_fs.glsl";
+	// LOD
+	const static char * SHADER_BRANCH_LOD_V			= "shaders/dynamic_tree/lod_branch_vs.glsl";
+	const static char * SHADER_BRANCH_LOD_F			= "shaders/dynamic_tree/lod_branch_fs.glsl";
+	const static char * SHADER_LEAF_LOD_V			= "shaders/dynamic_tree/lod_leaf_vs.glsl";
+	const static char * SHADER_LEAF_LOD_F			= "shaders/dynamic_tree/lod_leaf_fs.glsl";
 
 	const static char * SHADER_PREPROCESS_V		= "shaders/dynamic_tree/preprocess_vs.glsl";
 	const static char * SHADER_PREPROCESS_F		= "shaders/dynamic_tree/preprocess_fs.glsl";

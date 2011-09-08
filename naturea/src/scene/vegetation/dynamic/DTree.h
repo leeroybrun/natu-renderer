@@ -86,6 +86,10 @@ private:
 	Shader *			branchShader;
 	Shader *			leafShader;
 
+	Shader*				bLODShader;
+	Shader*				lLODShader;
+
+
 	Texture*			dataTexture;
 	Texture*			lColorTexture;
 	Texture*			frontDecalMap;
