@@ -58,6 +58,35 @@ static v4 glCoordToScreenSpace(const v4 &v){
    rhw);
 }
 
+static void l3dBillboardCheatCylindricalBegin() {
+	
+	float modelview[16];
+	int i,j;
+
+	// save the current modelview matrix
+	glPushMatrix();
+
+	// get the current modelview matrix
+	glGetFloatv(GL_MODELVIEW_MATRIX , modelview);
+ 
+	// Note that a row in the C convention is a column 
+	// in OpenGL convention (see the red book, pg.106 in version 1.2)
+	// right vector is [1,0,0]  (1st column)
+	// lookAt vector is [0,0,1] (3d column)
+	// leave the up vector unchanged (2nd column)
+	// notice the increment in i in the first cycle (i+=2)
+	for( i=0; i<3; i+=2 ) 
+		for( j=0; j<3; j++ ) {
+			if ( i==j )
+				modelview[i*4+j] = 1.0;
+			else
+				modelview[i*4+j] = 0.0;
+		}
+
+	// set the modelview matrix
+	glLoadMatrixf(modelview);
+}
+
 static v4 glCoordToScreenCoord(const v4 &v){
    // Get the matrices and viewport
    double modelView[16];
