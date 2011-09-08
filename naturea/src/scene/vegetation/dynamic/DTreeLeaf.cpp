@@ -52,7 +52,7 @@ void DTreeLeaf::init()
 	
 	if (normal.y<0){
 		// flip coord system
-		normal.y = -normal.y;
+		//normal.y = -normal.y;
 	}
 	
 	v3 binormal = normal.cross(tangent);

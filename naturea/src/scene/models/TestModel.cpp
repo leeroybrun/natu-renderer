@@ -70,11 +70,14 @@ void TestModel::draw()
 		glPushMatrix();	
 		
 			l3dBillboardCheatCylindricalBegin();
-			glTranslatef(-i*0.8, 10.0, 0.0);
-			glScalef(8.0,8.0,8.0);
+			
 			glRotatef(90, 0.0, 1.0, 0.0);
+			glTranslatef((i-(float(count)/2.0f)), 10.0, 0.0);
+			glScalef(9.0,9.0,9.0);
 			glRotatef(90, 0.0, 0.0, 1.0);
 			glRotatef(90, 0.0, 1.0, 0.0);
+			
+
 		
 			glDisable(GL_CULL_FACE);
 			colorTexture		->bind(GL_TEXTURE0);

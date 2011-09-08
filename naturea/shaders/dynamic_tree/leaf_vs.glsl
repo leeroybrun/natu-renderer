@@ -243,11 +243,6 @@ void animateBranchVertex(inout vec3 position)
     }
 	
 	
-
-
-
-
-
 	normal_vs	= normalize(tangent);
 	tangent_vs	= normalize(normal);
 	tangent_vs	 = tangent_vs.x * bt + tangent_vs.y * bs + tangent_vs.z * br;
