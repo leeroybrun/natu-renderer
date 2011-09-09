@@ -231,6 +231,9 @@
     <Filter Include="Shaders\dynaTree\LOD">
       <UniqueIdentifier>{f01fc0ef-1520-4605-9d56-5b46956d6a5f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="_binaries">
+      <UniqueIdentifier>{391f5d9e-345b-4731-b8cf-cffe27ca35f0}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp" />
@@ -635,6 +638,24 @@
     </None>
     <None Include="shaders\dynamic_tree\lod_leaf_vs.glsl">
       <Filter>Shaders\dynaTree\LOD</Filter>
+    </None>
+    <None Include="run.bat">
+      <Filter>_binaries</Filter>
+    </None>
+    <None Include="bin\release\AntTweakBar.dll">
+      <Filter>_binaries</Filter>
+    </None>
+    <None Include="bin\release\glew32.dll">
+      <Filter>_binaries</Filter>
+    </None>
+    <None Include="bin\release\glut32.dll">
+      <Filter>_binaries</Filter>
+    </None>
+    <None Include="bin\release\naturea.exe">
+      <Filter>_binaries</Filter>
+    </None>
+    <None Include="bin\release\naturea.pdb">
+      <Filter>_binaries</Filter>
     </None>
   </ItemGroup>
 </Project>

@@ -64,6 +64,13 @@ void TestModel::processTree(DTree * tree, v3 &dir)
 
 void TestModel::draw()
 {
+	// TODO: draw relevant slices 
+	/* Set of all slices must contain slice-views from all directions here.
+	* Only here is determined, which two slice-sets are active and which is primary...
+	* 
+	* Then draw slices one by one,
+	*	- render the secondary futhest slice first, then the furthest primary slice, etc.
+	*/
 	int i, count = slices.size();
 	Texture * colorTexture, * dataTexture, *displacementTexture, *displacement2Texture, *normalTexture;
 	displacementTexture		= displacementMap;
