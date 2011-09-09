@@ -26,11 +26,22 @@ public:
 		SAFE_DELETE_PTR(	datamap		);
 		printf("deleted slice\n");
 	}
-	Texture * colormap;
-	Texture * normalmap;
-	Texture * depthmap;
-	Texture * branchmap;
-	Texture * datamap;
+
+
+
+	Texture *	colormap;
+	Texture *	normalmap;
+	Texture *	depthmap;
+	Texture *	branchmap;
+	Texture *	datamap;
+	
+	float		getSortValue(v3 &viewer_position) {
+		return (controlPoint-viewer_position).length();
+	}
+	v3			direction;
+private:
+	v3			controlPoint;
+
 };
 
 
