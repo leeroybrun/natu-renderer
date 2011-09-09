@@ -19,7 +19,7 @@ public:
 
 	virtual void update(double time);
 
-	void		 processTree(DTree * tree);
+	void		 processTree(DTree * tree, v3 &dir);
 
 	Shader				*shader;
 	VBO					*vbo;

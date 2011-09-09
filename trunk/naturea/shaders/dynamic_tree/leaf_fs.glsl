@@ -54,7 +54,7 @@ vec3			ts_lightDir		= normalize(ts_lightDir_v);
 #define ROLLOFF			0.3
 
 #define REF_INDEX 1.3 	//1.3
-#define ROUGHNESS 0.2	//0.13
+#define ROUGHNESS 0.13	//0.13
 
 
 //--------------------------------------------------------------------------------------

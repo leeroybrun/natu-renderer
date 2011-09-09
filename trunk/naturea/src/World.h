@@ -80,6 +80,7 @@ public:
 	DTree				*p_dtree;
 
 	TestModel			*p_test_model;
+	TestModel			*p_test_model2;
 
 	TextureManager		textureManager;
 	ShaderManager		shaderManager;
@@ -98,6 +99,8 @@ private:
 	VBO	* cubeVBO;
 	EBO * cubeEBO;
 	Shader * cubeShader;
+
+	v4**				lod_positions;
 
 	void show_textures();
 	void drawForShadowmapping();

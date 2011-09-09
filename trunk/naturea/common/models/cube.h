@@ -156,10 +156,10 @@ static void drawCube()
 
 const GLfloat PLANE_VERTEX_ARRAY2[] =
 {
-	 -0.5f, 0.0f, -0.5f,
-	  0.5f, 0.0f, -0.5f,
-	  0.5f, 0.0f,  0.5f,
-	 -0.5f, 0.0f,  0.5f	
+	 -0.5f, 0.0f,  0.0f,
+	  0.5f, 0.0f,  0.0f,
+	  0.5f, 1.0f,  0.0f,
+	 -0.5f, 1.0f,  0.0f	
 };
 
 
@@ -196,10 +196,10 @@ const GLfloat PLANE_NORMAL_ARRAY[] =
 };
 const GLfloat PLANE_NORMAL_ARRAY2[] =
 {
-    0.0f,-1.0f, 0.0f,
-	0.0f,-1.0f, 0.0f,
-	0.0f,-1.0f, 0.0f,
-	0.0f,-1.0f, 0.0f
+    0.0f, 0.0f,-1.0f,
+	0.0f, 0.0f,-1.0f,
+	0.0f, 0.0f,-1.0f,
+	0.0f, 0.0f,-1.0f
 };
 const GLfloat PLANE_TANGENT_ARRAY[] =
 {

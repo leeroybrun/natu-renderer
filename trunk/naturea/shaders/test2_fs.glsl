@@ -17,10 +17,13 @@ uniform float		wave_y_offset;
 uniform float		wave_increase_factor;	
 uniform vec2		window_size;
 
-uniform vec4			wood_amplitudes;
-uniform vec4			wood_frequencies;
-uniform float			leaf_amplitude;
-uniform float			leaf_frequency;
+uniform vec4		wood_amplitudes;
+uniform vec4		wood_frequencies;
+uniform float		leaf_amplitude;
+uniform float		leaf_frequency;
+
+varying vec3		eyeDir;
+varying vec3		normalDir;
 
 void main()
 {	
@@ -34,10 +37,6 @@ void main()
 	//vec2 movVectorB = vec2(0.0, 1.0);//movementVectorB;
 	vec2 texCoordA = gl_TexCoord[0].st+t*movVectorA;
 	vec2 texCoordB = gl_TexCoord[0].st+t*movVectorB; // gl_TexCoord[0].st+t*movVectorB;
-
-
-
-	
 
 	vec2 fpos = gl_TexCoord[0].st;
 	
@@ -102,6 +101,10 @@ void main()
 			color = texture2D(colorMap, texCoord);
 		}
 		if (color.a<0.2){discard;}
+
+		//color.a =clamp(-0.5 + 2.0*abs(dot(normalize(normalDir), normalize(eyeDir))), 0.0, 1.0);
+		color.a =clamp(abs(dot(normalize(normalDir), normalize(eyeDir))), 0.0, 1.0);
+
 		gl_FragData[0] = color;
 		gl_FragData[1] = color * vec4(0.5, 0.5, 0.5, 1.0);
 
