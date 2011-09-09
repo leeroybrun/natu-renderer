@@ -14,7 +14,8 @@ uniform int		shadowMappingEnabled;
 uniform int		fastMode;
 void main()
 {
-	vec4 tex_color = texture2D(grass_tex, gl_TexCoord[0].st);
+vec2 st = gl_TexCoord[0].st + vec2(0.0, 0.01);
+	vec4 tex_color = texture2D(grass_tex, st);
 	if (tex_color.a<0.1){
 		discard;
 	}

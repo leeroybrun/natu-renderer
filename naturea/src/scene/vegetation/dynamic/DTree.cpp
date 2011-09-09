@@ -1077,9 +1077,11 @@ void DTree::createSlices(v3 & direction, int num, int resolution_x, int resoluti
 	int i;
 
 	// clear previous slices
-		for ( i = 0; i < slices.size(); i++){
+	/*
+	for ( i = 0; i < slices.size(); i++){
 			delete slices[i];
 		}
+	*/
 		slices.clear();
 		GLuint fbo = 0;
 		

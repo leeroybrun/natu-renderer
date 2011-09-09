@@ -43,12 +43,18 @@ TestModel::~TestModel(void)
 	SAFE_DELETE_PTR (backNormalMap 			);
 	SAFE_DELETE_PTR (backTranslucencyMap	);
 	SAFE_DELETE_PTR (backHalfLife2Map 		);
+	/*
+	for (int i = 0; i<slices.size(); i++ ){
+		SAFE_DELETE_PTR ( slices[i]);
+	}
+	*/
+	slices.clear();
 }
 
-void TestModel::processTree(DTree * tree)
+void TestModel::processTree(DTree * tree, v3 &dir)
 {
 	// create slices from tree
-	v3 dir = v3(-1.0, 0.0, 0.0);
+
 	float res = 256;
 	win_resolution = v2 (res, res);
 	tree->createSlices( dir, 5, win_resolution.x,  win_resolution.y, false);
@@ -69,12 +75,12 @@ void TestModel::draw()
 
 		glPushMatrix();	
 		
-			l3dBillboardCheatCylindricalBegin();
+			//l3dBillboardCheatCylindricalBegin();
 			
-			glRotatef(90, 0.0, 1.0, 0.0);
-			glTranslatef((i-(float(count)/2.0f)), 10.0, 0.0);
-			glScalef(9.0,9.0,9.0);
-			glRotatef(90, 0.0, 0.0, 1.0);
+			//glRotatef(90, 0.0, 1.0, 0.0);
+			glTranslatef((i-(float(count)/2.f) + 0.5), 0.0, 0.0);
+			glScalef(10.0,10.0,10.0);
+			//glRotatef(90, 0.0, 0.0, 1.0);
 			glRotatef(90, 0.0, 1.0, 0.0);
 			
 
@@ -194,7 +200,7 @@ void TestModel::init()
 	vbo->addVertexAttribute( dataSet );
 	// normal
 	dataSet = new VBODataSet(
-		PLANE_NORMAL_ARRAY,
+		PLANE_NORMAL_ARRAY2,
 		3*sizeof(GLfloat),
 		GL_FLOAT, 
 		ATTRIB_NAMES::NORMAL,

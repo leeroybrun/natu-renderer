@@ -15,6 +15,11 @@ World::World(void)
 	p_tree2_growth		= NULL;
 	p_dtree				= NULL;
 	p_godRays			= NULL;
+
+	p_test_model		= NULL;
+	p_test_model2		= NULL;
+
+	lod_positions		= NULL;
 }
 
 
@@ -32,6 +37,14 @@ World::~World(void)
 	SAFE_DELETE_PTR(p_tree2_prototype);
 	SAFE_DELETE_PTR(p_tree2_growth);
 	SAFE_DELETE_PTR(p_dtree);
+
+	SAFE_DELETE_PTR( p_test_model	);
+	SAFE_DELETE_PTR( p_test_model2	);
+
+	for (int i=0; i<100; i++){
+		SAFE_DELETE_PTR ( lod_positions[i] );
+	}
+	SAFE_DELETE_ARRAY_PTR( lod_positions );
 
 	SAFE_DELETE_PTR( p_godRays	);
 	textureManager.~TextureManager();
@@ -144,19 +157,11 @@ void World::draw()
 	
 	//p_testModel->draw();
 	//drawModels();
-	if (g_draw_dtree_lod){
-		glPushMatrix();
-
-			glTranslatef(0.0, 0.0, 10.0);
-
-			p_test_model->draw();
-
-		glPopMatrix();
-	}
+	
 	glEnable(GL_BLEND);
 	glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	drawWithAlpha();
-
+	
 	glDisable(GL_BLEND);
 	
 	if (g_godraysEnabled){
@@ -192,6 +197,21 @@ void World::drawWithAlpha(){
 			p_dtree->draw();
 		glPopMatrix();
 	}
+	//glDisable(GL_DEPTH_TEST);
+	if (g_draw_dtree_lod){
+		v4* f;
+		for (int c=0; c<100; c++){
+			f = lod_positions[c];
+			glPushMatrix();
+			glTranslatef(f->x, f->y, f->z);
+				glRotatef(f->w, 0.0, 1.0, 0.0);
+				p_test_model->draw();
+				glRotatef(-90, 0.0, 1.0, 0.0);
+				p_test_model2->draw();
+			glPopMatrix();
+		}
+	}
+	//glEnable(GL_DEPTH_TEST);
 }
 
 void World::drawUnderWater(){
@@ -383,9 +403,28 @@ void World::init()
 //===============================================================================
 // TEST OBJECT INIT
 //===============================================================================
+	// positions
+	lod_positions = new v4*[100];
+	float x,y,xt,yt,z,r;
+	float diff = 3.0;
+	for (int i=0; i<100; i++){
+			x = (i % 10)*7.5 + randomf(-diff, diff);
+			z = (i / 10)*7.5 + randomf(-diff, diff);
+			r = randomf(-180, 180);
+			xt = x + p_terrain->sz_x/2.0;
+			yt = z + p_terrain->sz_y/2.0;
+			y = p_terrain->getHeightAt(xt,yt);
+			lod_positions[i] = new v4(x,y,z,r);
+	}
+
+	v3 dir = v3(-1.0, 0.0, 0.0);
 	p_test_model = new TestModel();
-	p_test_model->processTree(p_dtree);
+	p_test_model->processTree(p_dtree, dir);
 	p_test_model->init();
+	dir = v3(0.0, 0.0, -1.0);
+	p_test_model2 = new TestModel();
+	p_test_model2->processTree(p_dtree, dir);
+	p_test_model2->init();
 	
 	/*
 	cubeShader = new Shader("cube");
