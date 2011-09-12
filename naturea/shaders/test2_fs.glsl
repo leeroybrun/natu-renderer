@@ -1,8 +1,8 @@
 #version 120
 
 uniform sampler2D	colorMap;
-uniform sampler2D	displacementMap;
-uniform sampler2D	displacement2Map;
+uniform sampler2D	branch_noise_tex;
+uniform sampler2D	leaf_noise_tex;
 uniform sampler2D	normalMap;
 uniform	sampler2D   dataMap;
 
@@ -45,9 +45,9 @@ void main()
 	vec2 b0 = texture2D(dataMap, gl_TexCoord[0].st).xy;
 	vec2 b1 = texture2D(dataMap, gl_TexCoord[0].st).zw;
 
-		float dist0 = min (1.0, 1.5 * length(fpos - b0)) ; // / branchProjectedLength
+		float dist0 = min (1.0, 2.0 * length(fpos - b0)) ; // / branchProjectedLength
 		////vec2 b1 = b1_origin * 0.5 + halfV2;
-		//float dist1 = min (1.0, 5.0 * length(fpos - b1)); // / branchProjectedLength
+		float dist1 = min (1.0, 5.0 * length(fpos - b1)); // / branchProjectedLength
 //
 		//b0 =b0*2.0-oneV2;
 		//b1 =b1*2.0-oneV2;
@@ -61,11 +61,11 @@ void main()
 		vec2 rotatedDifVec;
 		vec2 newPos = fpos;
 		float d = length(b1-vec2(0.5));
-		float ti = time*sizeFactor*25.0;
+		float ti = time*sizeFactor*5.0;
 		vec2 si = sizeFactor* 100.0 * wood_amplitudes.xy;
 		if ((d>0.01)){
-			//angle = dist1*dist1*(texture2D(displacement2Map, (ti * b1 * wood_frequencies.y)).s*2.0 - 1.0) * sizeFactor* 100.0 * wood_amplitudes.y;
-			angle = (texture2D(displacement2Map, (ti * b1 * wood_frequencies.y)).s*2.0 - 1.0) * si.y;
+			angle = dist1*(texture2D(branch_noise_tex, (ti * b1 * wood_frequencies.y)).s*2.0 - 1.0)  * si.y;
+			//angle = (texture2D(branch_noise_tex, (ti * b1 * wood_frequencies.y)).s*2.0 - 1.0) * si.y;
 			
 			cosA = cos (angle); 
 			sinA = sin (angle);
@@ -76,8 +76,8 @@ void main()
 			newPos = b1 + rotatedDifVec;
 		}
 		//newPos = fpos;
-		//angle = (texture2D(displacement2Map, (ti * b0 * wood_frequencies.x)).s*2.0-1.0) * si.x;
-		angle = dist0*dist0*(texture2D(displacement2Map, (ti * b0 * wood_frequencies.x)).s*2.0-1.0) * si.x;
+		//angle = (texture2D(branch_noise_tex, (ti * b0 * wood_frequencies.x)).s*2.0-1.0) * si.x;
+		angle = dist0*(texture2D(branch_noise_tex, (ti * b0 * wood_frequencies.x)).s*2.0-1.0) * si.x;
 		cosA = cos (angle); 
 		sinA = sin (angle);
 		difVec = (newPos - b0);
@@ -88,10 +88,10 @@ void main()
 
 		//texCoordA = (texture2D(displacementMap, texCoordA).st*2.0 - vec2(1.0))*(wave_y_offset + gl_TexCoord[0].t*wave_increase_factor);
 		//texCoordB = (texture2D(displacementMap, texCoordB).st*2.0 - vec2(1.0))*(wave_y_offset + gl_TexCoord[0].t*wave_increase_factor);
-		texCoordA = (texture2D(displacementMap, texCoordA).st*2.0 - vec2(1.0));
-		texCoordB = (texture2D(displacementMap, texCoordB).st*2.0 - vec2(1.0));
+		texCoordA = (texture2D(leaf_noise_tex, texCoordA).st*2.0 - vec2(1.0));
+		texCoordB = (texture2D(leaf_noise_tex, texCoordB).st*2.0 - vec2(1.0));
 		
-		vec2 texCoord = newPos+(texCoordA+texCoordB)*sizeFactor*4.0*leaf_amplitude;// texture2D(displacementMap, ).st;
+		vec2 texCoord = newPos+(texCoordA+texCoordB)*sizeFactor*leaf_amplitude;// texture2D(displacementMap, ).st;
 		vec4 fragmentNormal = texture2D(normalMap, texCoord);
 		float branchFlag = fragmentNormal.w + texture2D(normalMap, newPos).w;
 		vec4 color;
@@ -100,11 +100,11 @@ void main()
 		} else {
 			color = texture2D(colorMap, texCoord);
 		}
-		if (color.a<0.2){discard;}
+		if (color.a<0.5){discard;}
 
 		//color.a =clamp(-0.5 + 2.0*abs(dot(normalize(normalDir), normalize(eyeDir))), 0.0, 1.0);
-		color.a =clamp(abs(dot(normalize(normalDir), normalize(eyeDir))), 0.0, 1.0);
-
+		//color.a =clamp(abs(dot(normalize(normalDir), normalize(eyeDir))), 0.0, 1.0);
+		color.a = gl_Color.a;
 		gl_FragData[0] = color;
 		gl_FragData[1] = color * vec4(0.5, 0.5, 0.5, 1.0);
 

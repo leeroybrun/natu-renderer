@@ -107,7 +107,7 @@ void GodRays::end()
 	glTranslatef(0.0, -.1, 0.0), 
 	glDisable(GL_LIGHTING);
 	glDisable(GL_DEPTH_TEST);
-	glEnable(GL_TEXTURE_2D);
+	//glEnable(GL_TEXTURE_2D);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, originalColor);
 	glActiveTexture(GL_TEXTURE1);
@@ -130,7 +130,7 @@ void GodRays::end()
 	
 	glEnable(GL_LIGHTING);
 	glEnable(GL_DEPTH_TEST);
-	glDisable(GL_TEXTURE_2D);
+	//glDisable(GL_TEXTURE_2D);
 
 	glMatrixMode(GL_PROJECTION);
 	glPopMatrix();

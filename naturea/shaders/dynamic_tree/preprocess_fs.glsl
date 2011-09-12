@@ -9,7 +9,8 @@ uniform vec2 window_size;
 //--------------------------------------------------------------------------------------
 #define EPSILON1		100	
 #define EPSILON2		60
-#define STEP			1.0
+#define MEPSILON		-10
+#define STEP			2.0
 //--------------------------------------------------------------------------------------
 // Fragment Shader
 // PREPROCESS
@@ -25,7 +26,7 @@ void main()
 	int i = 0;
 	int j = 0;
 	float dataLength = 0.0;
-	for (i=-10; i<EPSILON1; i++){
+	for (i=MEPSILON; i<EPSILON1; i++){
 		for (j=-EPSILON2; j<EPSILON2; j++){
 			// find the closest filled point
 			float x = j / window_size.x * STEP;

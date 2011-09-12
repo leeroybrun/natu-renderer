@@ -759,10 +759,12 @@ Vegetation* DTree::getCopy(){
 	return copy;
 }
 
-void DTree::draw(){
+void DTree::drawLOD0()
+{
+	g_tree_lod0_count++;
 	glDisable(GL_CULL_FACE);
 	glPushMatrix();
-	glScalef( 1.f , -1.f, 1.f);
+	glScalef( 10.f , -10.f, 10.f);
 	
 	// draw bbox
 	//bbox->draw();
@@ -772,6 +774,8 @@ void DTree::draw(){
 	dataTexture->bind(GL_TEXTURE1);
 	branchNoiseTexture->bind(GL_TEXTURE2);
 	bColorTexture->bind(GL_TEXTURE4);
+
+	// TODO: use positions
 
 	// draw branches
 	branchesEBO->draw(branchShader);
@@ -789,7 +793,7 @@ void DTree::draw(){
 	backTranslucencyMap	->bind(GL_TEXTURE10);
 	backHalfLife2Map	->bind(GL_TEXTURE11);
 
-
+	// TODO: use positions
 
 	// draw leaves
 	leavesVBO->draw(leafShader, GL_QUADS, 0);
@@ -808,6 +812,218 @@ void DTree::draw(){
 	dataTexture->unbind();
 	glPopMatrix();
 	glEnable(GL_CULL_FACE);
+}
+
+void DTree::drawLOD1()
+{
+	if (g_draw_dtree_lod){
+	g_tree_lod1_count++;
+	int i, j, sliceCount, setCount=sliceSets.size();
+	Texture * colorTexture, * dataTexture, *displacementTexture, *displacement2Texture, *normalTexture;
+		displacementTexture		= leafNoiseTexture;
+		displacement2Texture	= branchNoiseTexture;
+		DTreeSlice * slice;
+	for (j = 0; j< setCount; j++){
+		sliceCount = sliceSets[j]->size();
+		
+		for (i=0; i<sliceCount; i++){
+			slice					= sliceSets[j]->getSlice(i);
+			colorTexture			= slice->colormap;
+			normalTexture			= slice->normalmap;
+			dataTexture				= slice->datamap;
+
+			glPushMatrix();	
+		
+				//l3dBillboardCheatCylindricalBegin();
+			
+				glRotatef(j*90, 0.0, 1.0, 0.0);
+				glTranslatef((i-(float(sliceCount)/2.f) + 0.5), 0.0, 0.0);
+				glScalef(10.0,10.0,10.0);
+				//glRotatef(90, 0.0, 0.0, 1.0);
+				glRotatef(90, 0.0, 1.0, 0.0);
+				glDisable(GL_CULL_FACE);
+				colorTexture		->bind(GL_TEXTURE0);
+				displacementTexture	->bind(GL_TEXTURE1);
+				displacement2Texture	->bind(GL_TEXTURE4);
+				dataTexture			->bind(GL_TEXTURE2);
+				normalTexture		->bind(GL_TEXTURE3);
+
+				u_time_offset->data = &	g_tree_time_offset_1;
+				// turn on shader
+				lod1shader->use(true);
+				lod1shader->setTexture(l_color	, colorTexture			->textureUnitNumber	);
+				lod1shader->setTexture(l_displ	, displacementTexture	->textureUnitNumber	);
+				lod1shader->setTexture(l_displ2	, displacement2Texture	->textureUnitNumber	);
+				lod1shader->setTexture(l_data	, dataTexture			->textureUnitNumber	);
+				lod1shader->setTexture(l_normal	, normalTexture			->textureUnitNumber	);
+			
+				// TODO: draw at all positions
+				lod1vbo->draw(lod1shader, GL_QUADS, 0);
+
+				colorTexture		->unbind();
+				displacementTexture	->unbind();
+				displacement2Texture	->unbind();
+				dataTexture			->unbind();
+				normalTexture		->unbind();
+				// turn off shader
+				lod1shader->use(false);
+				glEnable(GL_CULL_FACE);
+
+			glPopMatrix();
+		} // for i - each slice
+	} // for j - sliceSets
+	}
+}
+
+void DTree::drawLOD2()
+{
+	g_tree_lod2_count++;
+
+	if (g_draw_dtree_lod){
+	g_tree_lod1_count++;
+	int i, j, sliceCount, setCount=sliceSets.size();
+	Texture * colorTexture, * dataTexture, *displacementTexture, *displacement2Texture, *normalTexture;
+		displacementTexture		= leafNoiseTexture;
+		displacement2Texture	= branchNoiseTexture;
+		DTreeSlice * slice;
+	for (j = 0; j< setCount; j++){
+		sliceCount = sliceSets[j]->size();
+		i = sliceCount/2;
+		
+			slice					= sliceSets[j]->getSlice(i);
+			colorTexture			= slice->colormap;
+			normalTexture			= slice->normalmap;
+			dataTexture				= slice->datamap;
+
+			glPushMatrix();	
+		
+				//l3dBillboardCheatCylindricalBegin();
+			
+				glRotatef(j*90, 0.0, 1.0, 0.0);
+				glTranslatef((i-(float(sliceCount)/2.f) + 0.5), 0.0, 0.0);
+				glScalef(10.0,10.0,10.0);
+				//glRotatef(90, 0.0, 0.0, 1.0);
+				glRotatef(90, 0.0, 1.0, 0.0);
+				glDisable(GL_CULL_FACE);
+				colorTexture		->bind(GL_TEXTURE0);
+				displacementTexture	->bind(GL_TEXTURE1);
+				displacement2Texture	->bind(GL_TEXTURE4);
+				dataTexture			->bind(GL_TEXTURE2);
+				normalTexture		->bind(GL_TEXTURE3);
+
+				u_time_offset->data = &	g_tree_time_offset_1;
+				// turn on shader
+				lod1shader->use(true);
+				lod1shader->setTexture(l_color	, colorTexture			->textureUnitNumber	);
+				lod1shader->setTexture(l_displ	, displacementTexture	->textureUnitNumber	);
+				lod1shader->setTexture(l_displ2	, displacement2Texture	->textureUnitNumber	);
+				lod1shader->setTexture(l_data	, dataTexture			->textureUnitNumber	);
+				lod1shader->setTexture(l_normal	, normalTexture			->textureUnitNumber	);
+			
+				// TODO: draw at all positions
+				lod1vbo->draw(lod1shader, GL_QUADS, 0);
+
+				colorTexture		->unbind();
+				displacementTexture	->unbind();
+				displacement2Texture	->unbind();
+				dataTexture			->unbind();
+				normalTexture		->unbind();
+				// turn off shader
+				lod1shader->use(false);
+				glEnable(GL_CULL_FACE);
+
+			glPopMatrix();
+	} // for j - sliceSets
+	}
+
+}
+
+void DTree::draw(){
+	// get distance to viewer
+	v3		toViewDir = *viewer_position - position;
+	float distance = toViewDir.length();
+	toViewDir.normalize();
+	float discrepacy = toViewDir.dot(*viewer_direction);
+	v4 lodTresholds = v4 (15.0, 20.0, 50.0, 55.0);
+	if (discrepacy<0.0){ // if is infront of the camera
+		float alpha=0.0;
+		if (distance >= lodTresholds.w){
+			glColor4f(0.0, 0.0, 0.0, 1.0);
+			drawLOD2();
+		} else if (distance >= lodTresholds.z){
+			alpha = (distance - lodTresholds.z) / (lodTresholds.w - lodTresholds.z);
+			/*
+			// show LOD 1
+				glColor4f(0.0, 0.0, 0.0, 1.0-alpha);
+				drawLOD1();
+				glDepthMask(GL_FALSE);				
+				// show LOD 2 
+				glColor4f(0.0, 0.0, 0.0, alpha);
+				drawLOD2();
+				glDepthMask(GL_TRUE);
+			*/
+			
+			if (alpha<0.5){
+				// show LOD 1
+				glColor4f(0.0, 0.0, 0.0, 1.0);
+				drawLOD1();
+				glDepthMask(GL_FALSE);
+				// show LOD 2 
+				glColor4f(0.0, 0.0, 0.0, 2*alpha);
+				drawLOD2();
+				glDepthMask(GL_TRUE);
+			} else {
+				// show LOD 1 
+				glDepthMask(GL_FALSE);
+				glColor4f(0.0, 0.0, 0.0, 2*(1-alpha));
+				drawLOD1();
+				glDepthMask(GL_TRUE);
+				// show LOD 2 
+				glColor4f(0.0, 0.0, 0.0, 1.0);
+				drawLOD2();
+			}
+			
+		} else if (distance >=lodTresholds.y){
+			glColor4f(0.0, 0.0, 0.0, 1.0);
+			drawLOD1();
+		} else if (distance >=lodTresholds.x){
+			alpha = (distance - lodTresholds.x) / (lodTresholds.y - lodTresholds.x);
+			/*
+			glColor4f(0.0, 0.0, 0.0, 1.0-alpha);
+				drawLOD0();
+				glDepthMask(GL_FALSE);
+				// show LOD 1 
+				glColor4f(0.0, 0.0, 0.0, alpha);
+				drawLOD1();
+				glDepthMask(GL_TRUE);
+			/*/
+			if (alpha<0.5){
+				// show LOD 0
+				glColor4f(0.0, 0.0, 0.0, 1.0);
+				drawLOD0();
+				glDepthMask(GL_FALSE);
+				// show LOD 1 
+				glColor4f(0.0, 0.0, 0.0, 2*alpha);
+				drawLOD1();
+				glDepthMask(GL_TRUE);
+			} else {
+				// show LOD 0
+				glDepthMask(GL_FALSE);
+				glColor4f(0.0, 0.0, 0.0, 2*(1-alpha));
+				drawLOD0();
+				glDepthMask(GL_TRUE);
+				// show LOD 1 
+				glColor4f(0.0, 0.0, 0.0, 1.0);
+				drawLOD1();
+				
+			}
+			
+		} else {
+			glColor4f(0.0, 0.0, 0.0, 1.0);
+			drawLOD0();
+		}
+
+	} // if in front of camera plane
 }
 
 void DTree::drawForLOD(){
@@ -862,8 +1078,8 @@ void DTree::drawForLOD(){
 	glEnable(GL_CULL_FACE);
 }
 
-void DTree::init(){
-
+void DTree::initLOD0()
+{
 	printf("DYN_TREE init\n");
 	// load textures
 
@@ -1021,6 +1237,138 @@ void DTree::init(){
 
 	//printf("branch count = %i\n", branchCount);
 	//printf("DYN_TREE done (branch VBOid:%i, branchEBOid:%i, leafVBOid:%i)\n", branchesVBO->getID(), branchesEBO->getID(), leavesVBO->getID());
+
+
+}
+
+void DTree::initLOD1()
+{
+	
+	// create slices
+
+	// create 2 sliceSets (cross, double sided)
+	v3 dir = v3(-1.0, 0.0, 0.0);
+	DTreeSliceSet * set = new DTreeSliceSet();
+	float res = 256;
+	win_resolution = v2 (res, res);
+	this->createSlices(dir, 3, win_resolution.x, win_resolution.y, false);
+	set->setSlices(this->slices);
+	//set->createFromDir(this, dir);
+	sliceSets.push_back(set);
+
+	
+	dir = v3 (0.0, 0.0, -1.0);
+	set = new DTreeSliceSet();
+	this->createSlices(dir, 3, win_resolution.x, win_resolution.y, false);
+	set->setSlices(this->slices);
+	//set->createFromDir(this, dir);
+	sliceSets.push_back(set);
+
+	// init shaders
+
+	lod1shader = new Shader("test");
+	lod1shader->loadShader("shaders/test2_vs.glsl", "shaders/test2_fs.glsl");
+	// link textures to shader
+	//shader->linkTexture(colorMap			);
+	//shader->linkTexture(displacementMap		);
+	//shader->linkTexture(dataMap				);
+
+	l_color		 = lod1shader->getGLLocation("colorMap"			);
+	l_displ		 = lod1shader->getGLLocation("leaf_noise_tex"	);
+	l_displ2	 = lod1shader->getGLLocation("branch_noise_tex"	);
+	l_data		 = lod1shader->getGLLocation("dataMap"			);
+	l_normal	 = lod1shader->getGLLocation("normalMap"		);
+
+	lod1shader->registerUniform("time", UniformType::F1, & g_float_time);
+
+	lod1shader->registerUniform("wave_amplitude"		, UniformType::F1, & g_tree_wave_amplitude		);
+	lod1shader->registerUniform("wave_frequency"		, UniformType::F1, & g_tree_wave_frequency		);
+	lod1shader->registerUniform("movementVectorA"		, UniformType::F2, & g_tree_movementVectorA		);
+	lod1shader->registerUniform("movementVectorB"		, UniformType::F2, & g_tree_movementVectorB		);
+	lod1shader->registerUniform("wave_y_offset"			, UniformType::F1, & g_tree_wave_y_offset			);
+	lod1shader->registerUniform("wave_increase_factor"	, UniformType::F1, & g_tree_wave_increase_factor	);
+	lod1shader->registerUniform("window_size"			, UniformType::F2, & win_resolution				);
+
+
+	lod1shader->registerUniform("wood_amplitudes"		, UniformType::F4, & g_tree_wood_amplitudes.data	);
+	lod1shader->registerUniform("wood_frequencies"		, UniformType::F4, & g_tree_wood_frequencies.data	);
+	lod1shader->registerUniform("leaf_amplitude"		, UniformType::F1, & g_tree_leaf_amplitude	);
+	lod1shader->registerUniform("leaf_frequency"		, UniformType::F1, & g_tree_leaf_frequency	);
+
+	int i = lod1shader->registerUniform("time_offset"	, UniformType::F1, & tree_time_offset);
+	u_time_offset = lod1shader->getUniform(i);
+	
+	/*
+	shader = new Shader("test");
+	shader->loadShader("shaders/test_vs.glsl", "shaders/test_fs.glsl");
+	// link textures to shader
+	shader->linkTexture(frontDecalMap		);
+	shader->linkTexture(frontNormalMap		);
+	shader->linkTexture(frontTranslucencyMap);
+	shader->linkTexture(frontHalfLife2Map	);
+	shader->linkTexture(backDecalMap		);
+	shader->linkTexture(backNormalMap		);
+	shader->linkTexture(backTranslucencyMap	);
+	shader->linkTexture(backHalfLife2Map	);
+	*/
+	
+	// init VBO
+	int count = 4;
+	lod1vbo = new VBO();
+	lod1vbo->setVertexCount(count);
+	// position
+	VBODataSet * dataSet = new VBODataSet(
+		PLANE_VERTEX_ARRAY2,
+		3*sizeof(GLfloat),
+		GL_FLOAT, 
+		ATTRIB_NAMES::POSITION,
+		true
+	);
+	lod1vbo->addVertexAttribute( dataSet );
+	// normal
+	dataSet = new VBODataSet(
+		PLANE_NORMAL_ARRAY2,
+		3*sizeof(GLfloat),
+		GL_FLOAT, 
+		ATTRIB_NAMES::NORMAL,
+		false
+	);
+	lod1vbo->addVertexAttribute( dataSet );
+	// tangent
+	dataSet = new VBODataSet(
+		PLANE_TANGENT_ARRAY,
+		3*sizeof(GLfloat),
+		GL_FLOAT, 
+		ATTRIB_NAMES::TANGENT,
+		false
+	);
+	lod1vbo->addVertexAttribute( dataSet );
+	// texture coordinates
+	dataSet = new VBODataSet(
+		PLANE_TEX_COORD_ARRAY2,
+		2*sizeof(GLfloat),
+		GL_FLOAT, 
+		ATTRIB_NAMES::TEXCOORD0,
+		false
+	);
+	lod1vbo->addVertexAttribute( dataSet );
+
+	// link vbo and shaders
+	lod1vbo->compileData(GL_STATIC_DRAW);
+	lod1vbo->compileWithShader(lod1shader);
+	
+}
+
+void DTree::initLOD2()
+{
+
+
+}
+
+void DTree::init(){
+	initLOD0();
+	initLOD1();
+	//initLOD2();
 }
 
 void DTree::update(double time){
@@ -1067,7 +1415,7 @@ void DTree::createSlices(v3 & direction, int num, int resolution_x, int resoluti
 	BBox * box = getBBox();
 	float distance = -10.f;
 	v3 position = direction * distance;
-	float diameter = box->getMinSize();
+	float diameter = 0.7*box->getMinSize();
 	float radius = diameter*0.5f;
 	float thickness = diameter/(float(num));
 	if (half) thickness*=0.5;
@@ -1214,8 +1562,6 @@ void DTree::createSlices(v3 & direction, int num, int resolution_x, int resoluti
 			dataProcessShader->use(false);
 			//slice->branchmap->unbind();
 			glFinish();
-		
-		
 			glEnable(GL_DEPTH_TEST);
 		// return to normal screen rendering	
 		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);

@@ -29,7 +29,7 @@ Texture::Texture(GLuint _texType, GLuint _inFormat, GLenum _dataFormat, GLenum _
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	 glTexImage2D(GL_TEXTURE_2D, 0, _inFormat, _width, _height, 0, _dataFormat, _dataType, _data);
 	glBindTexture(GL_TEXTURE_2D, 0);
-	glDisable(GL_TEXTURE_2D);
+	//glDisable(GL_TEXTURE_2D);
 }
 
 Texture::~Texture(void)
@@ -65,7 +65,7 @@ void Texture::show(GLint x,GLint y, GLsizei width, GLsizei height){
 
 	glDisable(GL_LIGHTING);
 	glDisable(GL_DEPTH_TEST);
-	glEnable(GL_TEXTURE_2D);
+	//glEnable(GL_TEXTURE_2D);
 
 	
 	
@@ -82,7 +82,7 @@ void Texture::show(GLint x,GLint y, GLsizei width, GLsizei height){
 
 	glEnable(GL_LIGHTING);
 	glEnable(GL_DEPTH_TEST);
-	glDisable(GL_TEXTURE_2D);
+	//glDisable(GL_TEXTURE_2D);
 
 	glMatrixMode(GL_PROJECTION);
 	glPopMatrix();
@@ -94,13 +94,13 @@ void Texture::activate()
 {
 	glActiveTexture(textureUnit);	
 	glClientActiveTexture(textureUnit);
-	glEnable(GL_TEXTURE_2D);
+	//glEnable(GL_TEXTURE_2D);
 }
 
 void Texture::deactivate()
 {
 	glActiveTexture(textureUnit);	
-	glDisable(GL_TEXTURE_2D);
+	//glDisable(GL_TEXTURE_2D);
 	glClientActiveTexture(GL_TEXTURE0);
 }
 
@@ -238,7 +238,7 @@ void Texture::load(string filename, GLint unitNumber, bool buildMipmaps, GLint w
 unsigned char * Texture::snapshot(){
 	int pixelCount = width * height;
 	unsigned char * pixels = new unsigned char [4*sizeof(unsigned char)*pixelCount];
-	glEnable(GL_TEXTURE_2D);
+	//glEnable(GL_TEXTURE_2D);
 	
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, this->id);
@@ -279,7 +279,7 @@ void Texture::bind(GLenum texUnit)
 {
 	textureUnit = texUnit;
 	textureUnitNumber = texUnitToNumber(texUnit);
-	glEnable(GL_TEXTURE_2D);
+	//glEnable(GL_TEXTURE_2D);
 	glActiveTexture(texUnit);
 	//glClientActiveTexture(texUnit);
 	glBindTexture(GL_TEXTURE_2D, id);
@@ -290,7 +290,7 @@ void Texture::unbind()
 	glActiveTexture(textureUnit);
 	//glClientActiveTexture(textureUnit);
 	glBindTexture(GL_TEXTURE_2D, 0);
-	glDisable(GL_TEXTURE_2D);
+	//glDisable(GL_TEXTURE_2D);
 }
 
 void Texture::generateMipmaps()

@@ -9,6 +9,30 @@
 #define SAFE_DELETE_ARRAY_PTR(VAR) if(VAR!=NULL){delete [] VAR; VAR=NULL;}
 
 
+static void oneBubbleSortWalkthrough(v4** arr, int size, v3 & pos){
+	if (size<=1) return;
+	int i=0;
+	v4* act ;
+	v4* next;
+	float valueA = 0;
+	float valueN = 0;
+	for (i=0; i<size-1; i++){
+		act = arr[i];
+		next = arr[i+1];
+		valueA = (act->xyz() - pos).length();
+		valueN = (next->xyz() - pos).length();
+
+		
+		if (valueA<valueN){
+			// swap
+			arr[i] = next;
+			arr[i+1] = act;
+		}
+		
+	}
+}
+
+
 static void pauseAndExit()
 {
 	printf("Cannot continue - PROGRAM TERMINATED");
@@ -170,7 +194,7 @@ static void show_texture(GLuint texId, GLint x,GLint y, GLsizei width, GLsizei h
 
 	glDisable(GL_LIGHTING);
 	glDisable(GL_DEPTH_TEST);
-	glEnable(GL_TEXTURE_2D);
+	//glEnable(GL_TEXTURE_2D);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, texId);
 	glColor4f(1.f,1.f,1.f,1.f);
@@ -184,7 +208,7 @@ static void show_texture(GLuint texId, GLint x,GLint y, GLsizei width, GLsizei h
 
 	glEnable(GL_LIGHTING);
 	glEnable(GL_DEPTH_TEST);
-	glDisable(GL_TEXTURE_2D);
+	//glDisable(GL_TEXTURE_2D);
 
 	glMatrixMode(GL_PROJECTION);
 	glPopMatrix();

@@ -89,11 +89,11 @@
 
 #define HUMAN_SPEED				0.3f
 #define HUMAN_HEIGHT			2.f
-#define HUMAN_BREATH_FREQ		1.2f
-#define HUMAN_BREATH_AMPL		0.15f
-#define HUMAN_ACTIVITY_DECAY    0.992f
-#define HUMAN_ACTIVITY_INCR	    0.01f
-#define HUMAN_MIN_ACTIVITY	    0.1f
+#define HUMAN_BREATH_FREQ		0.6f
+#define HUMAN_BREATH_AMPL		0.08f
+#define HUMAN_ACTIVITY_DECAY    0.995f
+#define HUMAN_ACTIVITY_INCR	    0.5f
+#define HUMAN_MIN_ACTIVITY	    0.5f
 #define HUMAN_MAX_ACTIVITY	    1.3f
 #define HUMAN_POSITION          v3(-10.0, 5.0, 0.0)
 #define HUMAN_DIRECTION			v3(1.0, 0.0, 0.0)

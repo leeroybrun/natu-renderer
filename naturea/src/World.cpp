@@ -19,7 +19,7 @@ World::World(void)
 	p_test_model		= NULL;
 	p_test_model2		= NULL;
 
-	lod_positions		= NULL;
+	tree_positions		= NULL;
 }
 
 
@@ -42,9 +42,9 @@ World::~World(void)
 	SAFE_DELETE_PTR( p_test_model2	);
 
 	for (int i=0; i<100; i++){
-		SAFE_DELETE_PTR ( lod_positions[i] );
+		SAFE_DELETE_PTR ( tree_positions[i] );
 	}
-	SAFE_DELETE_ARRAY_PTR( lod_positions );
+	SAFE_DELETE_ARRAY_PTR( tree_positions );
 
 	SAFE_DELETE_PTR( p_godRays	);
 	textureManager.~TextureManager();
@@ -190,28 +190,30 @@ void World::drawWithAlpha(){
 		p_tree2_growth->draw();
 	}
 	if (g_draw_dtree){
-		glPushMatrix();
-			glTranslatef(0.0, 5.0, 0.0);
-			glScalef(10.0, 10.0, 10.0);
-		
-			p_dtree->draw();
-		glPopMatrix();
-	}
-	//glDisable(GL_DEPTH_TEST);
-	if (g_draw_dtree_lod){
+		// sort tree positions
+		v3 camPos = p_activeCamera->getPosition();
+		oneBubbleSortWalkthrough(tree_positions, g_tree_gridSize*g_tree_gridSize, camPos);
+
 		v4* f;
-		for (int c=0; c<100; c++){
-			f = lod_positions[c];
+		for (int c=0; c<g_tree_gridSize*g_tree_gridSize; c++){
+			f = tree_positions[c];
 			glPushMatrix();
 			glTranslatef(f->x, f->y, f->z);
 				glRotatef(f->w, 0.0, 1.0, 0.0);
-				p_test_model->draw();
-				glRotatef(-90, 0.0, 1.0, 0.0);
-				p_test_model2->draw();
+				p_dtree->position = f->xyz();
+				p_dtree->draw();
 			glPopMatrix();
 		}
+		/*
+		glPushMatrix();
+			glTranslatef(0.0, 5.0, 0.0);
+			glScalef(10.0, 10.0, 10.0);
+			
+			p_dtree->draw();
+		glPopMatrix();
+		*/
 	}
-	//glEnable(GL_DEPTH_TEST);
+	
 }
 
 void World::drawUnderWater(){
@@ -396,6 +398,8 @@ void World::init()
 	p_dtree = new DTree(&textureManager, &shaderManager);\
 		p_dtree->loadOBJT( DYN_TREE::OBJT_FILENAME );
 		p_dtree->init();
+		p_dtree->viewer_direction = &p_activeCamera->direction;
+		p_dtree->viewer_position = &p_activeCamera->position;
 	printf("----- END DYNAMIC TREE INIT ");
 
 	// generate initial slices for tree
@@ -404,17 +408,20 @@ void World::init()
 // TEST OBJECT INIT
 //===============================================================================
 	// positions
-	lod_positions = new v4*[100];
+	tree_positions = new v4*[g_tree_gridSize*g_tree_gridSize];
 	float x,y,xt,yt,z,r;
-	float diff = 3.0;
-	for (int i=0; i<100; i++){
-			x = (i % 10)*7.5 + randomf(-diff, diff);
-			z = (i / 10)*7.5 + randomf(-diff, diff);
+	float diff = g_tree_dither;
+	
+	for (int i=0; i<g_tree_gridSize; i++){
+		for (int j=0; j<g_tree_gridSize; j++){
+			x = (i - g_tree_gridSize/2)*g_tree_mean_distance + randomf(-diff, diff);
+			z = (j - g_tree_gridSize/2)*g_tree_mean_distance + randomf(-diff, diff);
 			r = randomf(-180, 180);
 			xt = x + p_terrain->sz_x/2.0;
 			yt = z + p_terrain->sz_y/2.0;
 			y = p_terrain->getHeightAt(xt,yt);
-			lod_positions[i] = new v4(x,y,z,r);
+			tree_positions[i*g_tree_gridSize + j] = new v4(x,y,z,r);
+		}
 	}
 
 	v3 dir = v3(-1.0, 0.0, 0.0);

@@ -136,6 +136,10 @@ float	g_tree_wave_increase_factor = 1.0;
 float	g_tree_time_offset_1	= 0.0;
 float	g_tree_time_offset_2	= 0.5;		
 
+int		g_tree_gridSize			= 20;
+float	g_tree_mean_distance	= 10.0;
+float	g_tree_dither			= 5.0;
+
 float	g_leaves_MultiplyAmbient			= 0.7;
 float	g_leaves_MultiplyDiffuse			= 0.7;
 float	g_leaves_MultiplySpecular			= 0.3;
@@ -144,6 +148,9 @@ float	g_leaves_ReduceTranslucencyInShadow	= 0.9;
 float	g_leaves_shadow_intensity			= 1.0;
 v3		g_leaves_LightDiffuseColor			= v3(0.2, 0.2, 0.2);
 
+int		g_tree_lod0_count					 = 0;
+int		g_tree_lod1_count					 = 0;
+int		g_tree_lod2_count					 = 0;
 
 float g_CPU_fps;
 float CPU_render_time;
@@ -169,6 +176,12 @@ void TW_CALL copyStdStringToClient(std::string& dst, const std::string& src);
 //-----------------------------------------------------------------------------
 void cbDisplay()
 {
+	g_tree_lod0_count = 0;
+	g_tree_lod1_count = 0;
+	g_tree_lod2_count = 0;
+
+
+
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); 
 
 	// Setup OpenGL states according to user settings
@@ -306,6 +319,7 @@ void cbInitGL()
 	glDepthFunc(GL_LESS);
 	glShadeModel(GL_SMOOTH);
 	glEnable(GL_LINE_SMOOTH);
+	glEnable(GL_TEXTURE_2D);
 	glEnable(GL_LIGHTING);
 	glEnable(GL_CULL_FACE);
 	glPointSize(1.f);
@@ -503,7 +517,11 @@ void initGUI()
 	TwAddVarRW(controlBar, "camera mode", transport_type, &g_cameraMode, 
 		" group='Camera' keyIncr=c \
 		help='Change camera movement mode.' ");
-
+	TwAddVarRO(controlBar, "LOD0_count", TW_TYPE_INT32, &(g_tree_lod0_count), " label='LOD0 instance count' group=Statistics ");
+	TwAddVarRO(controlBar, "LOD1_count", TW_TYPE_INT32, &(g_tree_lod1_count), " label='LOD1 instance count' group=Statistics ");
+	TwAddVarRO(controlBar, "LOD2_count", TW_TYPE_INT32, &(g_tree_lod2_count), " label='LOD2 instance count' group=Statistics ");
+	
+	
 	TwAddVarRO(controlBar, "GPU_fps", TW_TYPE_FLOAT, &(g_Statistics.fps), 
 		" label='GPU fps' group=Statistics help='frames per second (measured on GPU)' ");
 	TwAddVarRO(controlBar, "CPU_fps", TW_TYPE_FLOAT, &(g_CPU_fps), 

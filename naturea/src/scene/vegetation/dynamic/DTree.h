@@ -36,12 +36,41 @@ public:
 	Texture *	datamap;
 	
 	float		getSortValue(v3 &viewer_position) {
-		return (controlPoint-viewer_position).length();
-	}
-	v3			direction;
+					return (controlPoint-viewer_position).length();
+				}
+
+	//			transformed direction of the slice normal
+	
 private:
 	v3			controlPoint;
 
+
+};
+
+class DTreeSliceSet{
+public :
+	DTreeSliceSet(){}
+	~DTreeSliceSet(){}
+	v3			getNormal(){
+					return rotMatrix*normal;
+				}
+	void		setRotMatrix(m3 &_rotMatrix){
+					rotMatrix = _rotMatrix;
+				}
+	void		setSlices(vector<DTreeSlice*> _slices){
+					slices = _slices;
+				}
+	int			size(){
+					return slices.size();
+				}
+	DTreeSlice*	getSlice(int id){
+					return slices[id];
+				}
+
+private:
+	vector<DTreeSlice*> slices;
+	v3			normal;
+	m3			rotMatrix;
 };
 
 
@@ -72,7 +101,14 @@ public:
 
 	void drawForLOD();
 
+	void drawLOD0();
+	void drawLOD1();
+	void drawLOD2();
+
 	void init();
+	void initLOD0();
+	void initLOD1();
+	void initLOD2();
 
 	void update(double time);
 
@@ -86,6 +122,9 @@ public:
 	void createSlices(v3 & direction, int num=2, int resolution_x=DYN_TREE::SLICE_RESOLUTION_X, int resolution_y=DYN_TREE::SLICE_RESOLUTION_Y, bool half=true);
 
 	vector<DTreeSlice*>	slices;
+	v3					position;
+	v3*					viewer_position;
+	v3*					viewer_direction;
 
 private:
 	DTreeBranch			*trunk;
@@ -135,6 +174,25 @@ private:
 
 	void createBranchesVBO();
 	void createLeavesVBO();
+
+	// LOD 1
+	float				tree_time_offset;
+	Uniform*			u_time_offset;	 			
+
+	int					l_color	  ;
+	int					l_displ	  ;
+	int					l_displ2  ;
+	int					l_data	  ;
+	int					l_normal  ;
+	v2					win_resolution;
+
+	Texture*				colorMap;
+	Texture*				colorMap2;
+	Texture*				weightMap;
+	Texture*				dataMap;
+	vector<DTreeSliceSet*>	sliceSets;
+	Shader	*				lod1shader;
+	VBO		*				lod1vbo;
 
 };
 
