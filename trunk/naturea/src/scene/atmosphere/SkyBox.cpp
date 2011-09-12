@@ -32,6 +32,7 @@ void SkyBox::drawForLOD()
 
 void SkyBox::draw()
 {
+	glEnable(GL_TEXTURE_2D);
 	glDisable(GL_LIGHTING);
 	
    glMatrixMode(GL_MODELVIEW);

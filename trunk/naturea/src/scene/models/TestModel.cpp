@@ -57,19 +57,66 @@ void TestModel::processTree(DTree * tree, v3 &dir)
 
 	float res = 256;
 	win_resolution = v2 (res, res);
-	tree->createSlices( dir, 5, win_resolution.x,  win_resolution.y, false);
-
+	tree->createSlices( dir, 3, win_resolution.x,  win_resolution.y, false);
+	// create sliceSets
 	slices = tree->slices;	
 }
 
 void TestModel::draw()
 {
+	// own position
+	//v3 pos = 
+	// TODO: get viewer position, direction to viewer, distance
+
 	// TODO: draw relevant slices 
+
 	/* Set of all slices must contain slice-views from all directions here.
 	* Only here is determined, which two slice-sets are active and which is primary...
 	* 
 	* Then draw slices one by one,
 	*	- render the secondary futhest slice first, then the furthest primary slice, etc.
+	*/
+
+	
+	// determine primary & secondary slice set
+	/*
+	DTreeSlice * primarySliceSet;
+	DTreeSlice * secondarySliceSet;
+
+	float first = -1.0;
+	float second= -1.0;
+	int s=0;
+	float cosA;
+	for (s = 0; s < sliceSets.size(); s++){
+		cosA = viewDir.dot(sliceSets[s].getNormal());
+		if (cosA>=first){
+			second = first;
+			first = cosA;
+			secondarySliceSet = primarySliceSet;
+			primarySliceSet = sliceSets[s];
+		} else if (cosA>=second){
+			second = cosA;
+			secondarySliceSet = sliceSets[s];
+		}
+		
+	}
+
+	// sort - if double sided slices... 
+	//primarySliceSet->performSortCycle(viewer_position);
+	//secondarySliceSet->performSortCycle(viewer_position);
+
+	for (s=0; s < 2*g_tree_slice_count; s++){
+		if (s%2==0){
+			// secondary
+			secondarySliceSet->draw(s/2);
+		} else {
+			// primary
+			primarySliceSet->draw(s/2);
+		}
+
+	}
+	
+	
 	*/
 	int i, count = slices.size();
 	Texture * colorTexture, * dataTexture, *displacementTexture, *displacement2Texture, *normalTexture;
@@ -131,17 +178,17 @@ void TestModel::init()
 {
 
 	// init textures...
-	if (slices.size()<1){
+	if ( slices.size() < 1 ){
 		// error!!!
 		printf("Slices for LOD not attached to LOD model!!! Fatal error, terminating...\n");
 		pauseAndExit();
 
 	}
 
-	displacementMap		=new Texture("displacementMap");
+	displacementMap		=new Texture("leaf_noise_tex");
 	displacementMap		->load(DYN_TREE::LEAF_NOISE_TEXTURE, true, false, GL_REPEAT, GL_LINEAR, GL_LINEAR_MIPMAP_LINEAR);
 	
-	displacement2Map	=new Texture("displacement2Map");
+	displacement2Map	=new Texture("branch_noise_tex");
 	displacement2Map	->load(DYN_TREE::BRANCH_NOISE_TEXTURE, true, false, GL_REPEAT, GL_LINEAR, GL_LINEAR_MIPMAP_LINEAR);
 	
 
@@ -155,8 +202,8 @@ void TestModel::init()
 	//shader->linkTexture(dataMap				);
 
 	l_color		 = shader->getGLLocation("colorMap"			);
-	l_displ		 = shader->getGLLocation("displacementMap"	);
-	l_displ2	 = shader->getGLLocation("displacement2Map"	);
+	l_displ		 = shader->getGLLocation("leaf_noise_tex"	);
+	l_displ2	 = shader->getGLLocation("branch_noise_tex"	);
 	l_data		 = shader->getGLLocation("dataMap"			);
 	l_normal	 = shader->getGLLocation("normalMap"		);
 

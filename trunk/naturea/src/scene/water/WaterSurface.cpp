@@ -46,7 +46,7 @@ void WaterSurface::draw()
 	glPushMatrix();
 	glScalef(500.f, 1.f, 500.f);
 	glDisable(GL_CULL_FACE);
-	glEnable(GL_TEXTURE_2D);
+	//glEnable(GL_TEXTURE_2D);
 		glActiveTexture(GL_TEXTURE0);		
 		glBindTexture(GL_TEXTURE_2D, cb_refl_ID);
 		glActiveTexture(GL_TEXTURE1);		
@@ -56,7 +56,7 @@ void WaterSurface::draw()
 		glClientActiveTexture(GL_TEXTURE0);
 			drawPlane();
 		glBindTexture(GL_TEXTURE_2D, 0);
-	glDisable(GL_TEXTURE_2D);
+	//glDisable(GL_TEXTURE_2D);
 	glEnable(GL_CULL_FACE);
 	glPopMatrix();
 	shader->use(false);

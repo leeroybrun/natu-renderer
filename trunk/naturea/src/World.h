@@ -100,7 +100,7 @@ private:
 	EBO * cubeEBO;
 	Shader * cubeShader;
 
-	v4**				lod_positions;
+	v4**				tree_positions;
 
 	void show_textures();
 	void drawForShadowmapping();

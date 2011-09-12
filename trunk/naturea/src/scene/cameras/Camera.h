@@ -44,16 +44,16 @@ public:
 
 	void handleMouseMove(int x, int y);
 	bool handleKeyDown(int key, int action);
-
+	v3 position;
+	v3 direction;
+	v3 upVector;
 private:
 	Terrain * terrain;
 	CameraMode mode;
 	v3 human_movement;
 	float activityFactor;
 	double time;
-	v3 position;
-	v3 direction;
-	v3 upVector;
+
 	float step;
 	Vector4 corners[8];
 	Vector4 cornersCameraInWs[8];

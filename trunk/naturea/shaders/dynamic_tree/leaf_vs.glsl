@@ -434,7 +434,7 @@ void main()
 	gl_TexCoord[0].y = 1.0 - gl_TexCoord[0].y;
 	//gl_FrontColor = color;
     gl_Position = gl_ModelViewProjectionMatrix * vec4(vertex,1.0);
-
+	gl_FrontColor = gl_Color;
 	tangent_vs_v = tangent_vs;
 	normal_vs_v  = normal_vs; 
 

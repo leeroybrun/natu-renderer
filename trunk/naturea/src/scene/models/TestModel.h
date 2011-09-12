@@ -52,5 +52,8 @@ public:
 	int					l_normal  ;
 
 	v2					win_resolution;
+
+	v3					position;
+	float				y_rotation;
 };
 

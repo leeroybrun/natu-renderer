@@ -272,9 +272,9 @@ void main()
 	tangent_vs = gl_NormalMatrix * tangent;
 	
 	vPos = gl_ModelViewMatrix * vec4(vertex,1.0);
-	gl_FrontColor = vec4(gl_NormalMatrix * oVec, 1.0);
+	//gl_FrontColor = vec4(gl_NormalMatrix * oVec, 1.0);
 
-	//gl_FrontColor = color;
+	gl_FrontColor = gl_Color;
     gl_Position = gl_ModelViewProjectionMatrix * vec4(vertex,1.0);
 }
 

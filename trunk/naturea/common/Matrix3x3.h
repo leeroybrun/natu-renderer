@@ -108,7 +108,8 @@ class Matrix3x3
 			float m[9];
 
 	};
-
+typedef Matrix3x3 Matrix3;
+typedef Matrix3x3 m3;
 #endif //__MATRIX4X4_H__
 
 
