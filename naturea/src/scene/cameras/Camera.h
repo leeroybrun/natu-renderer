@@ -18,7 +18,8 @@ public:
 	void setDirection(v3 _v);
 	v3 getDirection();
 
-	
+	void setLookAtPoint(v3 &_p);
+	void orbitY(v3 &center, float radius, float time);
 
 	m4 getViewMatrix();
 	m4 getProjectionMatrix();
@@ -53,6 +54,7 @@ private:
 	v3 human_movement;
 	float activityFactor;
 	double time;
+	float angle;
 
 	float step;
 	Vector4 corners[8];

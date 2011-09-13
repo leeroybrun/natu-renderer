@@ -57,6 +57,12 @@ extern  bool					g_ParallaxMappingEnabled;
 extern  float					g_ParallaxScale;
 extern  float					g_ParallaxBias;
 
+
+
+extern	bool					g_draw_lod0				;
+extern	bool					g_draw_lod1				;
+extern	bool					g_draw_lod2				;
+extern	v4						g_lodTresholds			;
 extern	bool					g_draw_dtree_lod		;
 extern	bool					g_draw_low_vegetation	;
 extern	bool					g_draw_dtree			;
@@ -85,6 +91,11 @@ extern int g_Heightmaps	   ;
 extern int g_Specularmaps  ;
 extern int g_Alphamaps	   ;
 
+extern bool	g_orbit		   ;
+extern float g_orbit_speed ;
+extern float g_orbit_radius;
+extern v3	g_center	   ;
+extern float g_timeDiff;
 
 /**********************************************
 * DYNAMIC TREE

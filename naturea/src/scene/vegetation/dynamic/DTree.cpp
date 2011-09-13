@@ -28,6 +28,8 @@ DTree::DTree(TextureManager *texManager, ShaderManager *shManager):Vegetation(te
 	branchesVBO				 = NULL;
 	leavesVBO				 = NULL;
 	branchesEBO				 = NULL;
+
+	ctr	=0;
 }					
 DTree::DTree(DTree* copy):
 Vegetation(copy->textureManager, copy->shaderManager)
@@ -39,7 +41,7 @@ Vegetation(copy->textureManager, copy->shaderManager)
 	//	LCmatrixLoc = copy->LCmatrixLoc;
 	//	fastModeLoc	= copy->fastModeLoc;
 	//	shadowMappingEnabledLoc = copy->shadowMappingEnabledLoc;
-
+	ctr	=0;
 
 }
 
@@ -761,233 +763,275 @@ Vegetation* DTree::getCopy(){
 
 void DTree::drawLOD0()
 {
-	g_tree_lod0_count++;
-	glDisable(GL_CULL_FACE);
-	glPushMatrix();
-	glScalef( 10.f , -10.f, 10.f);
+	if (g_draw_lod0){
+		glColor4f(0.0, 0.0,0.0, alpha_c);
+		g_tree_lod0_count++;
+		glDisable(GL_CULL_FACE);
+		glPushMatrix();
+		glScalef( 10.f , -10.f, 10.f);
 	
-	// draw bbox
-	//bbox->draw();
+		// draw bbox
+		//bbox->draw();
 
 
-	// bind textures
-	dataTexture->bind(GL_TEXTURE1);
-	branchNoiseTexture->bind(GL_TEXTURE2);
-	bColorTexture->bind(GL_TEXTURE4);
+		// bind textures
+		dataTexture->bind(GL_TEXTURE1);
+		branchNoiseTexture->bind(GL_TEXTURE2);
+		bColorTexture->bind(GL_TEXTURE4);
 
-	// TODO: use positions
+		// TODO: use positions
 
-	// draw branches
-	branchesEBO->draw(branchShader);
+		// draw branches
+		branchesEBO->draw(branchShader);
 
-	bColorTexture->unbind();
+		bColorTexture->unbind();
 
-	// bind textures
-	leafNoiseTexture->bind(GL_TEXTURE3);
-	frontDecalMap		->bind(GL_TEXTURE4);
-	frontNormalMap		->bind(GL_TEXTURE5);
-	frontTranslucencyMap->bind(GL_TEXTURE6);
-	frontHalfLife2Map	->bind(GL_TEXTURE7);
-	backDecalMap		->bind(GL_TEXTURE8);
-	backNormalMap		->bind(GL_TEXTURE9);
-	backTranslucencyMap	->bind(GL_TEXTURE10);
-	backHalfLife2Map	->bind(GL_TEXTURE11);
+		// bind textures
+		leafNoiseTexture->bind(GL_TEXTURE3);
+		frontDecalMap		->bind(GL_TEXTURE4);
+		frontNormalMap		->bind(GL_TEXTURE5);
+		frontTranslucencyMap->bind(GL_TEXTURE6);
+		frontHalfLife2Map	->bind(GL_TEXTURE7);
+		backDecalMap		->bind(GL_TEXTURE8);
+		backNormalMap		->bind(GL_TEXTURE9);
+		backTranslucencyMap	->bind(GL_TEXTURE10);
+		backHalfLife2Map	->bind(GL_TEXTURE11);
 
-	// TODO: use positions
+		// TODO: use positions
 
-	// draw leaves
-	leavesVBO->draw(leafShader, GL_QUADS, 0);
+		// draw leaves
+		leavesVBO->draw(leafShader, GL_QUADS, 0);
 
 
-	leafNoiseTexture->unbind();
-	frontDecalMap		->unbind();
-	frontNormalMap		->unbind();
-	frontTranslucencyMap->unbind();
-	frontHalfLife2Map	->unbind();
-	backDecalMap		->unbind();
-	backNormalMap		->unbind();
-	backTranslucencyMap	->unbind();
-	backHalfLife2Map	->unbind();
-	branchNoiseTexture->unbind();
-	dataTexture->unbind();
-	glPopMatrix();
-	glEnable(GL_CULL_FACE);
+		leafNoiseTexture->unbind();
+		frontDecalMap		->unbind();
+		frontNormalMap		->unbind();
+		frontTranslucencyMap->unbind();
+		frontHalfLife2Map	->unbind();
+		backDecalMap		->unbind();
+		backNormalMap		->unbind();
+		backTranslucencyMap	->unbind();
+		backHalfLife2Map	->unbind();
+		branchNoiseTexture->unbind();
+		dataTexture->unbind();
+		glPopMatrix();
+		glEnable(GL_CULL_FACE);
+	}
 }
 
 void DTree::drawLOD1()
 {
-	if (g_draw_dtree_lod){
-	g_tree_lod1_count++;
-	int i, j, sliceCount, setCount=sliceSets.size();
-	Texture * colorTexture, * dataTexture, *displacementTexture, *displacement2Texture, *normalTexture;
-		displacementTexture		= leafNoiseTexture;
-		displacement2Texture	= branchNoiseTexture;
-		DTreeSlice * slice;
-	for (j = 0; j< setCount; j++){
-		sliceCount = sliceSets[j]->size();
+	if (g_draw_lod1){
+		glColor4f(0.0, 0.0,0.0, alpha_c);
+		g_tree_lod1_count++;
+		int i, j, sliceCount, setCount=sliceSets.size();
+		Texture * colorTexture, * dataTexture, *displacementTexture, *displacement2Texture, *normalTexture;
+			displacementTexture		= leafNoiseTexture;
+			displacement2Texture	= branchNoiseTexture;
+			DTreeSlice * slice;
+		for (j = 0; j< setCount; j++){
+			sliceCount = sliceSets[j]->size();
+			// if discrepacy angle under treshold, DO NOT write in z-buffer
+			v3 p = position;
+			v3 v = *viewer_position;
+			p.y = 0.0;
+			v.y = 0.0;
+			v3 eyeDir = (p-v).getNormalized();
+			v3 normalDir = sliceSets[j]->getNormal();
+			normalDir.rotateY(rotationY*DEG_TO_RAD);
+			float discrepacy = abs(normalDir.dot(eyeDir));
+			//printf("sliceset[%i] DISC: %f\n",j, discrepacy);
+			for (i=0; i<sliceCount; i++){
+				slice					= sliceSets[j]->getSlice(i);
+				colorTexture			= slice->colormap;
+				//printf("sliceset: %i, slice: %i is using: glTextureID %i\n", j,i, colorTexture->id);
+				normalTexture			= slice->normalmap;
+				dataTexture				= slice->datamap;
+
+				glPushMatrix();
 		
-		for (i=0; i<sliceCount; i++){
-			slice					= sliceSets[j]->getSlice(i);
-			colorTexture			= slice->colormap;
-			normalTexture			= slice->normalmap;
-			dataTexture				= slice->datamap;
-
-			glPushMatrix();	
-		
-				//l3dBillboardCheatCylindricalBegin();
+					//l3dBillboardCheatCylindricalBegin();
 			
-				glRotatef(j*90, 0.0, 1.0, 0.0);
-				glTranslatef((i-(float(sliceCount)/2.f) + 0.5), 0.0, 0.0);
-				glScalef(10.0,10.0,10.0);
-				//glRotatef(90, 0.0, 0.0, 1.0);
-				glRotatef(90, 0.0, 1.0, 0.0);
-				glDisable(GL_CULL_FACE);
-				colorTexture		->bind(GL_TEXTURE0);
-				displacementTexture	->bind(GL_TEXTURE1);
-				displacement2Texture	->bind(GL_TEXTURE4);
-				dataTexture			->bind(GL_TEXTURE2);
-				normalTexture		->bind(GL_TEXTURE3);
+					glRotatef(sliceSets[j]->rotation_y, 0.0, 1.0, 0.0);
+					glTranslatef((i-(float(sliceCount)/2.f) + 0.5), 0.0, 0.0);
+					glScalef(10.0,10.0,10.0);
+					//glRotatef(90, 0.0, 0.0, 1.0);
+					glRotatef(90.0, 0.0, 1.0, 0.0);
+					glDisable(GL_CULL_FACE);
+					colorTexture		->bind(GL_TEXTURE0);
+					displacementTexture	->bind(GL_TEXTURE1);
+					displacement2Texture	->bind(GL_TEXTURE4);
+					dataTexture			->bind(GL_TEXTURE2);
+					normalTexture		->bind(GL_TEXTURE3);
 
-				u_time_offset->data = &	g_tree_time_offset_1;
-				// turn on shader
-				lod1shader->use(true);
-				lod1shader->setTexture(l_color	, colorTexture			->textureUnitNumber	);
-				lod1shader->setTexture(l_displ	, displacementTexture	->textureUnitNumber	);
-				lod1shader->setTexture(l_displ2	, displacement2Texture	->textureUnitNumber	);
-				lod1shader->setTexture(l_data	, dataTexture			->textureUnitNumber	);
-				lod1shader->setTexture(l_normal	, normalTexture			->textureUnitNumber	);
+					u_time_offset->data = &	g_tree_time_offset_1;
+					// turn on shader
+					lod1shader->use(true);
+					lod1shader->setTexture(l_color	, colorTexture			->textureUnitNumber	);
+					lod1shader->setTexture(l_displ	, displacementTexture	->textureUnitNumber	);
+					lod1shader->setTexture(l_displ2	, displacement2Texture	->textureUnitNumber	);
+					lod1shader->setTexture(l_data	, dataTexture			->textureUnitNumber	);
+					lod1shader->setTexture(l_normal	, normalTexture			->textureUnitNumber	);
 			
-				// TODO: draw at all positions
-				lod1vbo->draw(lod1shader, GL_QUADS, 0);
+				
 
-				colorTexture		->unbind();
-				displacementTexture	->unbind();
-				displacement2Texture	->unbind();
-				dataTexture			->unbind();
-				normalTexture		->unbind();
-				// turn off shader
-				lod1shader->use(false);
-				glEnable(GL_CULL_FACE);
+					// TODO: draw at all positions
+					if (discrepacy<0.8){
+						glDepthMask(GL_FALSE);
+						lod1vbo->draw(lod1shader, GL_QUADS, 0);
+						glDepthMask(GL_TRUE);
+					} else {
+						lod1vbo->draw(lod1shader, GL_QUADS, 0);
+					}
+				
+					colorTexture		->unbind();
+					displacementTexture	->unbind();
+					displacement2Texture	->unbind();
+					dataTexture			->unbind();
+					normalTexture		->unbind();
+					// turn off shader
+					lod1shader->use(false);
+					glEnable(GL_CULL_FACE);
 
-			glPopMatrix();
-		} // for i - each slice
-	} // for j - sliceSets
+				glPopMatrix();
+			} // for i - each slice
+		} // for j - sliceSets
 	}
 }
 
 void DTree::drawLOD2()
 {
-	g_tree_lod2_count++;
+	if (g_draw_lod2){
+		glColor4f(0.0, 0.0,0.0, alpha_c);
+		g_tree_lod2_count++;
+		int i, j, sliceCount, setCount=sliceSets.size();
+		Texture * colorTexture, * dataTexture, *displacementTexture, *displacement2Texture, *normalTexture;
+			displacementTexture		= leafNoiseTexture;
+			displacement2Texture	= branchNoiseTexture;
+			DTreeSlice * slice;
+		for (j = 0; j< setCount; j++){
+			// if discrepacy angle under treshold, DO NOT write in z-buffer
+			v3 p = position;
+			v3 v = *viewer_position;
+			p.y = 0.0;
+			v.y = 0.0;
+			v3 eyeDir = (p-v).getNormalized();
+			v3 normalDir = sliceSets[j]->getNormal();
+			normalDir.rotateY(rotationY*DEG_TO_RAD);
+			float discrepacy = abs(normalDir.dot(eyeDir));
 
-	if (g_draw_dtree_lod){
-	g_tree_lod1_count++;
-	int i, j, sliceCount, setCount=sliceSets.size();
-	Texture * colorTexture, * dataTexture, *displacementTexture, *displacement2Texture, *normalTexture;
-		displacementTexture		= leafNoiseTexture;
-		displacement2Texture	= branchNoiseTexture;
-		DTreeSlice * slice;
-	for (j = 0; j< setCount; j++){
-		sliceCount = sliceSets[j]->size();
-		i = sliceCount/2;
-		
-			slice					= sliceSets[j]->getSlice(i);
-			colorTexture			= slice->colormap;
-			normalTexture			= slice->normalmap;
-			dataTexture				= slice->datamap;
-
-			glPushMatrix();	
-		
-				//l3dBillboardCheatCylindricalBegin();
+			sliceCount = sliceSets[j]->size();
+			i = sliceCount/2;
+				slice					= sliceSets[j]->getSlice(i);
+				colorTexture			= slice->colormap;
+				normalTexture			= slice->normalmap;
+				dataTexture				= slice->datamap;
+				glPushMatrix();	
+					//l3dBillboardCheatCylindricalBegin();
 			
-				glRotatef(j*90, 0.0, 1.0, 0.0);
-				glTranslatef((i-(float(sliceCount)/2.f) + 0.5), 0.0, 0.0);
-				glScalef(10.0,10.0,10.0);
-				//glRotatef(90, 0.0, 0.0, 1.0);
-				glRotatef(90, 0.0, 1.0, 0.0);
-				glDisable(GL_CULL_FACE);
-				colorTexture		->bind(GL_TEXTURE0);
-				displacementTexture	->bind(GL_TEXTURE1);
-				displacement2Texture	->bind(GL_TEXTURE4);
-				dataTexture			->bind(GL_TEXTURE2);
-				normalTexture		->bind(GL_TEXTURE3);
+					glRotatef(j*90, 0.0, 1.0, 0.0);
+					glTranslatef((i-(float(sliceCount)/2.f) + 0.5), 0.0, 0.0);
+					glScalef(10.0,10.0,10.0);
+					//glRotatef(90, 0.0, 0.0, 1.0);
+					glRotatef(90, 0.0, 1.0, 0.0);
+					glDisable(GL_CULL_FACE);
+					colorTexture		->bind(GL_TEXTURE0);
+					displacementTexture	->bind(GL_TEXTURE1);
+					displacement2Texture	->bind(GL_TEXTURE4);
+					dataTexture			->bind(GL_TEXTURE2);
+					normalTexture		->bind(GL_TEXTURE3);
 
-				u_time_offset->data = &	g_tree_time_offset_1;
-				// turn on shader
-				lod1shader->use(true);
-				lod1shader->setTexture(l_color	, colorTexture			->textureUnitNumber	);
-				lod1shader->setTexture(l_displ	, displacementTexture	->textureUnitNumber	);
-				lod1shader->setTexture(l_displ2	, displacement2Texture	->textureUnitNumber	);
-				lod1shader->setTexture(l_data	, dataTexture			->textureUnitNumber	);
-				lod1shader->setTexture(l_normal	, normalTexture			->textureUnitNumber	);
+					u_time_offset->data = &	g_tree_time_offset_1;
+					// turn on shader
+					lod1shader->use(true);
+					lod1shader->setTexture(l_color	, colorTexture			->textureUnitNumber	);
+					lod1shader->setTexture(l_displ	, displacementTexture	->textureUnitNumber	);
+					lod1shader->setTexture(l_displ2	, displacement2Texture	->textureUnitNumber	);
+					lod1shader->setTexture(l_data	, dataTexture			->textureUnitNumber	);
+					lod1shader->setTexture(l_normal	, normalTexture			->textureUnitNumber	);
 			
-				// TODO: draw at all positions
-				lod1vbo->draw(lod1shader, GL_QUADS, 0);
+					// TODO: draw at all positions
+					if (discrepacy<0.8){
+						glDepthMask(GL_FALSE);
+						lod1vbo->draw(lod1shader, GL_QUADS, 0);
+						glDepthMask(GL_TRUE);
+					} else {
+						lod1vbo->draw(lod1shader, GL_QUADS, 0);
+					}
 
-				colorTexture		->unbind();
-				displacementTexture	->unbind();
-				displacement2Texture	->unbind();
-				dataTexture			->unbind();
-				normalTexture		->unbind();
-				// turn off shader
-				lod1shader->use(false);
-				glEnable(GL_CULL_FACE);
+					colorTexture		->unbind();
+					displacementTexture	->unbind();
+					displacement2Texture	->unbind();
+					dataTexture			->unbind();
+					normalTexture		->unbind();
+					// turn off shader
+					lod1shader->use(false);
+					glEnable(GL_CULL_FACE);
 
-			glPopMatrix();
-	} // for j - sliceSets
+				glPopMatrix();
+		} // for j - sliceSets
 	}
 
 }
 
 void DTree::draw(){
+	if (!g_draw_dtree_lod){
+		drawLOD0();
+		return;
+	}
 	// get distance to viewer
 	v3		toViewDir = *viewer_position - position;
 	float distance = toViewDir.length();
 	toViewDir.normalize();
 	float discrepacy = toViewDir.dot(*viewer_direction);
-	v4 lodTresholds = v4 (15.0, 20.0, 50.0, 55.0);
+	//v4 lodTresholds = v4 (12.0, 13.0, 50.0, 55.0);
+	//v4 g_lodTresholds = v4 (15.0, 18.0, 50.0, 55.0);
 	if (discrepacy<0.0){ // if is infront of the camera
 		float alpha=0.0;
-		if (distance >= lodTresholds.w){
-			glColor4f(0.0, 0.0, 0.0, 1.0);
+		if (distance >= g_lodTresholds.w){
+			alpha_c = 1.0;
 			drawLOD2();
-		} else if (distance >= lodTresholds.z){
-			alpha = (distance - lodTresholds.z) / (lodTresholds.w - lodTresholds.z);
+		} else if (distance >= g_lodTresholds.z){
+			alpha = (distance - g_lodTresholds.z) / (g_lodTresholds.w - g_lodTresholds.z);
+			
 			/*
 			// show LOD 1
-				glColor4f(0.0, 0.0, 0.0, 1.0-alpha);
+				alpha_c = 1.0-alpha;
 				drawLOD1();
 				glDepthMask(GL_FALSE);				
 				// show LOD 2 
-				glColor4f(0.0, 0.0, 0.0, alpha);
+				alpha_c = alpha;
 				drawLOD2();
 				glDepthMask(GL_TRUE);
-			*/
+			/*/
 			
 			if (alpha<0.5){
 				// show LOD 1
-				glColor4f(0.0, 0.0, 0.0, 1.0);
+				alpha_c = 1.0;
 				drawLOD1();
 				glDepthMask(GL_FALSE);
 				// show LOD 2 
-				glColor4f(0.0, 0.0, 0.0, 2*alpha);
+				alpha_c = 2*alpha;
 				drawLOD2();
 				glDepthMask(GL_TRUE);
+				
 			} else {
+				// show LOD 2 
+				alpha_c = 1.0;
+				drawLOD2();
 				// show LOD 1 
 				glDepthMask(GL_FALSE);
-				glColor4f(0.0, 0.0, 0.0, 2*(1-alpha));
+				alpha_c = 2*(1-alpha);
 				drawLOD1();
 				glDepthMask(GL_TRUE);
-				// show LOD 2 
-				glColor4f(0.0, 0.0, 0.0, 1.0);
-				drawLOD2();
+				
 			}
 			
-		} else if (distance >=lodTresholds.y){
-			glColor4f(0.0, 0.0, 0.0, 1.0);
+		} else if (distance >=g_lodTresholds.y){
+			alpha_c = 1.0;
 			drawLOD1();
-		} else if (distance >=lodTresholds.x){
-			alpha = (distance - lodTresholds.x) / (lodTresholds.y - lodTresholds.x);
+		} else if (distance >=g_lodTresholds.x){
+			alpha = (distance - g_lodTresholds.x) / (g_lodTresholds.y - g_lodTresholds.x);
 			/*
 			glColor4f(0.0, 0.0, 0.0, 1.0-alpha);
 				drawLOD0();
@@ -999,27 +1043,27 @@ void DTree::draw(){
 			/*/
 			if (alpha<0.5){
 				// show LOD 0
-				glColor4f(0.0, 0.0, 0.0, 1.0);
+				alpha_c = 1.0;
 				drawLOD0();
 				glDepthMask(GL_FALSE);
 				// show LOD 1 
-				glColor4f(0.0, 0.0, 0.0, 2*alpha);
+				alpha_c = 2*alpha;
 				drawLOD1();
 				glDepthMask(GL_TRUE);
 			} else {
 				// show LOD 0
 				glDepthMask(GL_FALSE);
-				glColor4f(0.0, 0.0, 0.0, 2*(1-alpha));
+				alpha_c = 2*(1-alpha);
 				drawLOD0();
 				glDepthMask(GL_TRUE);
 				// show LOD 1 
-				glColor4f(0.0, 0.0, 0.0, 1.0);
+				alpha_c = 1.0;
 				drawLOD1();
 				
 			}
 			
 		} else {
-			glColor4f(0.0, 0.0, 0.0, 1.0);
+			alpha_c = 1.0;
 			drawLOD0();
 		}
 
@@ -1248,18 +1292,32 @@ void DTree::initLOD1()
 
 	// create 2 sliceSets (cross, double sided)
 	v3 dir = v3(-1.0, 0.0, 0.0);
-	DTreeSliceSet * set = new DTreeSliceSet();
 	float res = 256;
 	win_resolution = v2 (res, res);
+	
+	DTreeSliceSet * set;
+
+	
+	set = new DTreeSliceSet();
+	set->rotation_y = 0.0f;	
+	this->createSlices(dir, 3, win_resolution.x, win_resolution.y, false);
+	set->setSlices(this->slices);
+	sliceSets.push_back(set);
+	
+	
+	dir.rotateY(-30);
+	set = new DTreeSliceSet();
+	set->rotation_y = 60;
 	this->createSlices(dir, 3, win_resolution.x, win_resolution.y, false);
 	set->setSlices(this->slices);
 	//set->createFromDir(this, dir);
 	sliceSets.push_back(set);
 
-	
-	dir = v3 (0.0, 0.0, -1.0);
-	set = new DTreeSliceSet();
+	dir = v3(-1.0, 0.0, 0.0);
+	dir.rotateY(+30);
+	set = new DTreeSliceSet();	
 	this->createSlices(dir, 3, win_resolution.x, win_resolution.y, false);
+	set->rotation_y = -60;
 	set->setSlices(this->slices);
 	//set->createFromDir(this, dir);
 	sliceSets.push_back(set);
@@ -1448,7 +1506,11 @@ void DTree::createSlices(v3 & direction, int num, int resolution_x, int resoluti
 			slice->colormap->textureUnitNumber = 0;
 			slice->colormap->setParameterI(GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 			slice->colormap->setParameterI(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-			
+			char buff[100];
+			ctr++;
+			sprintf(buff, "color texture %i", ctr);
+			slice->colormap->description = buff;
+
 
 			slice->depthmap = new Texture(GL_TEXTURE_2D, GL_DEPTH_COMPONENT32F, GL_DEPTH_COMPONENT, GL_FLOAT, NULL, resolution_x, resolution_y, "depthMap");
 			slice->depthmap->textureUnit = GL_TEXTURE2;

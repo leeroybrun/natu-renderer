@@ -111,6 +111,10 @@ GLfloat  g_AlphaThreshold       = 0.01f; // Alpha test threshold
 bool	 g_MouseModeANT			= true;
 
 bool	g_draw_dtree_lod		= true;
+bool	g_draw_lod0		= true;
+bool	g_draw_lod1		= true;
+bool	g_draw_lod2		= true;
+v4		g_lodTresholds	= v4(10, 15, 20, 25);
 bool	g_draw_low_vegetation	= true;
 bool	g_draw_dtree			= true;
 bool	g_draw_light_direction	= false;
@@ -136,8 +140,8 @@ float	g_tree_wave_increase_factor = 1.0;
 float	g_tree_time_offset_1	= 0.0;
 float	g_tree_time_offset_2	= 0.5;		
 
-int		g_tree_gridSize			= 20;
-float	g_tree_mean_distance	= 10.0;
+int		g_tree_gridSize			= 10;
+float	g_tree_mean_distance	= 8.0;
 float	g_tree_dither			= 5.0;
 
 float	g_leaves_MultiplyAmbient			= 0.7;
@@ -151,6 +155,13 @@ v3		g_leaves_LightDiffuseColor			= v3(0.2, 0.2, 0.2);
 int		g_tree_lod0_count					 = 0;
 int		g_tree_lod1_count					 = 0;
 int		g_tree_lod2_count					 = 0;
+
+
+bool	g_orbit					= true;
+float	g_orbit_speed			= 0.1;
+float	g_orbit_radius			= 10.0;
+v3		g_center				= v3(0.0, 5.0, 0.0);
+float	g_timeDiff				= 0;
 
 float g_CPU_fps;
 float CPU_render_time;
@@ -234,8 +245,8 @@ void cbDisplay()
 		glGetQueryObjectui64vEXT(tqid, GL_QUERY_RESULT, &time); // blocking CPU
 		g_Statistics.fps = 1000000000.0/ double(time);
 	}
-	double timeDiff = timer.RealTime() - g_time;
-	g_CPU_fps = 1.0 / (timeDiff);
+	g_timeDiff = timer.RealTime() - g_time;
+	g_CPU_fps = 1.0 / (g_timeDiff);
 	/*
 	if (pqAvailable){
 	glEndQuery(GL_PRIMITIVES_GENERATED);
@@ -465,8 +476,23 @@ void initGUI()
 
 	TwAddVarRW(controlBar, "sw_tree", TW_TYPE_BOOLCPP, & g_draw_dtree, " group='Visibility' ");
 	TwAddVarRW(controlBar, "sw_lod", TW_TYPE_BOOLCPP, & g_draw_dtree_lod, " group='Visibility'  ");
+	TwAddVarRW(controlBar, "sw_lod0", TW_TYPE_BOOLCPP, & g_draw_lod0, " group='Visibility'  ");
+	TwAddVarRW(controlBar, "sw_lod1", TW_TYPE_BOOLCPP, & g_draw_lod1, " group='Visibility'  ");
+	TwAddVarRW(controlBar, "sw_lod2", TW_TYPE_BOOLCPP, & g_draw_lod2, " group='Visibility'  ");
+	//g_lodTresholds
+	TwAddVarRW(controlBar, "sw_lod_tresh0", TW_TYPE_FLOAT, & g_lodTresholds.x, " group='Visibility' label='LODtreshold0'  min=0 max=100 step=0.1");
+	TwAddVarRW(controlBar, "sw_lod_tresh1", TW_TYPE_FLOAT, & g_lodTresholds.y, " group='Visibility' label='LODtreshold1'  min=0 max=100 step=0.1");
+	TwAddVarRW(controlBar, "sw_lod_tresh2", TW_TYPE_FLOAT, & g_lodTresholds.z, " group='Visibility' label='LODtreshold2'  min=0 max=100 step=0.1");
+	TwAddVarRW(controlBar, "sw_lod_tresh3", TW_TYPE_FLOAT, & g_lodTresholds.w, " group='Visibility' label='LODtreshold3'  min=0 max=100 step=0.1");
+
+
 	TwAddVarRW(controlBar, "sw_veg", TW_TYPE_BOOLCPP, & g_draw_low_vegetation, " group='Visibility'  ");
 	TwAddVarRW(controlBar, "sw_light", TW_TYPE_BOOLCPP, & g_draw_light_direction, " group='Visibility'  ");
+
+	TwAddVarRW(controlBar, "sw_orbit", TW_TYPE_BOOLCPP, & g_orbit, " group='General' label='Orbit(ON/OFF)'");
+	TwAddVarRW(controlBar, "sw_orbit_speed", TW_TYPE_FLOAT, & g_orbit_speed, " group='General' min=-10 max=100 step=0.1 label='orbit speed'");
+	TwAddVarRW(controlBar, "sw_orbit_radius", TW_TYPE_FLOAT, & g_orbit_radius, " group='General' min=-10 max=100 step=0.1 label='orbit radius'");
+
 
 	TwAddVarRW(controlBar, "snapshotDir", TW_TYPE_DIR3F, &g_snapshot_direction, 
 		"group='LOD'  label='slices direction' help='direction of snapshot' ");

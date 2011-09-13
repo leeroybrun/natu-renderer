@@ -88,9 +88,12 @@ void World::endLODBuffer()
 
 void World::draw()
 {
+
 	// preprocess - one pass for LOD & occlusion queries
+	if (g_orbit){
+		p_activeCamera->orbitY(g_center, g_orbit_radius, g_timeDiff*g_orbit_speed);
+	}
 	p_activeCamera->shoot();
-	
 	/*
 	startLODBuffer();
 		drawForLOD();
@@ -184,26 +187,33 @@ void World::draw()
 }
 
 void World::drawWithAlpha(){
-	if (g_draw_low_vegetation){
-		p_grass_growth->draw();
-		p_tree1_growth->draw();
-		p_tree2_growth->draw();
-	}
+	
 	if (g_draw_dtree){
 		// sort tree positions
 		v3 camPos = p_activeCamera->getPosition();
 		oneBubbleSortWalkthrough(tree_positions, g_tree_gridSize*g_tree_gridSize, camPos);
 
 		v4* f;
+		
+		//	glPushMatrix();
+		//		glTranslatef(0.0, 5.0, -5.0);
+		//		//glRotatef(90, 0.0, 1.0, 0.0);
+		//		p_dtree->position = v3(0.0, 5.0, -5.0);
+		//		p_dtree->rotationY = 0.0;
+		//		p_dtree->draw();
+		//	glPopMatrix();
+		
 		for (int c=0; c<g_tree_gridSize*g_tree_gridSize; c++){
 			f = tree_positions[c];
 			glPushMatrix();
 			glTranslatef(f->x, f->y, f->z);
 				glRotatef(f->w, 0.0, 1.0, 0.0);
 				p_dtree->position = f->xyz();
+				p_dtree->rotationY = f->w;
 				p_dtree->draw();
 			glPopMatrix();
 		}
+		
 		/*
 		glPushMatrix();
 			glTranslatef(0.0, 5.0, 0.0);
@@ -213,7 +223,11 @@ void World::drawWithAlpha(){
 		glPopMatrix();
 		*/
 	}
-	
+	if (g_draw_low_vegetation){
+		p_grass_growth->draw();
+		p_tree1_growth->draw();
+		p_tree2_growth->draw();
+	}
 }
 
 void World::drawUnderWater(){
@@ -423,7 +437,7 @@ void World::init()
 			tree_positions[i*g_tree_gridSize + j] = new v4(x,y,z,r);
 		}
 	}
-
+	/*
 	v3 dir = v3(-1.0, 0.0, 0.0);
 	p_test_model = new TestModel();
 	p_test_model->processTree(p_dtree, dir);
@@ -432,7 +446,7 @@ void World::init()
 	p_test_model2 = new TestModel();
 	p_test_model2->processTree(p_dtree, dir);
 	p_test_model2->init();
-	
+	*/
 	/*
 	cubeShader = new Shader("cube");
 	cubeShader->loadShader("shaders/cube_vs.glsl", "shaders/cube_fs.glsl");
