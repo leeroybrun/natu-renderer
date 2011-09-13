@@ -24,6 +24,7 @@ uniform float		leaf_frequency;
 
 varying vec3		eyeDir;
 varying vec3		normalDir;
+varying	float		alpha;
 
 void main()
 {	
@@ -102,9 +103,12 @@ void main()
 		}
 		if (color.a<0.5){discard;}
 
+		//color.a = clamp(-2.0 + 4.0*abs(dot(normalize(normalDir), normalize(eyeDir))), 0.0, 1.0);
+		
 		//color.a =clamp(-0.5 + 2.0*abs(dot(normalize(normalDir), normalize(eyeDir))), 0.0, 1.0);
 		//color.a =clamp(abs(dot(normalize(normalDir), normalize(eyeDir))), 0.0, 1.0);
 		color.a = gl_Color.a;
+		//color.a = 0.5;
 		gl_FragData[0] = color;
 		gl_FragData[1] = color * vec4(0.5, 0.5, 0.5, 1.0);
 

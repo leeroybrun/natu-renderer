@@ -3,6 +3,7 @@
 GLuint edges[] = {0,1, 2,3, 4,5, 6,7, 0,2,2,4,4,6,6,0, 1,3,3,5,5,7,7,1};
 
 Camera::Camera() {
+	angle = 0.0;
 	activityFactor = 0.f;
 	human_movement = v3(0.f);
 	step = HUMAN_SPEED;
@@ -90,6 +91,14 @@ bool Camera::handleKeyDown(int key, int action)
 		case 'W':
 			move( direction*step);
 			break;
+		case 'q':
+		case 'Q':
+			move( upVector*step);
+			break;
+		case 'e':
+		case 'E':
+			move( upVector*-step);
+			break;
 		default:
 			return false;		
 	}
@@ -176,6 +185,17 @@ void Camera::draw() {
    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
+void Camera::setLookAtPoint(v3 &_p){
+	direction = (_p-position).getNormalized();
+}
+void Camera::orbitY(v3 &center, float radius, float angleDiff){
+	angle += angleDiff;
+	float cosA = cos(angle);
+	float sinA = sin(angle);
+	position = center + v3(radius*cosA,0.0,radius*sinA);
+	setLookAtPoint(center);
+}
+
 void Camera::shoot()
 {
 	/*
@@ -223,26 +243,27 @@ void Camera::setup(v3 & pos, v3 & dir, v3 &up, int *w, int *h, float fo, float n
 
 void Camera::move(v3 & dist)
 {
-	position = position + dist;
-	
-	if (terrain!=NULL && mode!=FREE){
-		float x = position.x +terrain->sz_x/2.0;
-		float z = position.z +terrain->sz_y/2.0;
-		switch (mode){
-		case TERRAIN_RESTRICTED:
-			position.y = max(terrain->getHeightAt(x, z)+HUMAN_HEIGHT, position.y);
-			break;
-		case TERRAIN_CONNECTED:
-			position.y = terrain->getHeightAt(x, z)+HUMAN_HEIGHT;
-			break;
-		case WALK:
-			activityFactor += HUMAN_ACTIVITY_INCR;
-			activityFactor = min(activityFactor, HUMAN_MAX_ACTIVITY);
-			position.y = terrain->getHeightAt(x,z)+HUMAN_HEIGHT;
+		g_center = g_center + dist;
+		position = position + dist;
+		
+		if (terrain!=NULL && mode!=FREE){
+			float x = position.x +terrain->sz_x/2.0;
+			float z = position.z +terrain->sz_y/2.0;
+			switch (mode){
+			case TERRAIN_RESTRICTED:
+				position.y = max(terrain->getHeightAt(x, z)+HUMAN_HEIGHT, position.y);
+				break;
+			case TERRAIN_CONNECTED:
+				position.y = terrain->getHeightAt(x, z)+HUMAN_HEIGHT;
+				break;
+			case WALK:
+				activityFactor += HUMAN_ACTIVITY_INCR;
+				activityFactor = min(activityFactor, HUMAN_MAX_ACTIVITY);
+				position.y = terrain->getHeightAt(x,z)+HUMAN_HEIGHT;
+
+			}
 
 		}
-
-	}
 	// restrict to the world cube
 }
 

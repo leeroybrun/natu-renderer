@@ -102,6 +102,11 @@ void Grass::init()
 	
 	// texture
 	textureId = textureManager->loadTexture(GRASS_TEX_NAME, "grass_tex", 0, false);
+	Texture * t = textureManager->getTexture(textureId);
+	t->setParameterI(GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+	t->setParameterI(GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+	t->setParameterI(GL_TEXTURE_WRAP_R, GL_MIRRORED_REPEAT);
+                    
 	textureWaveId = textureManager->loadTexture(GRASS_TEX_NAME, "grass_wave_tex", 1, false, GL_REPEAT, GL_NEAREST);
 	shader->linkTexture(textureManager->getTexture(textureId));
 	shader->linkTexture(textureManager->getTexture(textureWaveId));

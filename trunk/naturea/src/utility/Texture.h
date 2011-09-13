@@ -38,7 +38,7 @@ public:
 	GLsizei		width;
 	GLsizei		height;
 	string		inShaderName;
-
+	string		description;
 	static GLint texUnitToNumber(GLenum texUnit){
 		return texUnit - GL_TEXTURE0;
 	}

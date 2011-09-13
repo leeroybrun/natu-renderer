@@ -52,7 +52,9 @@ public :
 	DTreeSliceSet(){}
 	~DTreeSliceSet(){}
 	v3			getNormal(){
-					return rotMatrix*normal;
+					v3 n = v3(0.0, 0.0, -1.0);
+					n.rotateY((90+rotation_y)*DEG_TO_RAD);
+					return n;
 				}
 	void		setRotMatrix(m3 &_rotMatrix){
 					rotMatrix = _rotMatrix;
@@ -66,7 +68,7 @@ public :
 	DTreeSlice*	getSlice(int id){
 					return slices[id];
 				}
-
+	float		rotation_y; // degrees
 private:
 	vector<DTreeSlice*> slices;
 	v3			normal;
@@ -193,6 +195,10 @@ private:
 	vector<DTreeSliceSet*>	sliceSets;
 	Shader	*				lod1shader;
 	VBO		*				lod1vbo;
+
+
+	int						ctr;
+	float					alpha_c;
 
 };
 
