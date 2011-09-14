@@ -849,7 +849,7 @@ void DTree::drawLOD1()
 				dataTexture				= slice->datamap;
 
 				glPushMatrix();
-		
+					
 					//l3dBillboardCheatCylindricalBegin();
 			
 					glRotatef(sliceSets[j]->rotation_y, 0.0, 1.0, 0.0);
@@ -858,6 +858,7 @@ void DTree::drawLOD1()
 					//glRotatef(90, 0.0, 0.0, 1.0);
 					glRotatef(90.0, 0.0, 1.0, 0.0);
 					glDisable(GL_CULL_FACE);
+					glDisable(GL_LIGHTING);
 					colorTexture		->bind(GL_TEXTURE0);
 					displacementTexture	->bind(GL_TEXTURE1);
 					displacement2Texture	->bind(GL_TEXTURE4);
@@ -892,7 +893,7 @@ void DTree::drawLOD1()
 					// turn off shader
 					lod1shader->use(false);
 					glEnable(GL_CULL_FACE);
-
+					glEnable(GL_LIGHTING);
 				glPopMatrix();
 			} // for i - each slice
 		} // for j - sliceSets
@@ -1285,6 +1286,276 @@ void DTree::initLOD0()
 
 }
 
+void DTree::initLOD1b()
+{
+	// create slices
+
+	// create 2 sliceSets (cross, double sided)
+	v3 dir = v3(-1.0, 0.0, 0.0);
+	float res = 256;
+	win_resolution = v2 (res, res);
+	
+	DTreeSliceSet * set;
+	slice_count = 3;
+	resolution_x = win_resolution.x;
+	resolution_y = win_resolution.y;
+	
+	set = new DTreeSliceSet();
+	set->rotation_y = 0.0f;	
+	this->createSlices(dir, false);
+	set->setSlices(this->slices);
+	sliceSets.push_back(set);
+	
+	
+	dir.rotateY(-30);
+	set = new DTreeSliceSet();
+	set->rotation_y = 60;
+	this->createSlices(dir, false);
+	set->setSlices(this->slices);
+	//set->createFromDir(this, dir);
+	sliceSets.push_back(set);
+
+	dir = v3(-1.0, 0.0, 0.0);
+	dir.rotateY(+30);
+	set = new DTreeSliceSet();	
+	this->createSlices(dir, false);
+	set->rotation_y = -60;
+	set->setSlices(this->slices);
+	//set->createFromDir(this, dir);
+	sliceSets.push_back(set);
+
+	// join textures to one...
+	joinSliceSetsTextures();
+	
+	
+	
+	// init shaders
+
+
+
+
+	lod1shader = new Shader("test");
+	lod1shader->loadShader("shaders/test3_vs.glsl", "shaders/test3_fs.glsl");
+	// link textures to shader
+	//shader->linkTexture(colorMap			);
+	//shader->linkTexture(displacementMap		);
+	//shader->linkTexture(dataMap				);
+
+	l_color		 = lod1shader->getGLLocation("colorMap"			);
+	l_displ		 = lod1shader->getGLLocation("leaf_noise_tex"	);
+	l_displ2	 = lod1shader->getGLLocation("branch_noise_tex"	);
+	l_data		 = lod1shader->getGLLocation("dataMap"			);
+	l_normal	 = lod1shader->getGLLocation("normalMap"		);
+
+	lod1shader->registerUniform("time", UniformType::F1, & g_float_time);
+
+	lod1shader->registerUniform("wave_amplitude"		, UniformType::F1, & g_tree_wave_amplitude		);
+	lod1shader->registerUniform("wave_frequency"		, UniformType::F1, & g_tree_wave_frequency		);
+	lod1shader->registerUniform("movementVectorA"		, UniformType::F2, & g_tree_movementVectorA		);
+	lod1shader->registerUniform("movementVectorB"		, UniformType::F2, & g_tree_movementVectorB		);
+	lod1shader->registerUniform("wave_y_offset"			, UniformType::F1, & g_tree_wave_y_offset			);
+	lod1shader->registerUniform("wave_increase_factor"	, UniformType::F1, & g_tree_wave_increase_factor	);
+	lod1shader->registerUniform("window_size"			, UniformType::F2, & win_resolution				);
+
+
+	lod1shader->registerUniform("wood_amplitudes"		, UniformType::F4, & g_tree_wood_amplitudes.data	);
+	lod1shader->registerUniform("wood_frequencies"		, UniformType::F4, & g_tree_wood_frequencies.data	);
+	lod1shader->registerUniform("leaf_amplitude"		, UniformType::F1, & g_tree_leaf_amplitude	);
+	lod1shader->registerUniform("leaf_frequency"		, UniformType::F1, & g_tree_leaf_frequency	);
+
+	int i = lod1shader->registerUniform("time_offset"	, UniformType::F1, & tree_time_offset);
+	u_time_offset = lod1shader->getUniform(i);
+	
+	/*
+	shader = new Shader("test");
+	shader->loadShader("shaders/test_vs.glsl", "shaders/test_fs.glsl");
+	// link textures to shader
+	shader->linkTexture(frontDecalMap		);
+	shader->linkTexture(frontNormalMap		);
+	shader->linkTexture(frontTranslucencyMap);
+	shader->linkTexture(frontHalfLife2Map	);
+	shader->linkTexture(backDecalMap		);
+	shader->linkTexture(backNormalMap		);
+	shader->linkTexture(backTranslucencyMap	);
+	shader->linkTexture(backHalfLife2Map	);
+	*/
+	vector<v3> vertexArr0;
+	vector<v3> normalArr0;
+	vector<v3> tangentArr0;
+	vector<v2> texCoordArr0;
+	vector<v2> sliceAtrArr0;
+
+	vertexArr0.push_back(v3(-0.5,  0.0,  0.0));
+	vertexArr0.push_back(v3( 0.5,  0.0,  0.0));
+	vertexArr0.push_back(v3( 0.5,  1.0,  0.0));
+	vertexArr0.push_back(v3(-0.5,  1.0,  0.0));
+	vertexArr0.push_back(v3(-0.5,  0.0, -0.5));
+	vertexArr0.push_back(v3( 0.5,  0.0, -0.5));
+	vertexArr0.push_back(v3( 0.5,  1.0, -0.5));
+	vertexArr0.push_back(v3(-0.5,  1.0, -0.5));
+	vertexArr0.push_back(v3(-0.5,  0.0,  0.5));
+	vertexArr0.push_back(v3( 0.5,  0.0,  0.5));
+	vertexArr0.push_back(v3( 0.5,  1.0,  0.5));
+	vertexArr0.push_back(v3(-0.5,  1.0,  0.5));
+
+	normalArr0.push_back(v3( 0.0,  0.0,  1.0));
+	normalArr0.push_back(v3( 0.0,  0.0,  1.0));
+	normalArr0.push_back(v3( 0.0,  0.0,  1.0));
+	normalArr0.push_back(v3( 0.0,  0.0,  1.0));
+	normalArr0.push_back(v3( 0.0,  0.0,  1.0));
+	normalArr0.push_back(v3( 0.0,  0.0,  1.0));
+	normalArr0.push_back(v3( 0.0,  0.0,  1.0));
+	normalArr0.push_back(v3( 0.0,  0.0,  1.0));
+	normalArr0.push_back(v3( 0.0,  0.0,  1.0));
+	normalArr0.push_back(v3( 0.0,  0.0,  1.0));
+	normalArr0.push_back(v3( 0.0,  0.0,  1.0));
+	normalArr0.push_back(v3( 0.0,  0.0,  1.0));
+
+	tangentArr0.push_back(v3( 1.0,  0.0,  0.0));
+	tangentArr0.push_back(v3( 1.0,  0.0,  0.0));
+	tangentArr0.push_back(v3( 1.0,  0.0,  0.0));
+	tangentArr0.push_back(v3( 1.0,  0.0,  0.0));
+	tangentArr0.push_back(v3( 1.0,  0.0,  0.0));
+	tangentArr0.push_back(v3( 1.0,  0.0,  0.0));
+	tangentArr0.push_back(v3( 1.0,  0.0,  0.0));
+	tangentArr0.push_back(v3( 1.0,  0.0,  0.0));
+	tangentArr0.push_back(v3( 1.0,  0.0,  0.0));
+	tangentArr0.push_back(v3( 1.0,  0.0,  0.0));
+	tangentArr0.push_back(v3( 1.0,  0.0,  0.0));
+	tangentArr0.push_back(v3( 1.0,  0.0,  0.0));
+
+	texCoordArr0.push_back(v2( 0.0,  0.0));
+	texCoordArr0.push_back(v2( 1.0,  0.0));
+	texCoordArr0.push_back(v2( 1.0,  1.0));
+	texCoordArr0.push_back(v2( 0.0,  1.0));
+	texCoordArr0.push_back(v2( 0.0,  0.0));
+	texCoordArr0.push_back(v2( 1.0,  0.0));
+	texCoordArr0.push_back(v2( 1.0,  1.0));
+	texCoordArr0.push_back(v2( 0.0,  1.0));
+	texCoordArr0.push_back(v2( 0.0,  0.0));
+	texCoordArr0.push_back(v2( 1.0,  0.0));
+	texCoordArr0.push_back(v2( 1.0,  1.0));
+	texCoordArr0.push_back(v2( 0.0,  1.0));
+
+	// first slice number, second sliceSet number
+	sliceAtrArr0.push_back(v2( 1.0,  0.0));
+	sliceAtrArr0.push_back(v2( 1.0,  0.0));
+	sliceAtrArr0.push_back(v2( 1.0,  0.0));
+	sliceAtrArr0.push_back(v2( 1.0,  0.0));
+	sliceAtrArr0.push_back(v2( 0.0,  0.0));
+	sliceAtrArr0.push_back(v2( 0.0,  0.0));
+	sliceAtrArr0.push_back(v2( 0.0,  0.0));
+	sliceAtrArr0.push_back(v2( 0.0,  0.0));
+	sliceAtrArr0.push_back(v2( 2.0,  0.0));
+	sliceAtrArr0.push_back(v2( 2.0,  0.0));
+	sliceAtrArr0.push_back(v2( 2.0,  0.0));
+	sliceAtrArr0.push_back(v2( 2.0,  0.0));
+	
+	int sliceCount = 3;
+	v3 axisY = v3(0.0, 1.0, 0.0);
+	float angle= 60.0;
+	for (i=0; i<(sliceCount*4); i++){
+		vertexArr0.push_back(vertexArr0[i].getRotated(angle*DEG_TO_RAD, axisY));
+		normalArr0.push_back(normalArr0[i].getRotated(angle*DEG_TO_RAD, axisY));
+		tangentArr0.push_back(tangentArr0[i].getRotated(angle*DEG_TO_RAD, axisY));
+		texCoordArr0.push_back(texCoordArr0[i]);
+		sliceAtrArr0.push_back(v2(sliceAtrArr0[i].x, 1.0));
+	}
+	angle= -60.0;
+	for (i=0; i<(sliceCount*4); i++){
+		vertexArr0.push_back(vertexArr0[i].getRotated(angle*DEG_TO_RAD, axisY));
+		normalArr0.push_back(normalArr0[i].getRotated(angle*DEG_TO_RAD, axisY));
+		tangentArr0.push_back(tangentArr0[i].getRotated(angle*DEG_TO_RAD, axisY));
+		texCoordArr0.push_back(texCoordArr0[i]);
+		sliceAtrArr0.push_back(v2(sliceAtrArr0[i].x, 2.0));
+	}
+	// copy to buffer
+	GLfloat* vertices	= new GLfloat[3*vertexArr0.size()]; 
+	GLfloat* normals	= new GLfloat[3*normalArr0.size()]; 
+	GLfloat* tangents	= new GLfloat[3*tangentArr0.size()]; 
+	GLfloat* texCoords	= new GLfloat[2*texCoordArr0.size()]; 
+	GLfloat* sliceAttr	= new GLfloat[2*sliceAtrArr0.size()]; 
+	int vertexCount = vertexArr0.size();
+	for (i=0; i<vertexCount; i++){
+		vertices[i*3 + 0] = vertexArr0[i].x;
+		vertices[i*3 + 1] = vertexArr0[i].y;
+		vertices[i*3 + 2] = vertexArr0[i].z;
+		normals	[i*3 + 0] = normalArr0[i].x;
+		normals	[i*3 + 1] = normalArr0[i].y;
+		normals	[i*3 + 2] = normalArr0[i].z;
+		tangents[i*3 + 0] = tangentArr0[i].x;
+		tangents[i*3 + 1] = tangentArr0[i].y;
+		tangents[i*3 + 2] = tangentArr0[i].z;
+		texCoords[i*2 + 0] = texCoordArr0[i].x;
+		texCoords[i*2 + 1] = texCoordArr0[i].y;
+		sliceAttr[i*2 + 0] = sliceAtrArr0[i].x;
+		sliceAttr[i*2 + 1] = sliceAtrArr0[i].y;
+	}
+	// delete vector 'vertexArr0'
+
+	vertexArr0.clear();
+	normalArr0.clear();
+	tangentArr0.clear();
+	texCoordArr0.clear();
+	sliceAtrArr0.clear();
+
+
+	// init VBO
+	int count = vertexCount;
+	lod1vbo = new VBO();
+	lod1vbo->setVertexCount(count);
+	// position
+	VBODataSet * dataSet = new VBODataSet(
+		vertices,
+		3*sizeof(GLfloat),
+		GL_FLOAT, 
+		ATTRIB_NAMES::POSITION,
+		true
+	);
+	lod1vbo->addVertexAttribute( dataSet );
+	// normal
+	dataSet = new VBODataSet(
+		normals,
+		3*sizeof(GLfloat),
+		GL_FLOAT, 
+		ATTRIB_NAMES::NORMAL,
+		false
+	);
+	lod1vbo->addVertexAttribute( dataSet );
+	// tangent
+	dataSet = new VBODataSet(
+		tangents,
+		3*sizeof(GLfloat),
+		GL_FLOAT, 
+		ATTRIB_NAMES::TANGENT,
+		false
+	);
+	lod1vbo->addVertexAttribute( dataSet );
+	// texture coordinates
+	dataSet = new VBODataSet(
+		texCoords,
+		2*sizeof(GLfloat),
+		GL_FLOAT, 
+		ATTRIB_NAMES::TEXCOORD0,
+		false
+	);
+	lod1vbo->addVertexAttribute( dataSet );
+	// slice attributes
+	dataSet = new VBODataSet(
+		sliceAttr,
+		2*sizeof(GLfloat),
+		GL_FLOAT, 
+		"sliceDescription",
+		false
+	);
+	lod1vbo->addVertexAttribute( dataSet );
+
+
+	// link vbo and shaders
+	lod1vbo->compileData(GL_STATIC_DRAW);
+	lod1vbo->compileWithShader(lod1shader);
+}
+
 void DTree::initLOD1()
 {
 	
@@ -1296,11 +1567,13 @@ void DTree::initLOD1()
 	win_resolution = v2 (res, res);
 	
 	DTreeSliceSet * set;
-
+	slice_count = 3;
+	resolution_x = win_resolution.x;
+	resolution_y = win_resolution.y;
 	
 	set = new DTreeSliceSet();
 	set->rotation_y = 0.0f;	
-	this->createSlices(dir, 3, win_resolution.x, win_resolution.y, false);
+	this->createSlices(dir, false);
 	set->setSlices(this->slices);
 	sliceSets.push_back(set);
 	
@@ -1308,7 +1581,7 @@ void DTree::initLOD1()
 	dir.rotateY(-30);
 	set = new DTreeSliceSet();
 	set->rotation_y = 60;
-	this->createSlices(dir, 3, win_resolution.x, win_resolution.y, false);
+	this->createSlices(dir, false);
 	set->setSlices(this->slices);
 	//set->createFromDir(this, dir);
 	sliceSets.push_back(set);
@@ -1316,13 +1589,21 @@ void DTree::initLOD1()
 	dir = v3(-1.0, 0.0, 0.0);
 	dir.rotateY(+30);
 	set = new DTreeSliceSet();	
-	this->createSlices(dir, 3, win_resolution.x, win_resolution.y, false);
+	this->createSlices(dir, false);
 	set->rotation_y = -60;
 	set->setSlices(this->slices);
 	//set->createFromDir(this, dir);
 	sliceSets.push_back(set);
 
+	// join textures to one...
+	//joinSliceSetsTextures();
+	
+	
+	
 	// init shaders
+
+
+
 
 	lod1shader = new Shader("test");
 	lod1shader->loadShader("shaders/test2_vs.glsl", "shaders/test2_fs.glsl");
@@ -1369,7 +1650,7 @@ void DTree::initLOD1()
 	shader->linkTexture(backTranslucencyMap	);
 	shader->linkTexture(backHalfLife2Map	);
 	*/
-	
+
 	// init VBO
 	int count = 4;
 	lod1vbo = new VBO();
@@ -1410,6 +1691,8 @@ void DTree::initLOD1()
 		false
 	);
 	lod1vbo->addVertexAttribute( dataSet );
+
+
 
 	// link vbo and shaders
 	lod1vbo->compileData(GL_STATIC_DRAW);
@@ -1453,7 +1736,7 @@ BBox * DTree::getBBox()
 	return bbox;
 }
 
-void DTree::createSlices(v3 & direction, int num, int resolution_x, int resolution_y, bool half){
+void DTree::createSlices(v3 & direction, bool half){
 	// init data pre-processing shader
 	Shader * dataProcessShader = new Shader("data_pre-processor");
 	dataProcessShader->loadShader(DYN_TREE::SHADER_PREPROCESS_V, DYN_TREE::SHADER_PREPROCESS_F);
@@ -1475,7 +1758,7 @@ void DTree::createSlices(v3 & direction, int num, int resolution_x, int resoluti
 	v3 position = direction * distance;
 	float diameter = 0.7*box->getMinSize();
 	float radius = diameter*0.5f;
-	float thickness = diameter/(float(num));
+	float thickness = diameter/(float(slice_count));
 	if (half) thickness*=0.5;
 	float left = -0.5, right= 0.5, bottom= 0.0, top= 1.0, near, far;
 	float positionDist = position.length();
@@ -1492,7 +1775,7 @@ void DTree::createSlices(v3 & direction, int num, int resolution_x, int resoluti
 		GLuint fbo = 0;
 		
 
-	for ( i = 0; i< num; i++){
+	for ( i = 0; i< slice_count; i++){
 		// create FBO
 			glGenFramebuffersEXT(1, &fbo);
 			glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fbo);
@@ -1553,7 +1836,7 @@ void DTree::createSlices(v3 & direction, int num, int resolution_x, int resoluti
 			near = positionDist-radius + i * thickness;
 			far = near + thickness;
 			// last interval must be to infinity if half slicing
-			if (half && i==num-1)
+			if (half && i==slice_count-1)
 			{
 				far = positionDist-radius + 2*(i+1) * thickness;
 			}
@@ -1583,7 +1866,7 @@ void DTree::createSlices(v3 & direction, int num, int resolution_x, int resoluti
 	
 
 		// generate mipmaps where needed
-			//slice->colormap->generateMipmaps();
+			slice->colormap->generateMipmaps();
 			//slice->colormap->setParameterI(GL_TEXTURE_MIN_LOD, 0);
 			//slice->colormap->setParameterI(GL_TEXTURE_BASE_LEVEL, 0);
 			
@@ -1640,6 +1923,106 @@ void DTree::createSlices(v3 & direction, int num, int resolution_x, int resoluti
 		
 	} // for each slice
 	
+
+
+
+
 	SAFE_DELETE_PTR ( depthmap );
 	SAFE_DELETE_PTR ( dataProcessShader );
+}
+
+void DTree::joinSliceSetsTextures(){
+
+	Shader * joinShader = new Shader("join");
+	joinShader->loadShader(DYN_TREE::SHADER_JOIN_V, DYN_TREE::SHADER_JOIN_F);
+	int loc_colormap	= joinShader->getGLLocation("colorMap");	
+	int loc_datamap		= joinShader->getGLLocation("dataMap");			
+	int loc_normalmap	= joinShader->getGLLocation("normalMap");		
+	int loc_depthmap	= joinShader->getGLLocation("depthMap");		
+	int sliceSetCnt = sliceSets.size();
+	GLuint fbo = 0;
+	int jResX = slice_count * resolution_x;
+	int jResY = sliceSetCnt * resolution_y;
+
+
+
+	// render offscreen
+	g_window_sizes.x = jResX;
+	g_window_sizes.y = jResX;
+	glViewport(0, 0, g_window_sizes.x, g_window_sizes.y);
+
+	glGenFramebuffersEXT(1, &fbo);
+	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fbo);
+	
+		jColorMap	= new Texture(GL_TEXTURE_2D, GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE, NULL, jResX, jResY, "colorMap");
+		jColorMap->textureUnit =  GL_TEXTURE1;
+		jColorMap->textureUnitNumber =		1;
+		jDataMap	= new Texture(GL_TEXTURE_2D, GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE, NULL, jResX, jResY, "dataMap");
+		jDataMap->textureUnit =	  GL_TEXTURE2;
+		jDataMap->textureUnitNumber =		2;
+		jDepthMap	= new Texture(GL_TEXTURE_2D, GL_DEPTH_COMPONENT32F, GL_DEPTH_COMPONENT, GL_FLOAT, NULL, jResX, jResY, "depthMap");
+		jDepthMap->textureUnit =  GL_TEXTURE3;
+		jDepthMap->textureUnitNumber =		3;
+		jNormalMap	= new Texture(GL_TEXTURE_2D, GL_RGB, GL_RGB, GL_UNSIGNED_BYTE, NULL, jResX, jResY, "normalMap");
+		jNormalMap->textureUnit = GL_TEXTURE4;
+		jNormalMap->textureUnitNumber =     4;
+
+
+		glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_2D, jColorMap->id , 0);
+		glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT1_EXT, GL_TEXTURE_2D, jNormalMap->id , 0);
+		glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT2_EXT, GL_TEXTURE_2D, jDataMap->id , 0);
+		glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT, GL_TEXTURE_2D, jDepthMap->id , 0);
+		assert(glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT)==GL_FRAMEBUFFER_COMPLETE_EXT);
+		assert( glGetError() == GL_NO_ERROR );
+
+		glClearColor(0.f, 0.f, 0.f, 0.f);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		GLenum buffers[3] = {GL_COLOR_ATTACHMENT0_EXT, GL_COLOR_ATTACHMENT1_EXT, GL_COLOR_ATTACHMENT2_EXT};
+		glDrawBuffersARB(3, buffers);
+		DTreeSlice* slice;
+		// draw slices
+		//glDisable(GL_DEPTH_TEST);
+
+		joinShader->use(true);
+		int x,y,width,height;
+		int j=0;
+		for (int i=0; i<slice_count; i++){
+			// draw slice sets
+			for (j=0; j<sliceSetCnt; j++){
+				// draw on proper position
+				slice = sliceSets[j]->getSlice(i); 
+				x = i*resolution_x;
+				y = j*resolution_y;
+				width = resolution_x;
+				height = resolution_y;
+				slice->colormap->	bind(slice->colormap->textureUnit);
+				slice->datamap->	bind(slice->datamap->textureUnit);
+				slice->normalmap->	bind(slice->normalmap->textureUnit);
+				//slice->depthmap->setParameterI(GL_TEXTURE_COMPARE_MODE, GL_NONE);
+				slice->depthmap->	bind(slice->depthmap->textureUnit);
+				
+				joinShader->setTexture(loc_colormap,	slice->colormap->	textureUnitNumber);
+				joinShader->setTexture(loc_datamap,		slice->datamap->	textureUnitNumber);
+				joinShader->setTexture(loc_normalmap,	slice->normalmap->	textureUnitNumber);
+				joinShader->setTexture(loc_depthmap,	slice->depthmap->	textureUnitNumber);
+				
+				slice->colormap->show(i*resolution_x, j*resolution_y, resolution_x, resolution_y, true);	
+
+			}
+		}
+		joinShader->use(false);
+		glFinish();
+		//glEnable(GL_DEPTH_TEST);
+	/*glMatrixMode(GL_PROJECTION);
+		glPopMatrix();
+	glMatrixMode(GL_MODELVIEW);
+		glPopMatrix();*/
+		
+	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+	glDeleteFramebuffersEXT(1, &fbo);
+	glDrawBuffer(GL_BACK);
+
+	g_window_sizes.x = g_WinWidth;
+	g_window_sizes.y = g_WinHeight;
+	glViewport(0, 0, g_window_sizes.x, g_window_sizes.y);
 }

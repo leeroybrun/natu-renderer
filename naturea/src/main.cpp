@@ -18,6 +18,9 @@
 #define TEST 0
 #include "../common/Vector4.h"
 #include "settings.h"
+
+bool	g_compressToOneTexture = true;
+
 bool	g_ParallaxMappingEnabled = true;
 float	g_ParallaxScale =   0.04;
 float	g_ParallaxBias  =  -0.02;

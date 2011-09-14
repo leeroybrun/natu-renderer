@@ -28,7 +28,7 @@ public:
 
 	void generateMipmaps();
 
-	void show(GLint x, GLint y, GLsizei width, GLsizei height);
+	void show(GLint x, GLint y, GLsizei width, GLsizei height, bool depthtest = false);
 
 	GLint		format;
 	GLint		dataFormat;

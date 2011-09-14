@@ -53,35 +53,45 @@ void Texture::setParameterF(GLenum paramName, GLfloat paramValue )
 }
 
 
-void Texture::show(GLint x,GLint y, GLsizei width, GLsizei height){
+void Texture::show(GLint x,GLint y, GLsizei width, GLsizei height, bool depthtest){
 	glMatrixMode(GL_PROJECTION);
 	glPushMatrix();
 	glLoadIdentity();
-	glOrtho(0, g_window_sizes.x, 0, g_window_sizes.y, -1,1);
+	glOrtho(0, g_window_sizes.x, 0, g_window_sizes.y, -100,100);
 
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
 	glLoadIdentity();
 
 	glDisable(GL_LIGHTING);
-	glDisable(GL_DEPTH_TEST);
+	if (!depthtest){
+		glDisable(GL_DEPTH_TEST);
+	}
 	//glEnable(GL_TEXTURE_2D);
-
+	//glDepthMask(GL_FALSE);
 	
 	
 	glActiveTexture(textureUnit);
 	glBindTexture(GL_TEXTURE_2D, id);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_NONE);
 	glColor4f(1.f,1.f,1.f,1.f);
 
 	glBegin(GL_QUADS);
-		glMultiTexCoord2f(GL_TEXTURE0, 0.f, 0.f); glVertex2i(x,y);
-		glMultiTexCoord2f(GL_TEXTURE0, 1.f, 0.f); glVertex2i(x+width,y);
-		glMultiTexCoord2f(GL_TEXTURE0, 1.f, 1.f); glVertex2i(x+width,y+height);
-		glMultiTexCoord2f(GL_TEXTURE0, 0.f, 1.f); glVertex2i(x,y+height);
+		//glMultiTexCoord2f(GL_TEXTURE0, 0.f, 0.f); glVertex2i(x		,	y			);
+		//glMultiTexCoord2f(GL_TEXTURE0, 1.f, 0.f); glVertex2i(x+width,	y			);
+		//glMultiTexCoord2f(GL_TEXTURE0, 1.f, 1.f); glVertex2i(x+width,	y+height	);
+		//glMultiTexCoord2f(GL_TEXTURE0, 0.f, 1.f); glVertex2i(x		,	y+height	);
+		glMultiTexCoord2f(GL_TEXTURE0, 0.f, 0.f); glVertex3f(x		,	y			, 1.0);
+		glMultiTexCoord2f(GL_TEXTURE0, 1.f, 0.f); glVertex3f(x+width,	y			, 1.0);
+		glMultiTexCoord2f(GL_TEXTURE0, 1.f, 1.f); glVertex3f(x+width,	y+height	, 1.0);
+		glMultiTexCoord2f(GL_TEXTURE0, 0.f, 1.f); glVertex3f(x		,	y+height	, 1.0);
 	glEnd();
 
 	glEnable(GL_LIGHTING);
-	glEnable(GL_DEPTH_TEST);
+	//glDepthMask(GL_TRUE);
+	if (!depthtest){
+		glEnable(GL_DEPTH_TEST);
+	}
 	//glDisable(GL_TEXTURE_2D);
 
 	glMatrixMode(GL_PROJECTION);
