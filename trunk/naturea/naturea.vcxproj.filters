@@ -657,5 +657,11 @@
     <None Include="bin\release\naturea.pdb">
       <Filter>_binaries</Filter>
     </None>
+    <None Include="shaders\dynamic_tree\join_fs.glsl">
+      <Filter>Shaders\dynaTree</Filter>
+    </None>
+    <None Include="shaders\dynamic_tree\join_vs.glsl">
+      <Filter>Shaders\dynaTree</Filter>
+    </None>
   </ItemGroup>
 </Project>

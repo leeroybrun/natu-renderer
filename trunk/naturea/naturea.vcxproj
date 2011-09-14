@@ -256,6 +256,8 @@
     <None Include="shaders\cube_vs.glsl" />
     <None Include="shaders\dynamic_tree\branch_fs.glsl" />
     <None Include="shaders\dynamic_tree\branch_vs.glsl" />
+    <None Include="shaders\dynamic_tree\join_fs.glsl" />
+    <None Include="shaders\dynamic_tree\join_vs.glsl" />
     <None Include="shaders\dynamic_tree\leaf_fs.glsl" />
     <None Include="shaders\dynamic_tree\leaf_vs.glsl" />
     <None Include="shaders\dynamic_tree\lod_branch_fs.glsl" />

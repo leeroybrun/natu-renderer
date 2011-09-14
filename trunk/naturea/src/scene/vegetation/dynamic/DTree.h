@@ -68,6 +68,9 @@ public :
 	DTreeSlice*	getSlice(int id){
 					return slices[id];
 				}
+	int			getSliceCnt(){
+					return slices.size();
+				}
 	float		rotation_y; // degrees
 private:
 	vector<DTreeSlice*> slices;
@@ -110,6 +113,7 @@ public:
 	void init();
 	void initLOD0();
 	void initLOD1();
+	void initLOD1b();
 	void initLOD2();
 
 	void update(double time);
@@ -121,7 +125,17 @@ public:
 
 
 	BBox * getBBox(void);
-	void createSlices(v3 & direction, int num=2, int resolution_x=DYN_TREE::SLICE_RESOLUTION_X, int resolution_y=DYN_TREE::SLICE_RESOLUTION_Y, bool half=true);
+	void createSlices(v3 & direction, bool half=true);
+	int resolution_x, resolution_y;
+	int	slice_count;
+
+
+	void joinSliceSetsTextures();
+	Texture*			jColorMap;
+	Texture*			jDataMap;
+	Texture*			jNormalMap;
+	Texture*			jDepthMap;
+
 
 	vector<DTreeSlice*>	slices;
 	v3					position;
