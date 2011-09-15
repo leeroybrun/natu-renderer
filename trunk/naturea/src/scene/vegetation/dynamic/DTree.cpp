@@ -821,6 +821,8 @@ void DTree::drawLOD0()
 
 void DTree::drawLOD1()
 {
+	drawLOD1b();
+	return;
 	if (g_draw_lod1){
 		glColor4f(0.0, 0.0,0.0, alpha_c);
 		g_tree_lod1_count++;
@@ -899,6 +901,62 @@ void DTree::drawLOD1()
 		} // for j - sliceSets
 	}
 }
+void DTree::drawLOD1b()
+{
+	if (g_draw_lod1){
+		glColor4f(0.0, 0.0,0.0, alpha_c);
+		g_tree_lod1_count++;
+		int i, j, sliceCount, setCount=sliceSets2.size();
+		Texture * colorTexture, * dataTexture, *displacementTexture, *displacement2Texture, *normalTexture;
+		displacementTexture		=	leafNoiseTexture;
+		displacement2Texture	=	branchNoiseTexture;
+		
+		//
+		colorTexture			=	jColorMap;
+		dataTexture				=	jDataMap;
+		normalTexture			=	jNormalMap;
+
+		glPushMatrix();
+					
+			//l3dBillboardCheatCylindricalBegin();
+			glScalef(10.0, 10.0, -10.0);
+			glRotatef(90, 0.0, 1.0, 0.0);
+			glDisable(GL_CULL_FACE);
+			glDisable(GL_LIGHTING);
+			
+			colorTexture		->bind(GL_TEXTURE0);
+			displacementTexture	->bind(GL_TEXTURE1);
+			displacement2Texture->bind(GL_TEXTURE4);
+			dataTexture			->bind(GL_TEXTURE2);
+			normalTexture		->bind(GL_TEXTURE3);
+
+			u_time_offset->data = &	g_tree_time_offset_1;
+			
+			lod1shader2->use(true);
+			
+			lod1shader2->setTexture(l2_color	, colorTexture			->textureUnitNumber	);
+			lod1shader2->setTexture(l2_displ	, displacementTexture	->textureUnitNumber	);
+			lod1shader2->setTexture(l2_displ2	, displacement2Texture	->textureUnitNumber	);
+			lod1shader2->setTexture(l2_data		, dataTexture			->textureUnitNumber	);
+			lod1shader2->setTexture(l2_normal	, normalTexture			->textureUnitNumber	);
+			//glDepthMask(GL_FALSE);
+			lod1vbo2->draw(lod1shader2, GL_QUADS, 0);
+			//glDepthMask(GL_TRUE);
+			colorTexture		->unbind();
+			displacementTexture	->unbind();
+			displacement2Texture->unbind();
+			dataTexture			->unbind();
+			normalTexture		->unbind();
+			// turn off shader
+			lod1shader2->use(false);
+			
+			glEnable(GL_CULL_FACE);
+			glEnable(GL_LIGHTING);
+		
+		glPopMatrix();
+	}
+}
+
 
 void DTree::drawLOD2()
 {
@@ -962,7 +1020,7 @@ void DTree::drawLOD2()
 
 					colorTexture		->unbind();
 					displacementTexture	->unbind();
-					displacement2Texture	->unbind();
+					displacement2Texture->unbind();
 					dataTexture			->unbind();
 					normalTexture		->unbind();
 					// turn off shader
@@ -976,6 +1034,10 @@ void DTree::drawLOD2()
 }
 
 void DTree::draw(){
+	//drawLOD1b();
+	//return;
+
+
 	if (!g_draw_dtree_lod){
 		drawLOD0();
 		return;
@@ -1080,7 +1142,7 @@ void DTree::drawForLOD(){
 	// draw bbox
 	//bbox->draw();
 
-
+	glDisable(GL_LIGHTING);
 	// bind textures
 	dataTexture->bind(GL_TEXTURE1);
 	branchNoiseTexture->bind(GL_TEXTURE2);
@@ -1120,7 +1182,9 @@ void DTree::drawForLOD(){
 	branchNoiseTexture->unbind();
 	dataTexture->unbind();
 	glPopMatrix();
+	glEnable(GL_LIGHTING);
 	glEnable(GL_CULL_FACE);
+
 }
 
 void DTree::initLOD0()
@@ -1293,7 +1357,7 @@ void DTree::initLOD1b()
 	// create 2 sliceSets (cross, double sided)
 	v3 dir = v3(-1.0, 0.0, 0.0);
 	v3 right = v3(0.0, 0.0, -1.0);
-	float res = 512;
+	float res = 256;
 	win_resolution = v2 (res, res);
 	
 	DTreeSliceSet * set;
@@ -1344,11 +1408,11 @@ void DTree::initLOD1b()
 	//shader->linkTexture(displacementMap		);
 	//shader->linkTexture(dataMap				);
 
-	l_color		 = lod1shader->getGLLocation("colorMap"			);
-	l_displ		 = lod1shader->getGLLocation("leaf_noise_tex"	);
-	l_displ2	 = lod1shader->getGLLocation("branch_noise_tex"	);
-	l_data		 = lod1shader->getGLLocation("dataMap"			);
-	l_normal	 = lod1shader->getGLLocation("normalMap"		);
+	l2_color	= lod1shader->getGLLocation("colorMap"			);
+	l2_displ	= lod1shader->getGLLocation("leaf_noise_tex"	);
+	l2_displ2	= lod1shader->getGLLocation("branch_noise_tex"	);
+	l2_data		= lod1shader->getGLLocation("dataMap"			);
+	l2_normal	= lod1shader->getGLLocation("normalMap"			);
 
 	lod1shader2->registerUniform("time", UniformType::F1, & g_float_time);
 
@@ -1392,14 +1456,14 @@ void DTree::initLOD1b()
 	vertexArr0.push_back(v3( 0.5,  0.0,  0.0));
 	vertexArr0.push_back(v3( 0.5,  1.0,  0.0));
 	vertexArr0.push_back(v3(-0.5,  1.0,  0.0));
-	vertexArr0.push_back(v3(-0.5,  0.0, -0.5));
-	vertexArr0.push_back(v3( 0.5,  0.0, -0.5));
-	vertexArr0.push_back(v3( 0.5,  1.0, -0.5));
-	vertexArr0.push_back(v3(-0.5,  1.0, -0.5));
-	vertexArr0.push_back(v3(-0.5,  0.0,  0.5));
-	vertexArr0.push_back(v3( 0.5,  0.0,  0.5));
-	vertexArr0.push_back(v3( 0.5,  1.0,  0.5));
-	vertexArr0.push_back(v3(-0.5,  1.0,  0.5));
+	vertexArr0.push_back(v3(-0.5,  0.0, -0.05));
+	vertexArr0.push_back(v3( 0.5,  0.0, -0.05));
+	vertexArr0.push_back(v3( 0.5,  1.0, -0.05));
+	vertexArr0.push_back(v3(-0.5,  1.0, -0.05));
+	vertexArr0.push_back(v3(-0.5,  0.0,  0.05));
+	vertexArr0.push_back(v3( 0.5,  0.0,  0.05));
+	vertexArr0.push_back(v3( 0.5,  1.0,  0.05));
+	vertexArr0.push_back(v3(-0.5,  1.0,  0.05));
 
 	normalArr0.push_back(v3( 0.0,  0.0,  1.0));
 	normalArr0.push_back(v3( 0.0,  0.0,  1.0));
