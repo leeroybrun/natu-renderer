@@ -114,7 +114,7 @@ void main()
 		if (color.a<0.5){discard;}
 
 		//color.a = clamp(-2.0 + 4.0*abs(dot(normalize(normalDir), normalize(eyeDir))), 0.0, 1.0);
-		
+		//color.a = clamp(abs(dot(normalize(normalDir), normalize(eyeDir))), 0.0, 1.0);
 		//color.a =clamp(-0.5 + 2.0*abs(dot(normalize(normalDir), normalize(eyeDir))), 0.0, 1.0);
 		//color.a =clamp(abs(dot(normalize(normalDir), normalize(eyeDir))), 0.0, 1.0);
 		color.a = gl_Color.a;

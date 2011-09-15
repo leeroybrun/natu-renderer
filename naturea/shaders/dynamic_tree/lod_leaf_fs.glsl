@@ -199,24 +199,16 @@ void colorize(out vec4 outColor, in vec3 normal, in vec3 tangent, in vec3 bitang
 	const float k = 1.5;
 	if (!gl_FrontFacing)
 	{
-		decal_color			= pow(	texture2D(frontDecalMap			, gl_TexCoord[0].xy ) , vec4(k));
+		//decal_color			= pow(	texture2D(frontDecalMap			, gl_TexCoord[0].xy ) , vec4(k));
+		decal_color			=		texture2D(frontDecalMap			, gl_TexCoord[0].xy );
 		normal_color		=		texture2D(frontNormalMap		, gl_TexCoord[0].xy );
-		translucency_color	= pow(	texture2D(frontTranslucencyMap	, gl_TexCoord[0].xy ) , vec4(k));
-		halflife2_color		=		texture2D(frontHalfLife2Map		, gl_TexCoord[0].xy );
-		
-		//cpvcolor = IN.color1;
-		//other_cpvcolor = IN.color2;
-	}
+		}
 	else
 	{
-		decal_color			= pow(	texture2D(backDecalMap			, gl_TexCoord[0].xy ) , vec4(k));
+		//decal_color			= pow(	texture2D(backDecalMap			, gl_TexCoord[0].xy ) , vec4(k));
+		decal_color			=		texture2D(backDecalMap			, gl_TexCoord[0].xy );
 		normal_color		=		texture2D(backNormalMap			, gl_TexCoord[0].xy );
-		translucency_color	= pow(	texture2D(backTranslucencyMap	, gl_TexCoord[0].xy ) , vec4(k));
-		halflife2_color		=		texture2D(backHalfLife2Map		, gl_TexCoord[0].xy );
-		//discard;
-		//cpvcolor = IN.color2;
-		//other_cpvcolor = IN.color1;
-	}
+		}
 
 	
 	// --- Alpha Testing ---
@@ -238,48 +230,18 @@ void colorize(out vec4 outColor, in vec3 normal, in vec3 tangent, in vec3 bitang
 
 
 	// --- Lighting ---
-
-	float translucency;
-	float specularity = 0.0;
 	float diffuse_term;
 	
 	// Calculate tangent space normal.
 	ts_normal = normalize(normal_color.xyz * 2.0 - 1.0);
 	
 	// Calculate translucency intensity.
-	/*translucency =	dot(ts_lightDir, vec3(-SQRT6, -SQRT2, -SQRT3)) * halflife2_color.x +
-					dot(ts_lightDir, vec3(-SQRT6,  SQRT2, -SQRT3)) * halflife2_color.y +
-					dot(ts_lightDir, vec3( SQRT23,   0.0, -SQRT3)) * halflife2_color.z;
-	translucency = max(translucency, 0.0);
-	*/
 	if (!gl_FrontFacing)
 	{
-		// Calculate translucency intensity.
-		
-		translucency =	dot(ts_lightDir, vec3(-SQRT6, -SQRT2,  SQRT3)) * halflife2_color.x +
-					    dot(ts_lightDir, vec3(-SQRT6,  SQRT2,  SQRT3)) * halflife2_color.y +
-						dot(ts_lightDir, vec3( SQRT23,   0.0,  SQRT3)) * halflife2_color.z;
-		translucency = max(translucency, 0.0);
-		
-		// Calculate specularity.
-		vec3 n = ts_normal;
-		vec3 v = ts_viewDir; 
 
-		specularity = getModifiedCookTorranceSpecularity(ts_lightDir, v, n, REF_INDEX, ROUGHNESS);
-		//specularity = getCookTorranceSpecularity(-ts_lightDir, ts_viewDir, ts_normal);
-		//specularity = getPhongSpecularity(-ts_lightDir, ts_viewDir, ts_normal);
 	}
 	else
 	{
-		// Calculate translucency intensity.
-		translucency =	dot(ts_lightDir, vec3(-SQRT6, -SQRT2,  -SQRT3)) * halflife2_color.x +
-						dot(ts_lightDir, vec3(-SQRT6,  SQRT2,  -SQRT3)) * halflife2_color.y +
-						dot(ts_lightDir, vec3( SQRT23,   0.0,  -SQRT3)) * halflife2_color.z;
-		translucency = max(translucency, 0.0);
-
-		// Calculate specularity.
-		specularity = 0.0;//getModifiedCookTorranceSpecularity(IN.direction_to_light, -IN.view_vector, ts_normal, RefractionIndex, Roughness);
-		//specularity = getPhongSpecularity(IN.direction_to_light, -IN.view_vector, ts_normal);
 		
 		ts_normal.z = -ts_normal.z;
 	}
@@ -293,21 +255,10 @@ void colorize(out vec4 outColor, in vec3 normal, in vec3 tangent, in vec3 bitang
 	
 	// --- Combine terms for final output color ---
 	
-	// Actual diffuse light intensity depends on falloff map.
-
-	// Calculate lighting terms.
-	///specularity = dot(ts_lightDir, ts_normal);
-	
-	vec3 translucency_in_light = translucency * other_cpvcolor.rgb * gl_LightSource[0].diffuse.rgb ;
-
-	vec3 final_translucency = translucency_color.rgb * translucency_in_light * MultiplyTranslucency;// * (shadow_intensity * ReduceTranslucencyInShadow)* MultiplyTranslucency;
-	
 	vec4 final_ambient = decal_color * cpvcolor * gl_LightSource[0].ambient  * MultiplyAmbient;
 	vec4 final_diffuse = decal_color * diffuse_term * gl_FrontLightProduct[0].diffuse * MultiplyDiffuse;
 	
-	vec4 final_specular = specularity * shadow_intensity * gl_FrontLightProduct[0].diffuse * MultiplySpecular;
-	//outColor = vec4(vec3(translucency),1.0);// * final_ambient.rgb + 0.0001*(final_diffuse.rgb + final_specular.rgb + final_translucency);	
-	outColor.rgb = final_ambient.rgb + final_diffuse.rgb + final_specular.rgb + final_translucency; //
+	outColor.rgb = final_ambient.rgb + final_diffuse.rgb; //
 	//outColor.rgb = final_specular.rgb; 
 	outColor.a = decal_color.a;
 }
@@ -323,7 +274,6 @@ void main()
 	vec4 color;
 
 	colorize(color, normal_vs, tangent_vs, bitangent);
-
 	gl_FragData[0] = color;
 	vec3 normal;
 	vec3 nor = normalize(normal_v);

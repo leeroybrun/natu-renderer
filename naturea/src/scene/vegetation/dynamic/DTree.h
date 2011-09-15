@@ -108,6 +108,7 @@ public:
 
 	void drawLOD0();
 	void drawLOD1();
+	void drawLOD1b();
 	void drawLOD2();
 
 	void init();
@@ -209,9 +210,17 @@ private:
 	vector<DTreeSliceSet*>	sliceSets;
 	Shader	*				lod1shader;
 	VBO		*				lod1vbo;
-	vector<DTreeSliceSet*>	sliceSets2;
-	Shader	*				lod1shader2;
-	VBO		*				lod1vbo2;
+
+
+
+	int						l2_color	;
+	int						l2_displ	;
+	int						l2_displ2	;
+	int						l2_data		;
+	int						l2_normal	;
+	vector<DTreeSliceSet*>	sliceSets2	;
+	Shader	*				lod1shader2	;
+	VBO		*				lod1vbo2	;
 
 	int						ctr;
 	float					alpha_c;
