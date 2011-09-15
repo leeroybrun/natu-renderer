@@ -60,7 +60,7 @@ void TestModel::processTree(DTree * tree, v3 &dir)
 	tree->slice_count = 3;
 	tree->resolution_x = win_resolution.x;
 	tree->resolution_y = win_resolution.y;
-	tree->createSlices( dir, false );
+	// tree->createSlices( dir, false );
 	// create sliceSets
 	slices = tree->slices;	
 }

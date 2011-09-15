@@ -125,7 +125,7 @@ public:
 
 
 	BBox * getBBox(void);
-	void createSlices(v3 & direction, bool half=true);
+	void createSlices(v3 & direction, v3 & right,  bool half=true);
 	int resolution_x, resolution_y;
 	int	slice_count;
 
@@ -192,15 +192,15 @@ private:
 	void createLeavesVBO();
 
 	// LOD 1
-	float				tree_time_offset;
-	Uniform*			u_time_offset;	 			
+	float					tree_time_offset;
+	Uniform*				u_time_offset;	 			
 
-	int					l_color	  ;
-	int					l_displ	  ;
-	int					l_displ2  ;
-	int					l_data	  ;
-	int					l_normal  ;
-	v2					win_resolution;
+	int						l_color	  ;
+	int						l_displ	  ;
+	int						l_displ2  ;
+	int						l_data	  ;
+	int						l_normal  ;
+	v2						win_resolution;
 
 	Texture*				colorMap;
 	Texture*				colorMap2;
@@ -209,7 +209,9 @@ private:
 	vector<DTreeSliceSet*>	sliceSets;
 	Shader	*				lod1shader;
 	VBO		*				lod1vbo;
-
+	vector<DTreeSliceSet*>	sliceSets2;
+	Shader	*				lod1shader2;
+	VBO		*				lod1vbo2;
 
 	int						ctr;
 	float					alpha_c;

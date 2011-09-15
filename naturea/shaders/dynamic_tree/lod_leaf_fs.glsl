@@ -30,6 +30,7 @@ uniform vec2			window_size;
 #define SQRT3  0.57735026918962576450914878050196
 #define SQRT23 0.81649658092772603273242802490196	
 
+varying vec3			normal_v;
 varying vec3			normal_vs_v;
 varying vec3			tangent_vs_v;
 varying vec4			vPos;
@@ -42,8 +43,13 @@ varying vec2			b1_origin;
 varying vec2			b2_origin;
 varying vec3			b_lengths;
 
+uniform vec3			cam_dir;
+uniform vec3			cam_right;
+vec3					cam_up = cross(cam_dir, cam_right);
+
 vec3			normal_vs		= normal_vs_v;
 vec3			tangent_vs		= tangent_vs_v;
+vec3			ts_normal;
 								  
 vec3			ts_viewDir		= normalize(ts_viewDir_v);
 vec3			ts_lightDir		= normalize(ts_lightDir_v);
@@ -238,7 +244,7 @@ void colorize(out vec4 outColor, in vec3 normal, in vec3 tangent, in vec3 bitang
 	float diffuse_term;
 	
 	// Calculate tangent space normal.
-	vec3 ts_normal = normalize(normal_color.xyz * 2.0 - 1.0);
+	ts_normal = normalize(normal_color.xyz * 2.0 - 1.0);
 	
 	// Calculate translucency intensity.
 	/*translucency =	dot(ts_lightDir, vec3(-SQRT6, -SQRT2, -SQRT3)) * halflife2_color.x +
@@ -319,7 +325,10 @@ void main()
 	colorize(color, normal_vs, tangent_vs, bitangent);
 
 	gl_FragData[0] = color;
-	gl_FragData[1] = vec4(normal_vs, 0.0);
+	vec3 normal;
+	vec3 nor = normalize(normal_v);
+	normal = normalize(vec3(dot( cam_up, nor ), dot( cam_right, nor ), dot( cam_dir, nor )));
+	gl_FragData[1] = vec4(normal*0.5 + vec3(0.5) , 1.0);
 	gl_FragData[2] = vec4(b0_origin*0.5+vec2(0.5),b1_origin*0.5+vec2(0.5));
 	
 }
