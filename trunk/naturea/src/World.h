@@ -54,11 +54,11 @@ public:
 	void scale(v3 &scaleVector);
 
 	void snapTree(v3 &dir){
-		if (p_dtree!=NULL){
-			p_activeCamera->shoot();
-			p_dtree->createSlices(dir, g_slice_count);
-		}
-		//system("PAUSE");
+		//if (p_dtree!=NULL){
+		//	p_activeCamera->shoot();
+		//	p_dtree->createSlices(dir, g_slice_count);
+		//}
+		system("PAUSE");
 	}
 // attributes:
 	vector<SceneModel*> v_models;

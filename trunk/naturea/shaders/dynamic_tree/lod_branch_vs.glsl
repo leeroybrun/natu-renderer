@@ -29,9 +29,11 @@ attribute vec4			x_vals;
 attribute float			branch_index;
 attribute vec2			texCoords0;
 
+
 float				time_faster;
-varying vec3		normal_vs;
-varying vec3		tangent_vs;
+varying vec3		normal_vs  ;
+varying vec3		normal_v   ;
+varying vec3		tangent_vs ;
 varying float		level;
 
 varying vec2		b0_origin;
@@ -193,7 +195,15 @@ void main()
     vec3 vertex = gl_Vertex.xyz;
     animateBranchVertex(vertex);
 	gl_TexCoord[0] = vec4(texCoords0, 0.0, 0.0);	
-	normal_vs = gl_NormalMatrix * normal;
+	//normal_vs = gl_NormalMatrix * normal_vs;
+	normal_vs  = normal;
+	tangent_vs = tangent;
+	normal_vs = -normal_vs;
+	normal_v = gl_NormalMatrix * normal_vs.xzy;
+	normal_vs = gl_NormalMatrix * normal_vs;
+	tangent_vs = gl_NormalMatrix * tangent_vs;
+
+
 	vPos = gl_ModelViewMatrix * vec4(vertex,1.0);
     gl_Position = gl_ModelViewProjectionMatrix * vec4(vertex,1.0);
 }

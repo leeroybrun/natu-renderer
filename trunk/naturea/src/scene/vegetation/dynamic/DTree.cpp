@@ -1292,7 +1292,8 @@ void DTree::initLOD1b()
 
 	// create 2 sliceSets (cross, double sided)
 	v3 dir = v3(-1.0, 0.0, 0.0);
-	float res = 256;
+	v3 right = v3(0.0, 0.0, -1.0);
+	float res = 512;
 	win_resolution = v2 (res, res);
 	
 	DTreeSliceSet * set;
@@ -1301,28 +1302,30 @@ void DTree::initLOD1b()
 	resolution_y = win_resolution.y;
 	
 	set = new DTreeSliceSet();
-	set->rotation_y = 0.0f;	
-	this->createSlices(dir, false);
+	set->rotation_y = 180.0f;	
+	this->createSlices(-dir, right, false);
 	set->setSlices(this->slices);
-	sliceSets.push_back(set);
-	
-	
-	dir.rotateY(-30);
+	sliceSets2.push_back(set);
+		
+	dir.rotateY(60*DEG_TO_RAD);
+	right.rotateY(60*DEG_TO_RAD);
 	set = new DTreeSliceSet();
 	set->rotation_y = 60;
-	this->createSlices(dir, false);
+	this->createSlices(dir, right, false);
 	set->setSlices(this->slices);
 	//set->createFromDir(this, dir);
-	sliceSets.push_back(set);
+	sliceSets2.push_back(set);
 
 	dir = v3(-1.0, 0.0, 0.0);
-	dir.rotateY(+30);
+	right = v3(0.0, 0.0, -1.0);
+	dir.rotateY(-60*DEG_TO_RAD);
+	right.rotateY(-60*DEG_TO_RAD);
 	set = new DTreeSliceSet();	
-	this->createSlices(dir, false);
+	this->createSlices(dir, right, false);
 	set->rotation_y = -60;
 	set->setSlices(this->slices);
 	//set->createFromDir(this, dir);
-	sliceSets.push_back(set);
+	sliceSets2.push_back(set);
 
 	// join textures to one...
 	joinSliceSetsTextures();
@@ -1334,8 +1337,8 @@ void DTree::initLOD1b()
 
 
 
-	lod1shader = new Shader("test");
-	lod1shader->loadShader("shaders/test3_vs.glsl", "shaders/test3_fs.glsl");
+	lod1shader2 = new Shader("test");
+	lod1shader2->loadShader("shaders/test3_vs.glsl", "shaders/test3_fs.glsl");
 	// link textures to shader
 	//shader->linkTexture(colorMap			);
 	//shader->linkTexture(displacementMap		);
@@ -1347,23 +1350,23 @@ void DTree::initLOD1b()
 	l_data		 = lod1shader->getGLLocation("dataMap"			);
 	l_normal	 = lod1shader->getGLLocation("normalMap"		);
 
-	lod1shader->registerUniform("time", UniformType::F1, & g_float_time);
+	lod1shader2->registerUniform("time", UniformType::F1, & g_float_time);
 
-	lod1shader->registerUniform("wave_amplitude"		, UniformType::F1, & g_tree_wave_amplitude		);
-	lod1shader->registerUniform("wave_frequency"		, UniformType::F1, & g_tree_wave_frequency		);
-	lod1shader->registerUniform("movementVectorA"		, UniformType::F2, & g_tree_movementVectorA		);
-	lod1shader->registerUniform("movementVectorB"		, UniformType::F2, & g_tree_movementVectorB		);
-	lod1shader->registerUniform("wave_y_offset"			, UniformType::F1, & g_tree_wave_y_offset			);
-	lod1shader->registerUniform("wave_increase_factor"	, UniformType::F1, & g_tree_wave_increase_factor	);
-	lod1shader->registerUniform("window_size"			, UniformType::F2, & win_resolution				);
+	lod1shader2->registerUniform("wave_amplitude"		, UniformType::F1, & g_tree_wave_amplitude		);
+	lod1shader2->registerUniform("wave_frequency"		, UniformType::F1, & g_tree_wave_frequency		);
+	lod1shader2->registerUniform("movementVectorA"		, UniformType::F2, & g_tree_movementVectorA		);
+	lod1shader2->registerUniform("movementVectorB"		, UniformType::F2, & g_tree_movementVectorB		);
+	lod1shader2->registerUniform("wave_y_offset"			, UniformType::F1, & g_tree_wave_y_offset			);
+	lod1shader2->registerUniform("wave_increase_factor"	, UniformType::F1, & g_tree_wave_increase_factor	);
+	lod1shader2->registerUniform("window_size"			, UniformType::F2, & win_resolution				);
 
 
-	lod1shader->registerUniform("wood_amplitudes"		, UniformType::F4, & g_tree_wood_amplitudes.data	);
-	lod1shader->registerUniform("wood_frequencies"		, UniformType::F4, & g_tree_wood_frequencies.data	);
-	lod1shader->registerUniform("leaf_amplitude"		, UniformType::F1, & g_tree_leaf_amplitude	);
-	lod1shader->registerUniform("leaf_frequency"		, UniformType::F1, & g_tree_leaf_frequency	);
+	lod1shader2->registerUniform("wood_amplitudes"		, UniformType::F4, & g_tree_wood_amplitudes.data	);
+	lod1shader2->registerUniform("wood_frequencies"		, UniformType::F4, & g_tree_wood_frequencies.data	);
+	lod1shader2->registerUniform("leaf_amplitude"		, UniformType::F1, & g_tree_leaf_amplitude	);
+	lod1shader2->registerUniform("leaf_frequency"		, UniformType::F1, & g_tree_leaf_frequency	);
 
-	int i = lod1shader->registerUniform("time_offset"	, UniformType::F1, & tree_time_offset);
+	int i = lod1shader2->registerUniform("time_offset"	, UniformType::F1, & tree_time_offset);
 	u_time_offset = lod1shader->getUniform(i);
 	
 	/*
@@ -1502,8 +1505,8 @@ void DTree::initLOD1b()
 
 	// init VBO
 	int count = vertexCount;
-	lod1vbo = new VBO();
-	lod1vbo->setVertexCount(count);
+	lod1vbo2 = new VBO();
+	lod1vbo2->setVertexCount(count);
 	// position
 	VBODataSet * dataSet = new VBODataSet(
 		vertices,
@@ -1512,7 +1515,7 @@ void DTree::initLOD1b()
 		ATTRIB_NAMES::POSITION,
 		true
 	);
-	lod1vbo->addVertexAttribute( dataSet );
+	lod1vbo2->addVertexAttribute( dataSet );
 	// normal
 	dataSet = new VBODataSet(
 		normals,
@@ -1521,7 +1524,7 @@ void DTree::initLOD1b()
 		ATTRIB_NAMES::NORMAL,
 		false
 	);
-	lod1vbo->addVertexAttribute( dataSet );
+	lod1vbo2->addVertexAttribute( dataSet );
 	// tangent
 	dataSet = new VBODataSet(
 		tangents,
@@ -1530,7 +1533,7 @@ void DTree::initLOD1b()
 		ATTRIB_NAMES::TANGENT,
 		false
 	);
-	lod1vbo->addVertexAttribute( dataSet );
+	lod1vbo2->addVertexAttribute( dataSet );
 	// texture coordinates
 	dataSet = new VBODataSet(
 		texCoords,
@@ -1539,7 +1542,7 @@ void DTree::initLOD1b()
 		ATTRIB_NAMES::TEXCOORD0,
 		false
 	);
-	lod1vbo->addVertexAttribute( dataSet );
+	lod1vbo2->addVertexAttribute( dataSet );
 	// slice attributes
 	dataSet = new VBODataSet(
 		sliceAttr,
@@ -1548,12 +1551,10 @@ void DTree::initLOD1b()
 		"sliceDescription",
 		false
 	);
-	lod1vbo->addVertexAttribute( dataSet );
-
-
+	lod1vbo2->addVertexAttribute( dataSet );
 	// link vbo and shaders
-	lod1vbo->compileData(GL_STATIC_DRAW);
-	lod1vbo->compileWithShader(lod1shader);
+	lod1vbo2->compileData(GL_STATIC_DRAW);
+	lod1vbo2->compileWithShader(lod1shader2);
 }
 
 void DTree::initLOD1()
@@ -1563,6 +1564,7 @@ void DTree::initLOD1()
 
 	// create 2 sliceSets (cross, double sided)
 	v3 dir = v3(-1.0, 0.0, 0.0);
+	v3 right = v3(0.0, 0.0, -1.0);
 	float res = 256;
 	win_resolution = v2 (res, res);
 	
@@ -1572,24 +1574,31 @@ void DTree::initLOD1()
 	resolution_y = win_resolution.y;
 	
 	set = new DTreeSliceSet();
-	set->rotation_y = 0.0f;	
-	this->createSlices(dir, false);
+	set->rotation_y = 180.0f;	
+	this->createSlices(-dir, right, false);
 	set->setSlices(this->slices);
 	sliceSets.push_back(set);
 	
 	
-	dir.rotateY(-30);
+	//dir.rotateY(-30*DEG_TO_RAD);
+	//right.rotateY(-30*DEG_TO_RAD);
+	dir.rotateY(60*DEG_TO_RAD);
+	right.rotateY(60*DEG_TO_RAD);
 	set = new DTreeSliceSet();
 	set->rotation_y = 60;
-	this->createSlices(dir, false);
+	this->createSlices(dir, right, false);
 	set->setSlices(this->slices);
 	//set->createFromDir(this, dir);
 	sliceSets.push_back(set);
 
 	dir = v3(-1.0, 0.0, 0.0);
-	dir.rotateY(+30);
+	right = v3(0.0, 0.0, -1.0);
+	//dir.rotateY(+30*DEG_TO_RAD);
+
+	dir.rotateY(-60*DEG_TO_RAD);	
+	right.rotateY(-60*DEG_TO_RAD);
 	set = new DTreeSliceSet();	
-	this->createSlices(dir, false);
+	this->createSlices(dir, right, false);
 	set->rotation_y = -60;
 	set->setSlices(this->slices);
 	//set->createFromDir(this, dir);
@@ -1709,6 +1718,7 @@ void DTree::initLOD2()
 void DTree::init(){
 	initLOD0();
 	initLOD1();
+	initLOD1b();
 	//initLOD2();
 }
 
@@ -1736,12 +1746,19 @@ BBox * DTree::getBBox()
 	return bbox;
 }
 
-void DTree::createSlices(v3 & direction, bool half){
+void DTree::createSlices(v3 & direction, v3 & rightVector, bool half){
 	// init data pre-processing shader
 	Shader * dataProcessShader = new Shader("data_pre-processor");
 	dataProcessShader->loadShader(DYN_TREE::SHADER_PREPROCESS_V, DYN_TREE::SHADER_PREPROCESS_F);
-	GLint	gl_location = dataProcessShader->getGLLocation("branchMap");
-	int		loc_win_size = dataProcessShader->getLocation("window_size");
+	GLint	gl_location		= dataProcessShader->getGLLocation("branchMap");
+	int		loc_win_size	= dataProcessShader->getLocation("window_size");
+	//int		loc_cam_dir		= dataProcessShader->getLocation("cam_dir");
+	v3 d = direction.getRotated(90*DEG_TO_RAD, v3(0.0, 1.0, 0.0));
+	v3 r = rightVector.getRotated(90*DEG_TO_RAD, v3(0.0, 1.0, 0.0));
+	bLODShader->registerUniform("cam_dir", UniformType::F3, & d);
+	lLODShader->registerUniform("cam_dir", UniformType::F3, & d);
+	bLODShader->registerUniform("cam_right", UniformType::F3, & r);
+	lLODShader->registerUniform("cam_right", UniformType::F3, & r);
 	// dummy depth map
 	Texture * depthmap = new Texture(GL_TEXTURE_2D, GL_DEPTH_COMPONENT32F, GL_DEPTH_COMPONENT, GL_FLOAT, NULL, resolution_x, resolution_y, "dummy_depthMap");
 	depthmap->textureUnit = GL_TEXTURE7;
@@ -1902,7 +1919,7 @@ void DTree::createSlices(v3 & direction, bool half){
 			dataProcessShader->use(true);
 			slice->branchmap->bind(slice->branchmap->textureUnit);
 			dataProcessShader->setTexture(gl_location, slice->branchmap->textureUnitNumber);			
-			dataProcessShader->setUniform2f(loc_win_size, g_window_sizes.x, g_window_sizes.y);
+			dataProcessShader->setUniform2f(loc_win_size,	g_window_sizes.x, g_window_sizes.y);
 			slice->branchmap->show(0,0, g_window_sizes.x, g_window_sizes.y);
 			dataProcessShader->use(false);
 			//slice->branchmap->unbind();
@@ -1922,13 +1939,10 @@ void DTree::createSlices(v3 & direction, bool half){
 		glViewport(0, 0, g_window_sizes.x, g_window_sizes.y);
 		
 	} // for each slice
-	
-
-
-
-
 	SAFE_DELETE_PTR ( depthmap );
 	SAFE_DELETE_PTR ( dataProcessShader );
+
+	//system("PAUSE");
 }
 
 void DTree::joinSliceSetsTextures(){
@@ -1990,7 +2004,7 @@ void DTree::joinSliceSetsTextures(){
 			// draw slice sets
 			for (j=0; j<sliceSetCnt; j++){
 				// draw on proper position
-				slice = sliceSets[j]->getSlice(i); 
+				slice = sliceSets2[j]->getSlice(i); 
 				x = i*resolution_x;
 				y = j*resolution_y;
 				width = resolution_x;
@@ -2025,4 +2039,6 @@ void DTree::joinSliceSetsTextures(){
 	g_window_sizes.x = g_WinWidth;
 	g_window_sizes.y = g_WinHeight;
 	glViewport(0, 0, g_window_sizes.x, g_window_sizes.y);
+
+	// system("PAUSE");
 }

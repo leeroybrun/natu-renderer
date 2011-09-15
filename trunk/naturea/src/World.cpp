@@ -190,19 +190,20 @@ void World::drawWithAlpha(){
 	
 	if (g_draw_dtree){
 		// sort tree positions
-		v3 camPos = p_activeCamera->getPosition();
-		oneBubbleSortWalkthrough(tree_positions, g_tree_gridSize*g_tree_gridSize, camPos);
+		
+		
+		glPushMatrix();
+			glTranslatef(0.0, 5.0, -5.0);
+			//glRotatef(90, 0.0, 1.0, 0.0);
+			p_dtree->position = v3(0.0, 5.0, -5.0);
+			p_dtree->rotationY = 0.0;
+			p_dtree->draw();
+		glPopMatrix();
+		//v3 camPos = p_activeCamera->getPosition();
+		//oneBubbleSortWalkthrough(tree_positions, g_tree_gridSize*g_tree_gridSize, camPos);
 
-		v4* f;
-		
-		//	glPushMatrix();
-		//		glTranslatef(0.0, 5.0, -5.0);
-		//		//glRotatef(90, 0.0, 1.0, 0.0);
-		//		p_dtree->position = v3(0.0, 5.0, -5.0);
-		//		p_dtree->rotationY = 0.0;
-		//		p_dtree->draw();
-		//	glPopMatrix();
-		
+		//v4* f;
+		/*
 		for (int c=0; c<g_tree_gridSize*g_tree_gridSize; c++){
 			f = tree_positions[c];
 			glPushMatrix();
@@ -213,7 +214,7 @@ void World::drawWithAlpha(){
 				p_dtree->draw();
 			glPopMatrix();
 		}
-		
+		*/
 		/*
 		glPushMatrix();
 			glTranslatef(0.0, 5.0, 0.0);

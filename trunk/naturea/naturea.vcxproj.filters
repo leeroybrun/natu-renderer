@@ -663,5 +663,11 @@
     <None Include="shaders\dynamic_tree\join_vs.glsl">
       <Filter>Shaders\dynaTree</Filter>
     </None>
+    <None Include="shaders\test3_fs.glsl">
+      <Filter>Shaders\testing</Filter>
+    </None>
+    <None Include="shaders\test3_vs.glsl">
+      <Filter>Shaders\testing</Filter>
+    </None>
   </ItemGroup>
 </Project>

@@ -36,6 +36,7 @@ attribute vec4			x_vals;
 attribute float			branch_index;
 attribute vec2			texCoords0;
 
+varying vec3			normal_v;
 varying vec3			normal_vs_v;
 varying vec3			tangent_vs_v;
 varying vec3			ts_viewDir_v;
@@ -345,6 +346,7 @@ void main()
 	
 	
 	normal_vs = -normal_vs;
+	
 	vec3 bitangent = cross (normal_vs, tangent_vs);
 
 	// TBN matrix & coord system transfer to Tangent space...
@@ -362,13 +364,15 @@ void main()
 
 
 	vertex = leafOrigin + (vertex.x*bitangent + vertex.y*tangent_vs);
+	//normal_vs = -normal_vs;
+	normal_v = gl_NormalMatrix * normal_vs.xzy;
 	normal_vs = gl_NormalMatrix * normal_vs;
 	tangent_vs = gl_NormalMatrix * tangent_vs;
 	
 	vPos = gl_ModelViewMatrix * vec4(vertex,1.0);
 	ts_viewDir_v = normalize( vPos.xyz * TBN_Matrix) ;
-    //animateBranchVertex(vertex); // with branch motion
-	// animateLeafVertex(vertex); // own motion of leaf
+    // animateBranchVertex(vertex);		// with branch motion
+	// animateLeafVertex(vertex);		// own motion of leaf
 	
 	gl_TexCoord[0] = vec4(texCoords0, 0.0, 0.0);
 	// flip Y coords

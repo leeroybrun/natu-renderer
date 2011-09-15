@@ -455,7 +455,19 @@ void	Shader::setUniform(Uniform * uni){
 }
 
 int		Shader::registerUniform(string inShaderName, UniformType type, void * data){
-
+	// check if it already exists in uniforms
+	int index = -1;
+	for (int i=0; i<uniforms.size(); i++){
+		if (uniforms[i]->name.compare(inShaderName)==0){
+			index = i;
+			break;
+		}
+	}
+	if (index>=0){
+		uniforms[index]->data = data;
+		uniforms[index]->type = type;
+		return index;
+	}
 	GLint loc = getGLLocation(inShaderName);
 	if (loc<0){ return loc;}
 	Uniform * u = new Uniform();

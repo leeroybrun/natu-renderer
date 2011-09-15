@@ -52,10 +52,10 @@ double g_time				= 0.0;
 float g_float_time			= 0.0f;
 CTimer						timer;
 Statistics					g_Statistics;
-int g_Bumpmaps		= 0;
-int g_Heightmaps	= 0;
-int g_Specularmaps	= 0;
-int g_Alphamaps		= 0;
+int g_Bumpmaps				= 0;
+int g_Heightmaps			= 0;
+int g_Specularmaps			= 0;
+int g_Alphamaps				= 0;
 
 
 
