@@ -16,6 +16,9 @@ public:
 	void linkVBO(VBO * _vbo);
 
 	void create(GLenum _dataType, GLenum _primitiveType, int _indicesCount, const void * _data, GLenum _usage);
+	void bind();
+	void unbind();
+	void draw(GLenum _dataType, GLenum _primitiveType, int _indicesCount, const void * offset);
 
 	void draw(Shader * shader);
 	int getID(){

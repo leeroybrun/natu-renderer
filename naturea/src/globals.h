@@ -41,6 +41,10 @@ struct Statistics{
 
 };
 static int g_nula = 0;
+extern	int						g_offset;
+extern	float					g_cosA	;
+extern	float					g_cosB	;
+extern	float					g_cosC	;
 
 extern	GLint					g_WinWidth;   // Window width
 extern	GLint					g_WinHeight;   // Window height

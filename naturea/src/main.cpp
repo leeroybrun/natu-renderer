@@ -25,6 +25,10 @@ bool	g_ParallaxMappingEnabled = true;
 float	g_ParallaxScale =   0.04;
 float	g_ParallaxBias  =  -0.02;
 
+int		g_offset = 0;
+float	g_cosA	 = 0.0;
+float	g_cosB	 = 0.0;
+float	g_cosC	 = 0.0;
 
 #define TERRAIN_INIT_BORDER_VAL v4(13.0f, 10.0f, 5.0f, -1.0f)
 #define TERRAIN_INIT_BORDER_WID v4(2.0f, 2.0f, 2.0f, 2.0f)
@@ -145,7 +149,7 @@ float	g_tree_time_offset_2	= 0.5;
 
 int		g_tree_gridSize			= 10;
 float	g_tree_mean_distance	= 8.0;
-float	g_tree_dither			= 5.0;
+float	g_tree_dither			= 3.0;
 
 float	g_leaves_MultiplyAmbient			= 0.7;
 float	g_leaves_MultiplyDiffuse			= 0.7;
@@ -477,8 +481,13 @@ void initGUI()
 	TwDefine(" Controls position='0 0' size='250 550' refresh=0.3 \
 			 valueswidth=80 ");
 
+	TwAddVarRW(controlBar, "offset", TW_TYPE_INT32, & g_offset, " label='offset' min=0 max=2 step=1 ");
+	TwAddVarRO(controlBar, "cosA", TW_TYPE_FLOAT, & g_cosA, " label='cosA' ");
+	TwAddVarRO(controlBar, "cosB", TW_TYPE_FLOAT, & g_cosB, " label='cosB' ");
+	TwAddVarRO(controlBar, "cosC", TW_TYPE_FLOAT, & g_cosC, " label='cosC' ");
+
 	TwAddVarRW(controlBar, "sw_tree", TW_TYPE_BOOLCPP, & g_draw_dtree, " group='Visibility' ");
-	TwAddVarRW(controlBar, "sw_lod", TW_TYPE_BOOLCPP, & g_draw_dtree_lod, " group='Visibility'  ");
+	TwAddVarRW(controlBar, "sw_lod",  TW_TYPE_BOOLCPP, & g_draw_dtree_lod, " group='Visibility'  ");
 	TwAddVarRW(controlBar, "sw_lod0", TW_TYPE_BOOLCPP, & g_draw_lod0, " group='Visibility'  ");
 	TwAddVarRW(controlBar, "sw_lod1", TW_TYPE_BOOLCPP, & g_draw_lod1, " group='Visibility'  ");
 	TwAddVarRW(controlBar, "sw_lod2", TW_TYPE_BOOLCPP, & g_draw_lod2, " group='Visibility'  ");

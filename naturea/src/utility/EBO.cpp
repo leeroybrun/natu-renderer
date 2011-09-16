@@ -54,3 +54,17 @@ void EBO::draw(Shader * shader)
 	if (shader!=NULL)
 		shader->use(false);
 }
+
+void EBO::draw(GLenum _dataType, GLenum _primitiveType, int _indicesCount, const void * _offset){
+	glDrawElements(_primitiveType, _indicesCount, _dataType, _offset);
+}
+
+void EBO::bind()
+{
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, id);
+}
+
+void EBO::unbind()
+{
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+}

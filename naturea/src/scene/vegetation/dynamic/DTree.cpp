@@ -901,6 +901,8 @@ void DTree::drawLOD1()
 		} // for j - sliceSets
 	}
 }
+
+
 void DTree::drawLOD1b()
 {
 	if (g_draw_lod1){
@@ -911,7 +913,6 @@ void DTree::drawLOD1b()
 		displacementTexture		=	leafNoiseTexture;
 		displacement2Texture	=	branchNoiseTexture;
 		
-		//
 		colorTexture			=	jColorMap;
 		dataTexture				=	jDataMap;
 		normalTexture			=	jNormalMap;
@@ -919,28 +920,103 @@ void DTree::drawLOD1b()
 		glPushMatrix();
 					
 			//l3dBillboardCheatCylindricalBegin();
-			glScalef(10.0, 10.0, -10.0);
-			glRotatef(90, 0.0, 1.0, 0.0);
+			
+			//glRotatef(90, 0.0, 1.0, 0.0);
 			glDisable(GL_CULL_FACE);
 			glDisable(GL_LIGHTING);
 			
-			colorTexture		->bind(GL_TEXTURE0);
-			displacementTexture	->bind(GL_TEXTURE1);
-			displacement2Texture->bind(GL_TEXTURE4);
-			dataTexture			->bind(GL_TEXTURE2);
-			normalTexture		->bind(GL_TEXTURE3);
+			/*
+			v3 dirA = v3( -1.0, 0.0, 0.0);									// A
+			v3 rightA = dirA.getRotated( 90*DEG_TO_RAD, v3(0.0, 1.0, 0.0));
+			v3 dirB = dirA.getRotated(  60*DEG_TO_RAD, v3(0.0, 1.0, 0.0));	// B
+			v3 rightB = dirB.getRotated( 90*DEG_TO_RAD, v3(0.0, 1.0, 0.0));
+			v3 dirC = dirA.getRotated( -60*DEG_TO_RAD, v3(0.0, 1.0, 0.0));	// C
+			v3 rightC = dirC.getRotated( 90*DEG_TO_RAD, v3(0.0, 1.0, 0.0));
+			float short_l = 0.1, long_l = 0.3;
+			glPushMatrix();
+				glTranslatef(0.0, 0.1, 0.0);
+				glBegin(GL_LINE_STRIP);
+					glColor4f(1.0, 0.0,0.0, alpha_c);
+					glVertex3f(short_l*rightA.x, short_l*rightA.y, short_l*rightA.z); glVertex3f(0.0, .0, .0); glVertex3f(long_l*dirA.x, long_l*dirA.y, long_l*dirA.z);
+				glEnd();
+				glBegin(GL_LINE_STRIP);
+					glColor4f(0.0, 1.0,0.0, alpha_c);
+					glVertex3f(short_l*rightB.x, short_l*rightB.y, short_l*rightB.z); glVertex3f(0.0, .0, .0); glVertex3f(long_l*dirB.x, long_l*dirB.y, long_l*dirB.z);
+				glEnd();
+				glBegin(GL_LINE_STRIP);
+					glColor4f(0.0, 0.0, 1.0, alpha_c);
+					glVertex3f(short_l*rightC.x, short_l*rightC.y, short_l*rightC.z); glVertex3f(0.0, .0, .0); glVertex3f(long_l*dirC.x, long_l*dirC.y, long_l*dirC.z);
+				glEnd();
+
+				glBegin(GL_LINES);
+					glColor4f(1.0, 1.0, 1.0, alpha_c);
+					glVertex3f(0.0, 0.0, 0.0); glVertex3f(eyeDir.x,eyeDir.y, eyeDir.z);
+				glEnd();
+			glPopMatrix();
+			*/
+			lod1shader2->use(true);
+			jColorMap			->bind(GL_TEXTURE1);
+			displacementTexture	->bind(GL_TEXTURE2);
+			displacement2Texture->bind(GL_TEXTURE3);
+			jDataMap			->bind(GL_TEXTURE4);
+			jNormalMap			->bind(GL_TEXTURE5);
 
 			u_time_offset->data = &	g_tree_time_offset_1;
-			
-			lod1shader2->use(true);
-			
-			lod1shader2->setTexture(l2_color	, colorTexture			->textureUnitNumber	);
-			lod1shader2->setTexture(l2_displ	, displacementTexture	->textureUnitNumber	);
+	
+			//printf("SETTING TEXTURE[%s] loc:%i, unit id: %i\n", colorTexture->inShaderName.c_str(),l2_color, colorTexture->textureUnitNumber);
+			lod1shader2->setTexture(l2_color	, jColorMap			->textureUnitNumber	);
+			//printf("SETTING TEXTURE[%s] loc:%i, unit id: %i\n", displacementTexture->inShaderName.c_str(),l2_displ, displacementTexture->textureUnitNumber);
+			lod1shader2->setTexture(l2_displ	, displacementTexture	->textureUnitNumber	);			
+			//printf("SETTING TEXTURE[%s] loc:%i, unit id: %i\n", displacement2Texture->inShaderName.c_str(),l2_displ2, displacement2Texture->textureUnitNumber);
 			lod1shader2->setTexture(l2_displ2	, displacement2Texture	->textureUnitNumber	);
-			lod1shader2->setTexture(l2_data		, dataTexture			->textureUnitNumber	);
-			lod1shader2->setTexture(l2_normal	, normalTexture			->textureUnitNumber	);
+			//printf("SETTING TEXTURE[%s] loc:%i, unit id: %i\n", dataTexture->inShaderName.c_str(),l2_data, dataTexture->textureUnitNumber);
+			lod1shader2->setTexture(l2_data		, jDataMap			->textureUnitNumber	);
+			//printf("SETTING TEXTURE[%s] loc:%i, unit id: %i\n", normalTexture->inShaderName.c_str(),l2_normal, normalTexture->textureUnitNumber);
+			lod1shader2->setTexture(l2_normal	, jNormalMap			->textureUnitNumber	);
 			//glDepthMask(GL_FALSE);
-			lod1vbo2->draw(lod1shader2, GL_QUADS, 0);
+			lod1vbo2->bind(lod1shader2);
+
+			// draw EBO...
+			eboLOD1->bind();
+
+			// for each instance
+
+			for (int i = 0; i < tree_pos.size(); i++){
+				// determine LOD configuration
+				position = tree_pos[i]->xyz();
+				rotationY= tree_pos[i]->w;
+				glPushMatrix();
+					glTranslate(position);
+					glRotatef(rotationY, 0.0, 1.0 ,0.0);
+					glScalef(10.0, 10.0, 10.0);
+					v3 p = position;
+					v3 v = *viewer_position;
+					p.y = 0.0;
+					v.y = 0.0;
+					v3 eyeDir = -(p-v).getNormalized();	
+					v3 dirA = v3( -1.0, 0.0, 0.0).getRotated( (rotationY)*DEG_TO_RAD, v3(0.0, 1.0, 0.0));	// A									// A
+					v3 dirB = dirA.getRotated( 60 * DEG_TO_RAD, v3(0.0, 1.0, 0.0));							// B
+					v3 dirC = dirA.getRotated( -60 * DEG_TO_RAD, v3(0.0, 1.0, 0.0));						// C
+				
+					float cosA = dirA.dot(eyeDir);
+					float cosB = dirB.dot(eyeDir);
+					float cosC = dirC.dot(eyeDir);
+					int o = 1; 
+					if (cosA<= -0.86 || cosA>=0.86){
+						o = 0;
+					} else if (cosB<= -0.86 || cosB>=0.86){
+						o = 2;
+					}
+					int off = o*(4*3*3*sizeof(unsigned int));
+					void * offset = BUFFER_OFFSET(off);
+					eboLOD1->draw(GL_UNSIGNED_INT, GL_QUADS, 3*3*4, offset);
+				glPopMatrix();
+			} // for each position
+			
+			eboLOD1->unbind();
+
+			lod1vbo2->unbind(lod1shader2);
+			//lod1vbo2->draw(lod1shader2, GL_QUADS, 0);
 			//glDepthMask(GL_TRUE);
 			colorTexture		->unbind();
 			displacementTexture	->unbind();
@@ -996,7 +1072,7 @@ void DTree::drawLOD2()
 					glDisable(GL_CULL_FACE);
 					colorTexture		->bind(GL_TEXTURE0);
 					displacementTexture	->bind(GL_TEXTURE1);
-					displacement2Texture	->bind(GL_TEXTURE4);
+					displacement2Texture->bind(GL_TEXTURE4);
 					dataTexture			->bind(GL_TEXTURE2);
 					normalTexture		->bind(GL_TEXTURE3);
 
@@ -1034,8 +1110,9 @@ void DTree::drawLOD2()
 }
 
 void DTree::draw(){
-	//drawLOD1b();
-	//return;
+	alpha_c = 1.0;
+	drawLOD1b();
+	return;
 
 
 	if (!g_draw_dtree_lod){
@@ -1366,8 +1443,8 @@ void DTree::initLOD1b()
 	resolution_y = win_resolution.y;
 	
 	set = new DTreeSliceSet();
-	set->rotation_y = 180.0f;	
-	this->createSlices(-dir, right, false);
+	set->rotation_y = 0.0f;	
+	this->createSlices(dir, right, false);
 	set->setSlices(this->slices);
 	sliceSets2.push_back(set);
 		
@@ -1408,11 +1485,11 @@ void DTree::initLOD1b()
 	//shader->linkTexture(displacementMap		);
 	//shader->linkTexture(dataMap				);
 
-	l2_color	= lod1shader->getGLLocation("colorMap"			);
-	l2_displ	= lod1shader->getGLLocation("leaf_noise_tex"	);
-	l2_displ2	= lod1shader->getGLLocation("branch_noise_tex"	);
-	l2_data		= lod1shader->getGLLocation("dataMap"			);
-	l2_normal	= lod1shader->getGLLocation("normalMap"			);
+	l2_color	= lod1shader2->getGLLocation("colorMap"			);
+	l2_displ	= lod1shader2->getGLLocation("leaf_noise_tex"	);
+	l2_displ2	= lod1shader2->getGLLocation("branch_noise_tex"	);
+	l2_data		= lod1shader2->getGLLocation("dataMap"			);
+	l2_normal	= lod1shader2->getGLLocation("normalMap"			);
 
 	lod1shader2->registerUniform("time", UniformType::F1, & g_float_time);
 
@@ -1452,18 +1529,18 @@ void DTree::initLOD1b()
 	vector<v2> texCoordArr0;
 	vector<v2> sliceAtrArr0;
 
-	vertexArr0.push_back(v3(-0.5,  0.0,  0.0));
-	vertexArr0.push_back(v3( 0.5,  0.0,  0.0));
-	vertexArr0.push_back(v3( 0.5,  1.0,  0.0));
-	vertexArr0.push_back(v3(-0.5,  1.0,  0.0));
-	vertexArr0.push_back(v3(-0.5,  0.0, -0.05));
-	vertexArr0.push_back(v3( 0.5,  0.0, -0.05));
-	vertexArr0.push_back(v3( 0.5,  1.0, -0.05));
-	vertexArr0.push_back(v3(-0.5,  1.0, -0.05));
-	vertexArr0.push_back(v3(-0.5,  0.0,  0.05));
-	vertexArr0.push_back(v3( 0.5,  0.0,  0.05));
-	vertexArr0.push_back(v3( 0.5,  1.0,  0.05));
-	vertexArr0.push_back(v3(-0.5,  1.0,  0.05));
+	vertexArr0.push_back(v3( 0.0,  0.0, -0.5 ));
+	vertexArr0.push_back(v3( 0.0,  0.0,  0.5 ));
+	vertexArr0.push_back(v3( 0.0,  1.0,  0.5 ));
+	vertexArr0.push_back(v3( 0.0,  1.0, -0.5 ));
+	vertexArr0.push_back(v3(-0.1,  0.0, -0.5 ));
+	vertexArr0.push_back(v3(-0.1,  0.0,  0.5 ));
+	vertexArr0.push_back(v3(-0.1,  1.0,  0.5 ));
+	vertexArr0.push_back(v3(-0.1,  1.0, -0.5 ));
+	vertexArr0.push_back(v3( 0.1,  0.0, -0.5 ));
+	vertexArr0.push_back(v3( 0.1,  0.0,  0.5 ));
+	vertexArr0.push_back(v3( 0.1,  1.0,  0.5 ));
+	vertexArr0.push_back(v3( 0.1,  1.0, -0.5 ));
 
 	normalArr0.push_back(v3( 0.0,  0.0,  1.0));
 	normalArr0.push_back(v3( 0.0,  0.0,  1.0));
@@ -1518,8 +1595,11 @@ void DTree::initLOD1b()
 	sliceAtrArr0.push_back(v2( 2.0,  0.0));
 	sliceAtrArr0.push_back(v2( 2.0,  0.0));
 	
+	// A 
+
 	int sliceCount = 3;
 	v3 axisY = v3(0.0, 1.0, 0.0);
+	// B
 	float angle= 60.0;
 	for (i=0; i<(sliceCount*4); i++){
 		vertexArr0.push_back(vertexArr0[i].getRotated(angle*DEG_TO_RAD, axisY));
@@ -1528,6 +1608,7 @@ void DTree::initLOD1b()
 		texCoordArr0.push_back(texCoordArr0[i]);
 		sliceAtrArr0.push_back(v2(sliceAtrArr0[i].x, 1.0));
 	}
+	// C
 	angle= -60.0;
 	for (i=0; i<(sliceCount*4); i++){
 		vertexArr0.push_back(vertexArr0[i].getRotated(angle*DEG_TO_RAD, axisY));
@@ -1619,6 +1700,29 @@ void DTree::initLOD1b()
 	// link vbo and shaders
 	lod1vbo2->compileData(GL_STATIC_DRAW);
 	lod1vbo2->compileWithShader(lod1shader2);
+
+
+	/*	
+	*	CREATE EBO
+	*		
+	*/
+	unsigned int ebo_data[3*36] = {	 0, 1, 2, 3,	 4, 5, 6, 7,	 8, 9,10,11, // A
+									24,25,26,27,	28,29,30,31,	32,33,34,35, // C
+									12,13,14,15,	16,17,18,19,	20,21,22,23, // B
+									
+									24,25,26,27,	28,29,30,31,	32,33,34,35, // C
+									12,13,14,15,	16,17,18,19,	20,21,22,23, // B
+									 0, 1, 2, 3,	 4, 5, 6, 7,	 8, 9,10,11, // A
+
+									12,13,14,15,	16,17,18,19,	20,21,22,23, // B
+									 0, 1, 2, 3,	 4, 5, 6, 7,	 8, 9,10,11, // A
+									24,25,26,27,	28,29,30,31,	32,33,34,35  // C
+									
+								};
+	int iCnt = 3 * 4 * sliceCount * 3; // 4 = vertexCnt of one slice, 3 = number of slice sets
+	
+	eboLOD1 = new EBO();
+	eboLOD1->create(GL_UNSIGNED_INT, GL_QUADS, iCnt, ebo_data, GL_STATIC_DRAW);
 }
 
 void DTree::initLOD1()
@@ -2033,6 +2137,8 @@ void DTree::joinSliceSetsTextures(){
 	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fbo);
 	
 		jColorMap	= new Texture(GL_TEXTURE_2D, GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE, NULL, jResX, jResY, "colorMap");
+		jColorMap->setParameterI(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		//jColorMap->setParameterI(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		jColorMap->textureUnit =  GL_TEXTURE1;
 		jColorMap->textureUnitNumber =		1;
 		jDataMap	= new Texture(GL_TEXTURE_2D, GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE, NULL, jResX, jResY, "dataMap");
@@ -2042,6 +2148,8 @@ void DTree::joinSliceSetsTextures(){
 		jDepthMap->textureUnit =  GL_TEXTURE3;
 		jDepthMap->textureUnitNumber =		3;
 		jNormalMap	= new Texture(GL_TEXTURE_2D, GL_RGB, GL_RGB, GL_UNSIGNED_BYTE, NULL, jResX, jResY, "normalMap");
+		jNormalMap->setParameterI(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		//jNormalMap->setParameterI(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		jNormalMap->textureUnit = GL_TEXTURE4;
 		jNormalMap->textureUnitNumber =     4;
 
