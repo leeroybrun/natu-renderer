@@ -31,95 +31,70 @@ varying vec2		sliceDesc;
 #define sliceCnt		3
 #define sliceSetsCnt	3
 
-void main()
+
+vec2	myClamp(in vec2 coords){
+	vec2 clamped = clamp( (coords+sliceDesc) , sliceDesc, sliceDesc+vec2(1.0,1.0));
+	//float x = clamped.x / sliceCnt;
+	//float y = clamped.y / sliceSetsCnt;
+	return clamped;
+}
+
+vec2 calcLookUp(in vec2 coord){
+	vec2 s = vec2(sliceCnt,sliceSetsCnt);
+	return clamp ( ((coord+sliceDesc)/s) , sliceDesc/s, (sliceDesc+vec2(1.0,1.0))/s );
+}						 
+
+void	main()
 {	
-	vec2 clamped = clamp( (gl_TexCoord[0].xy+sliceDesc) , sliceDesc, sliceDesc+vec2(1.0,1.0));
-	float x = clamped.x / sliceCnt;
-	float y = clamped.y / sliceSetsCnt;
+	vec2	lookUpCoord = calcLookUp(gl_TexCoord[0].xy);
+	vec4	color = vec4(0.0, 0.0, 0.0, 1.0);
+	float	angle	= wood_amplitudes.x*0.1 ;
+	vec2	b0		= texture2D(dataMap, lookUpCoord).xy;
+	vec2	dif0	= gl_TexCoord[0].xy - b0;
+	/*
+	float	cosA	= cos (angle); 
+	float	sinA	= sin (angle);
+	mat2	R;
+	R = mat2(	 cosA	, sinA,
+ 				-sinA	, cosA );
+	vec2 difR = R*dif0;
+	*/
+	vec2 texCoord = (b0 + dif0 + vec2(1.0, 1.0)*angle);
+	color = texture2D(colorMap, calcLookUp(texCoord));
+	if (color.a<0.5) discard;
+	//color = vec4(dif0, 0.0, 0.0, 1.0);
+	//color.a = 1.0;
+	//color.xy = difR;
+	gl_FragData[0] = color;
+	gl_FragData[1] = color*vec4(0.5,0.5,0.5,1.0);
 
-	vec2 texCoord = vec2(x,y);
-	
-	float sizeFactor = 1.0/max(window_size.x, window_size.y);
+	return;
+	/*
+	vec2	lookUpCoord = myClamp(gl_TexCoord[0].xy) / vec2(sliceCnt, sliceSetsCnt) ;
+	vec4	color;
+	float	angle = wood_amplitudes.x*0.1 ;
+	float	cosA;
+	float	sinA;
+	vec2	difVec;
+	vec2	rotatedDifVec;
+	vec2	fpos = gl_TexCoord[0].xy;
+	mat2	R;
+	vec2 b0 = texture2D(dataMap, lookUpCoord).xy;
 
-	float t = time*10.0*leaf_frequency*sizeFactor+time_offset;
-	vec2 movVectorA = movementVectorA;
-	vec2 movVectorB = movementVectorB;
-	//vec2 movVectorA = vec2(0.0, 1.0);//movementVectorA;
-	//vec2 movVectorB = vec2(0.0, 1.0);//movementVectorB;
-	vec2 texCoordA = texCoord.st+t*movVectorA;
-	vec2 texCoordB = texCoord.st+t*movVectorB; // gl_TexCoord[0].st+t*movVectorB;
+	cosA = cos (angle); 
+	sinA = sin (angle);
+	difVec = (fpos - b0);
+	R = mat2(	 cosA	, sinA,
+ 				-sinA	, cosA );
+	rotatedDifVec = R*difVec;
+	vec2 newPos = myClamp( b0 + rotatedDifVec );
 
-	vec2 fpos = texCoord.st;
-	
-	//fpos = fpos/window_size;
-	vec2 oneV2 = vec2(1.0);
-	vec2 b0 = texture2D(dataMap, texCoord.st).xy;
-	vec2 b1 = texture2D(dataMap, texCoord.st).zw;
+	//color = texture2D(colorMap, newPos);
+	color = texture2D(colorMap, newPos);
+	if (color.a<0.5){discard;}
 
-		float dist0 = min (1.0, 2.0 * length(fpos - b0)) ; // / branchProjectedLength
-		////vec2 b1 = b1_origin * 0.5 + halfV2;
-		float dist1 = min (1.0, 5.0 * length(fpos - b1)); // / branchProjectedLength
-//
-		//b0 =b0*2.0-oneV2;
-		//b1 =b1*2.0-oneV2;
-
-		
-		float angle;
-		float cosA;
-		float sinA;
-		vec2  difVec;
-		mat2 R;
-		vec2 rotatedDifVec;
-		vec2 newPos = fpos;
-		float d = length(b1-vec2(0.5));
-		float ti = time*sizeFactor*5.0;
-		vec2 si = sizeFactor* 100.0 * wood_amplitudes.xy;
-		if ((d>0.01)){
-			angle = dist1*(texture2D(branch_noise_tex, (ti * b1 * wood_frequencies.y)).s*2.0 - 1.0)  * si.y;
-			//angle = (texture2D(branch_noise_tex, (ti * b1 * wood_frequencies.y)).s*2.0 - 1.0) * si.y;
-			
-			cosA = cos (angle); 
-			sinA = sin (angle);
-			difVec = (fpos - b1);
-			R = mat2(	cosA	, sinA,
- 						-sinA	, cosA );
-			rotatedDifVec = R*difVec;
-			newPos = b1 + rotatedDifVec;
-		}
-		//newPos = fpos;
-		//angle = (texture2D(branch_noise_tex, (ti * b0 * wood_frequencies.x)).s*2.0-1.0) * si.x;
-		angle = dist0*(texture2D(branch_noise_tex, (ti * b0 * wood_frequencies.x)).s*2.0-1.0) * si.x;
-		cosA = cos (angle); 
-		sinA = sin (angle);
-		difVec = (newPos - b0);
-		R = mat2(	cosA	, sinA,
- 					-sinA	, cosA );
-		rotatedDifVec = R*difVec;
-		newPos = b0 + rotatedDifVec;
-
-		//texCoordA = (texture2D(displacementMap, texCoordA).st*2.0 - vec2(1.0))*(wave_y_offset + gl_TexCoord[0].t*wave_increase_factor);
-		//texCoordB = (texture2D(displacementMap, texCoordB).st*2.0 - vec2(1.0))*(wave_y_offset + gl_TexCoord[0].t*wave_increase_factor);
-		texCoordA = (texture2D(leaf_noise_tex, texCoordA).st*2.0 - vec2(1.0));
-		texCoordB = (texture2D(leaf_noise_tex, texCoordB).st*2.0 - vec2(1.0));
-		
-		texCoord = newPos+(texCoordA+texCoordB)*sizeFactor*leaf_amplitude;// texture2D(displacementMap, ).st;
-		vec4 fragmentNormal = texture2D(normalMap, texCoord);
-		float branchFlag = fragmentNormal.w + texture2D(normalMap, newPos).w;
-		vec4 color;
-		if (branchFlag>0.5){
-			color = texture2D(colorMap, newPos);
-		} else {
-			color = texture2D(colorMap, texCoord);
-		}
-		if (color.a<0.5){discard;}
-
-		//color.a = clamp(-2.0 + 4.0*abs(dot(normalize(normalDir), normalize(eyeDir))), 0.0, 1.0);
-		//color.a = clamp(abs(dot(normalize(normalDir), normalize(eyeDir))), 0.0, 1.0);
-		//color.a =clamp(-0.5 + 2.0*abs(dot(normalize(normalDir), normalize(eyeDir))), 0.0, 1.0);
-		//color.a =clamp(abs(dot(normalize(normalDir), normalize(eyeDir))), 0.0, 1.0);
-		color.a = gl_Color.a;
-		//color.a = 0.5;
-		gl_FragData[0] = color;
-		gl_FragData[1] = color * vec4(0.5, 0.5, 0.5, 1.0);
-
+	//color.a = 1.0;
+	gl_FragData[0] = color;
+	gl_FragData[1] = color*vec4(0.5,0.5,0.5,1.0);
+	*/
 }

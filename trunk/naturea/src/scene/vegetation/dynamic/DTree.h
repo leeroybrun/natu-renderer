@@ -143,6 +143,7 @@ public:
 	v3*					viewer_position;
 	v3*					viewer_direction;
 
+	vector<v4*>			tree_pos;
 private:
 	DTreeBranch			*trunk;
 	vector<DTreeBranch*> branches;
@@ -221,9 +222,9 @@ private:
 	vector<DTreeSliceSet*>	sliceSets2	;
 	Shader	*				lod1shader2	;
 	VBO		*				lod1vbo2	;
-
+	EBO		*				eboLOD1	;
 	int						ctr;
 	float					alpha_c;
-
+	
 };
 

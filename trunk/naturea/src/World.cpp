@@ -41,11 +41,12 @@ World::~World(void)
 	SAFE_DELETE_PTR( p_test_model	);
 	SAFE_DELETE_PTR( p_test_model2	);
 
+	/*
 	for (int i=0; i<100; i++){
 		SAFE_DELETE_PTR ( tree_positions[i] );
 	}
 	SAFE_DELETE_ARRAY_PTR( tree_positions );
-
+	*/
 	SAFE_DELETE_PTR( p_godRays	);
 	textureManager.~TextureManager();
 	shaderManager.~ShaderManager();
@@ -193,10 +194,10 @@ void World::drawWithAlpha(){
 		
 		
 		glPushMatrix();
-			glTranslatef(0.0, 5.0, -5.0);
+			//glTranslatef(0.0, 5.0, -5.0);
 			//glRotatef(90, 0.0, 1.0, 0.0);
-			p_dtree->position = v3(0.0, 5.0, -5.0);
-			p_dtree->rotationY = 0.0;
+			//p_dtree->position = v3(0.0, 5.0, -5.0);
+			//p_dtree->rotationY = 0.0;
 			p_dtree->draw();
 		glPopMatrix();
 		//v3 camPos = p_activeCamera->getPosition();
@@ -423,7 +424,7 @@ void World::init()
 // TEST OBJECT INIT
 //===============================================================================
 	// positions
-	tree_positions = new v4*[g_tree_gridSize*g_tree_gridSize];
+	//tree_positions = new v4*[g_tree_gridSize*g_tree_gridSize];
 	float x,y,xt,yt,z,r;
 	float diff = g_tree_dither;
 	
@@ -435,7 +436,8 @@ void World::init()
 			xt = x + p_terrain->sz_x/2.0;
 			yt = z + p_terrain->sz_y/2.0;
 			y = p_terrain->getHeightAt(xt,yt);
-			tree_positions[i*g_tree_gridSize + j] = new v4(x,y,z,r);
+			//tree_positions[i*g_tree_gridSize + j] = new v4(x,y,z,r);
+			p_dtree->tree_pos.push_back( new v4(x,y,z,r) );
 		}
 	}
 	/*
