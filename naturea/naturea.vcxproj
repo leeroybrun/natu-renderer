@@ -285,6 +285,8 @@
     <None Include="shaders\test3_fs.glsl" />
     <None Include="shaders\test3_vs.glsl" />
     <None Include="shaders\test_fs.glsl" />
+    <None Include="shaders\test_instancing_fs.glsl" />
+    <None Include="shaders\test_instancing_vs.glsl" />
     <None Include="shaders\test_vs.glsl" />
     <None Include="shaders\tree\tree_fs.glsl" />
     <None Include="shaders\tree\tree_vs.glsl" />

@@ -30,71 +30,87 @@ varying vec2		sliceDesc;
 
 #define sliceCnt		3
 #define sliceSetsCnt	3
-
-
-vec2	myClamp(in vec2 coords){
-	vec2 clamped = clamp( (coords+sliceDesc) , sliceDesc, sliceDesc+vec2(1.0,1.0));
-	//float x = clamped.x / sliceCnt;
-	//float y = clamped.y / sliceSetsCnt;
-	return clamped;
-}
-
-vec2 calcLookUp(in vec2 coord){
-	vec2 s = vec2(sliceCnt,sliceSetsCnt);
-	return clamp ( ((coord+sliceDesc)/s) , sliceDesc/s, (sliceDesc+vec2(1.0,1.0))/s );
-}						 
+					 
 
 void	main()
 {	
-	vec2	lookUpCoord = calcLookUp(gl_TexCoord[0].xy);
-	vec4	color = vec4(0.0, 0.0, 0.0, 1.0);
-	float	angle	= wood_amplitudes.x*0.1 ;
-	vec2	b0		= texture2D(dataMap, lookUpCoord).xy;
-	vec2	dif0	= gl_TexCoord[0].xy - b0;
-	/*
-	float	cosA	= cos (angle); 
-	float	sinA	= sin (angle);
-	mat2	R;
-	R = mat2(	 cosA	, sinA,
- 				-sinA	, cosA );
-	vec2 difR = R*dif0;
-	*/
-	vec2 texCoord = (b0 + dif0 + vec2(1.0, 1.0)*angle);
-	color = texture2D(colorMap, calcLookUp(texCoord));
-	if (color.a<0.5) discard;
-	//color = vec4(dif0, 0.0, 0.0, 1.0);
-	//color.a = 1.0;
-	//color.xy = difR;
-	gl_FragData[0] = color;
-	gl_FragData[1] = color*vec4(0.5,0.5,0.5,1.0);
+	float sizeFactor = 1.0/max(window_size.x, window_size.y);
 
-	return;
-	/*
-	vec2	lookUpCoord = myClamp(gl_TexCoord[0].xy) / vec2(sliceCnt, sliceSetsCnt) ;
-	vec4	color;
-	float	angle = wood_amplitudes.x*0.1 ;
-	float	cosA;
-	float	sinA;
-	vec2	difVec;
-	vec2	rotatedDifVec;
-	vec2	fpos = gl_TexCoord[0].xy;
-	mat2	R;
-	vec2 b0 = texture2D(dataMap, lookUpCoord).xy;
+	float t			= time*10.0*leaf_frequency*sizeFactor+time_offset;
+	vec2 movVectorA = movementVectorA;
+	vec2 movVectorB = movementVectorB;
 
+	vec2 texC		= gl_TexCoord[0].st;
+	vec2 fpos		= clamp ( texC + sliceDesc , sliceDesc, sliceDesc+vec2(1.0, 1.0) ) / vec2(sliceCnt,sliceSetsCnt);
+
+	vec2 texCoordA	= fpos+t*movVectorA;
+	vec2 texCoordB	= fpos+t*movVectorB; // gl_TexCoord[0].st+t*movVectorB;
+	
+	vec2 oneV2 = vec2(1.0);
+	vec2 b0 = texture2D(dataMap, fpos).xy;
+	vec2 b1 = texture2D(dataMap, fpos).zw;
+
+	float dist0 = min (1.0, 2.0 * length(texC - b0)) ; // / branchProjectedLength
+	float dist1 = min (1.0, 5.0 * length(texC - b1)); // / branchProjectedLength
+
+	vec4 color;
+	float angle;
+	float cosA;
+	float sinA;
+	vec2  difVec;
+	mat2 R;
+	vec2 rotatedDifVec;
+	vec2 newPos = texC;
+	float ti = time*sizeFactor*5.0;
+	vec2 si = sizeFactor* 100.0 * wood_amplitudes.xy;
+	float d = length(b1-vec2(0.5));
+
+	if ((d>0.01)){
+		angle = dist1*(texture2D(branch_noise_tex, (ti * b1 * wood_frequencies.y)).s*2.0 - 1.0)  * si.y;
+		//angle = (texture2D(branch_noise_tex, (ti * b1 * wood_frequencies.y)).s*2.0 - 1.0) * si.y;
+		
+		cosA = cos (angle); 
+		sinA = sin (angle);
+		difVec = (newPos - b1);
+		R = mat2(	 cosA	, sinA,
+ 					-sinA	, cosA );
+		rotatedDifVec = R*difVec;
+		newPos = b1 + rotatedDifVec;
+	}
+	
+	angle = dist0 * (texture2D(branch_noise_tex, (ti * b0 * wood_frequencies.x)).s*2.0-1.0) * si.x;
 	cosA = cos (angle); 
 	sinA = sin (angle);
-	difVec = (fpos - b0);
+	difVec = (newPos - b0);
 	R = mat2(	 cosA	, sinA,
  				-sinA	, cosA );
 	rotatedDifVec = R*difVec;
-	vec2 newPos = myClamp( b0 + rotatedDifVec );
+	newPos = b0 + rotatedDifVec;
+	newPos = clamp ( newPos  , vec2(0.0, 0.0), vec2(1.0, 1.0) );// + sliceDesc ) / vec2(sliceCnt,sliceSetsCnt);
+	newPos = (newPos + sliceDesc) / vec2(sliceCnt,sliceSetsCnt);
+	texCoordA = (texture2D(leaf_noise_tex, texCoordA).st*2.0 - vec2(1.0));
+	texCoordB = (texture2D(leaf_noise_tex, texCoordB).st*2.0 - vec2(1.0));
+	
+	
+	//newPos = fpos;
 
-	//color = texture2D(colorMap, newPos);
-	color = texture2D(colorMap, newPos);
-	if (color.a<0.5){discard;}
-
-	//color.a = 1.0;
+	vec2 texCoord = newPos+(texCoordA+texCoordB)*sizeFactor*leaf_amplitude / sliceCnt ;
+	vec4 fragmentNormal = texture2D(normalMap, texCoord);
+	
+	float branchFlag = texture2D(normalMap, newPos).w + fragmentNormal.w;
+	if (branchFlag>0.5){
+		// trunk / branch 
+		color = texture2D(colorMap, newPos);
+		if (color.a<0.5){discard;}
+	} else {
+		// foliage
+		color = texture2D(colorMap, texCoord);
+		if (color.a<0.5){discard;}
+		
+	}
+	
+	color.a = 1.0;
 	gl_FragData[0] = color;
-	gl_FragData[1] = color*vec4(0.5,0.5,0.5,1.0);
-	*/
+	gl_FragData[1] = color * vec4(0.5, 0.5, 0.5, 1.0);
+
 }

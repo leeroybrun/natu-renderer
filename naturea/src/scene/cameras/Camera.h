@@ -48,6 +48,9 @@ public:
 	v3 position;
 	v3 direction;
 	v3 upVector;
+	float ratio;
+	float frustum_treshold;
+	float getFrustumTreshold();
 private:
 	Terrain * terrain;
 	CameraMode mode;

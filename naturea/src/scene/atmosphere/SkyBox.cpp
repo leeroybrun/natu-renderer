@@ -34,7 +34,7 @@ void SkyBox::draw()
 {
 	glEnable(GL_TEXTURE_2D);
 	glDisable(GL_LIGHTING);
-	
+	glDisable(GL_CULL_FACE);
    glMatrixMode(GL_MODELVIEW);
    glPushMatrix();
     // move with user...
@@ -44,7 +44,7 @@ void SkyBox::draw()
 		p_light->positionFixedToSkybox = p_light->position.xyz() + p_activeCamera->getPosition();
 		//p_light->draw();
 	//}
-	glColor3f(1.0,1.0,1.0);
+	glColor4f(1.0,1.0,1.0, 1.0);
 	glScale(v3(SKYBOX_SIZE));
 	
 	// down 
@@ -103,6 +103,7 @@ void SkyBox::draw()
 	glPopMatrix();
    glPopMatrix();	
 	glEnable(GL_LIGHTING);
+	glEnable(GL_CULL_FACE);
 }
 
 void SkyBox::init()

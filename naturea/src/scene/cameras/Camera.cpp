@@ -99,6 +99,12 @@ bool Camera::handleKeyDown(int key, int action)
 		case 'E':
 			move( upVector*-step);
 			break;
+		case 'x':
+			step*=0.5;
+			break;
+		case 'X':
+			step*=2.0;
+			break;
 		default:
 			return false;		
 	}
@@ -239,6 +245,14 @@ void Camera::setup(v3 & pos, v3 & dir, v3 &up, int *w, int *h, float fo, float n
 	fov			= fo;
 	near		= n;
 	far			= fa;
+	ratio		= float(max(*w, *h))/float(min(*w,*h));
+	frustum_treshold = getFrustumTreshold();
+}
+float Camera::getFrustumTreshold(){
+	return cos(ratio * fov * 0.2);
+
+	float alpha = asin(1.0/ratio * sin(fov*0.5));
+	return cos(alpha);
 }
 
 void Camera::move(v3 & dist)
