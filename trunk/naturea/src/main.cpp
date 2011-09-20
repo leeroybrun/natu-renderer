@@ -147,9 +147,9 @@ float	g_tree_wave_increase_factor = 1.0;
 float	g_tree_time_offset_1	= 0.0;
 float	g_tree_time_offset_2	= 0.5;		
 
-int		g_tree_gridSize			= 10;
-float	g_tree_mean_distance	= 8.0;
-float	g_tree_dither			= 3.0;
+const int	g_tree_gridSize		= 100;
+float	g_tree_mean_distance	= 2.0;
+float	g_tree_dither			= 1.0;
 
 float	g_leaves_MultiplyAmbient			= 0.7;
 float	g_leaves_MultiplyDiffuse			= 0.7;
@@ -163,12 +163,15 @@ int		g_tree_lod0_count					 = 0;
 int		g_tree_lod1_count					 = 0;
 int		g_tree_lod2_count					 = 0;
 
-
+bool	g_draw_lod1_method		= true;
 bool	g_orbit					= true;
 float	g_orbit_speed			= 0.1;
 float	g_orbit_radius			= 10.0;
 v3		g_center				= v3(0.0, 5.0, 0.0);
 float	g_timeDiff				= 0;
+
+v3*		g_viewer_position;
+v3*		g_viewer_direction;
 
 float g_CPU_fps;
 float CPU_render_time;
@@ -504,7 +507,7 @@ void initGUI()
 	TwAddVarRW(controlBar, "sw_orbit", TW_TYPE_BOOLCPP, & g_orbit, " group='General' label='Orbit(ON/OFF)'");
 	TwAddVarRW(controlBar, "sw_orbit_speed", TW_TYPE_FLOAT, & g_orbit_speed, " group='General' min=-10 max=100 step=0.1 label='orbit speed'");
 	TwAddVarRW(controlBar, "sw_orbit_radius", TW_TYPE_FLOAT, & g_orbit_radius, " group='General' min=-10 max=100 step=0.1 label='orbit radius'");
-
+	TwAddVarRW(controlBar, "sw_lod1_ab", TW_TYPE_BOOLCPP, & g_draw_lod1_method, " group='General'  ");
 
 	TwAddVarRW(controlBar, "snapshotDir", TW_TYPE_DIR3F, &g_snapshot_direction, 
 		"group='LOD'  label='slices direction' help='direction of snapshot' ");

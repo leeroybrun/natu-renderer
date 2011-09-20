@@ -169,7 +169,11 @@ public:
 		y = _y;
 		z = _z;
 	}
-
+	inline float distanceTo(const Vector3& vec)
+	{
+			Vector3 d = vec - *this;
+			return sqrt(d.x*d.x+d.y*d.y+d.z*d.z);
+	}
 	inline float length() const
 	{
 		return static_cast<float>(sqrt(x*x + y*y + z*z));

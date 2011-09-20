@@ -145,6 +145,7 @@ void World::draw()
 	if (g_draw_light_direction){
 		p_activeLight->draw();
 	}
+	p_skybox->draw();
 	p_terrain->draw();
 	/*
 	if (p_activeCamera->getPosition().y>=WATER_HEIGHT-1.0){
@@ -156,10 +157,10 @@ void World::draw()
 		drawUnderWater();
 	}
 	*/
-	p_skybox->draw();
+	
 	//p_water->draw(); // draw water surface
 	
-	//p_testModel->draw();
+	
 	//drawModels();
 	
 	glEnable(GL_BLEND);
@@ -188,23 +189,15 @@ void World::draw()
 }
 
 void World::drawWithAlpha(){
-	
+	/*
 	if (g_draw_dtree){
-		// sort tree positions
+		//p_dtree->draw();
 		
-		
-		glPushMatrix();
-			//glTranslatef(0.0, 5.0, -5.0);
-			//glRotatef(90, 0.0, 1.0, 0.0);
-			//p_dtree->position = v3(0.0, 5.0, -5.0);
-			//p_dtree->rotationY = 0.0;
-			p_dtree->draw();
-		glPopMatrix();
-		//v3 camPos = p_activeCamera->getPosition();
-		//oneBubbleSortWalkthrough(tree_positions, g_tree_gridSize*g_tree_gridSize, camPos);
+		v3 camPos = p_activeCamera->getPosition();
+		oneBubbleSortWalkthrough(tree_positions, g_tree_gridSize*g_tree_gridSize, camPos);
 
-		//v4* f;
-		/*
+		v4* f;
+		
 		for (int c=0; c<g_tree_gridSize*g_tree_gridSize; c++){
 			f = tree_positions[c];
 			glPushMatrix();
@@ -215,16 +208,18 @@ void World::drawWithAlpha(){
 				p_dtree->draw();
 			glPopMatrix();
 		}
-		*/
-		/*
-		glPushMatrix();
-			glTranslatef(0.0, 5.0, 0.0);
-			glScalef(10.0, 10.0, 10.0);
-			
-			p_dtree->draw();
-		glPopMatrix();
-		*/
+		// 
+		// 
+		// glPushMatrix();
+		// 	glTranslatef(0.0, 5.0, 0.0);
+		// 	glScalef(10.0, 10.0, 10.0);
+		// 	
+		// 	p_dtree->draw();
+		// glPopMatrix();
+		// 
 	}
+	/***/
+	p_test_model->draw();
 	if (g_draw_low_vegetation){
 		p_grass_growth->draw();
 		p_tree1_growth->draw();
@@ -269,6 +264,8 @@ void World::drawReflection(){
 void World::windowSizeChanged(int width, int height)
 {
 	//p_water->windowSizeChanged(width, height);
+	p_activeCamera->ratio = float(max(width, height))/float(min(width, height));
+	p_activeCamera->frustum_treshold = p_activeCamera->getFrustumTreshold();
 	p_godRays->windowSizeChanged(width, height);
 }
 
@@ -342,6 +339,10 @@ void World::init()
 	//p_activeCamera->setup(LIGHT_POSITION, -LIGHT_POSITION, v3(0.0,1.f,0.f), &g_WinWidth, &g_WinHeight, 60.0, 1.f, 1000.f);
 	p_activeCamera->setTerrain(p_terrain);
 	p_activeCamera->setMode(g_cameraMode);
+	g_viewer_position = & (p_activeCamera->position);
+	g_viewer_direction= & (p_activeCamera->direction);
+
+
 
 	// sun
 	p_activeLight = new Light(&textureManager);
@@ -409,7 +410,7 @@ void World::init()
  	count = tree2_planter.plantVegetationCount(g_Tree2Count);
 	printf("count: %i\n", count);
 	
-	
+	/*
 	printf("---- DYNAMIC TREE INIT BEGIN");
 	p_dtree = new DTree(&textureManager, &shaderManager);\
 		p_dtree->loadOBJT( DYN_TREE::OBJT_FILENAME );
@@ -417,17 +418,19 @@ void World::init()
 		p_dtree->viewer_direction = &p_activeCamera->direction;
 		p_dtree->viewer_position = &p_activeCamera->position;
 	printf("----- END DYNAMIC TREE INIT ");
-
+	*/
 	// generate initial slices for tree
 	
 //===============================================================================
 // TEST OBJECT INIT
 //===============================================================================
 	// positions
-	//tree_positions = new v4*[g_tree_gridSize*g_tree_gridSize];
+	/*
+	tree_positions = new v4*[g_tree_gridSize*g_tree_gridSize];
+	
 	float x,y,xt,yt,z,r;
 	float diff = g_tree_dither;
-	
+	int instance_index = 0;
 	for (int i=0; i<g_tree_gridSize; i++){
 		for (int j=0; j<g_tree_gridSize; j++){
 			x = (i - g_tree_gridSize/2)*g_tree_mean_distance + randomf(-diff, diff);
@@ -436,40 +439,23 @@ void World::init()
 			xt = x + p_terrain->sz_x/2.0;
 			yt = z + p_terrain->sz_y/2.0;
 			y = p_terrain->getHeightAt(xt,yt);
-			//tree_positions[i*g_tree_gridSize + j] = new v4(x,y,z,r);
-			p_dtree->tree_pos.push_back( new v4(x,y,z,r) );
+			tree_positions[i*g_tree_gridSize + j] = new v4(x,y,z,r);
+			DTreeInstanceData * idata = new DTreeInstanceData();
+			idata->alpha = 1.0;
+			idata->index = instance_index;
+			instance_index++;
+			idata->position = v3(x,y,z);
+			idata->rotation_y = r;
+			p_dtree->tree_instances.push_back( idata );
 		}
 	}
-	/*
-	v3 dir = v3(-1.0, 0.0, 0.0);
-	p_test_model = new TestModel();
-	p_test_model->processTree(p_dtree, dir);
-	p_test_model->init();
-	dir = v3(0.0, 0.0, -1.0);
-	p_test_model2 = new TestModel();
-	p_test_model2->processTree(p_dtree, dir);
-	p_test_model2->init();
 	*/
-	/*
-	cubeShader = new Shader("cube");
-	cubeShader->loadShader("shaders/cube_vs.glsl", "shaders/cube_fs.glsl");
-
-	cubeVBO = new VBO();
-	cubeVBO->setVertexCount(8);
-
-	VBODataSet * dataset = new VBODataSet(
-		CUBE_VERTICES_ARRAY, sizeof(GLfloat) * 3, GL_FLOAT, "position", true); 
-	cubeVBO->addVertexAttribute(dataset);
-	dataset = new VBODataSet(
-		CUBE_COLORS_ARRAY, sizeof(GLfloat) * 3, GL_FLOAT, "color", false); 
-	cubeVBO->addVertexAttribute(dataset);
 	
-	cubeVBO->compileData(GL_STATIC_DRAW);
-	cubeVBO->compileWithShader(cubeShader);
-	cubeEBO = new EBO();
-	cubeEBO->linkVBO(cubeVBO);
-	cubeEBO->create(GL_UNSIGNED_INT, GL_QUADS, 24, CUBE_INDEX_ARRAY, GL_STATIC_DRAW);
-	*/
+	p_test_model = new TestModel();
+	p_test_model->terrain = p_terrain;
+	p_test_model->camera = p_activeCamera;
+	p_test_model->init();
+
 
 	printf("WORLD CREATED:\n");
 

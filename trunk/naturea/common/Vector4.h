@@ -60,6 +60,15 @@ class Vector4
 		inline operator const float*() const	{ return &x;	}
 		inline operator float*()				{ return &x;	}
 		
+		inline float distanceTo(const Vector4& vec){
+			Vector4 d = vec - *this;
+			return sqrt(d.x*d.x+d.y*d.y+d.z*d.z+d.w*d.w);
+		}
+		inline float distanceTo(const Vector3& vec){
+			v3 d = vec - this->xyz();
+			return sqrt(d.x*d.x+d.y*d.y+d.z*d.z);
+		}
+
 		inline float dot(const Vector4& vec) const
 		{
 			return x * vec.x + y * vec.y + z * vec.z + w * vec.w;

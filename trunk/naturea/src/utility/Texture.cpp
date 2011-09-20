@@ -65,7 +65,9 @@ void Texture::show(GLint x,GLint y, GLsizei width, GLsizei height, bool depthtes
 
 	glDisable(GL_LIGHTING);
 	if (!depthtest){
-		glDisable(GL_DEPTH_TEST);
+		glDepthFunc(GL_ALWAYS);
+		//glDepthMask(GL_FALSE);
+		//glDisable(GL_DEPTH_TEST);
 	}
 	//glEnable(GL_TEXTURE_2D);
 	//glDepthMask(GL_FALSE);
@@ -90,10 +92,10 @@ void Texture::show(GLint x,GLint y, GLsizei width, GLsizei height, bool depthtes
 	glEnable(GL_LIGHTING);
 	//glDepthMask(GL_TRUE);
 	if (!depthtest){
-		glEnable(GL_DEPTH_TEST);
+		glDepthFunc(GL_LESS);
 	}
 	//glDisable(GL_TEXTURE_2D);
-
+	glDepthMask(GL_TRUE);
 	glMatrixMode(GL_PROJECTION);
 	glPopMatrix();
 	glMatrixMode(GL_MODELVIEW);

@@ -765,7 +765,7 @@ void DTree::drawLOD0()
 {
 	if (g_draw_lod0){
 		glColor4f(0.0, 0.0,0.0, alpha_c);
-		g_tree_lod0_count++;
+		
 		glDisable(GL_CULL_FACE);
 		glPushMatrix();
 		glScalef( 10.f , -10.f, 10.f);
@@ -821,11 +821,9 @@ void DTree::drawLOD0()
 
 void DTree::drawLOD1()
 {
-	drawLOD1b();
-	return;
 	if (g_draw_lod1){
 		glColor4f(0.0, 0.0,0.0, alpha_c);
-		g_tree_lod1_count++;
+		
 		int i, j, sliceCount, setCount=sliceSets.size();
 		Texture * colorTexture, * dataTexture, *displacementTexture, *displacement2Texture, *normalTexture;
 			displacementTexture		= leafNoiseTexture;
@@ -856,9 +854,9 @@ void DTree::drawLOD1()
 			
 					glRotatef(sliceSets[j]->rotation_y, 0.0, 1.0, 0.0);
 					glTranslatef((i-(float(sliceCount)/2.f) + 0.5), 0.0, 0.0);
-					glScalef(10.0,10.0,10.0);
+					glScalef(10.0,10.0,-10.0);
 					//glRotatef(90, 0.0, 0.0, 1.0);
-					glRotatef(90.0, 0.0, 1.0, 0.0);
+					glRotatef(-90.0, 0.0, 1.0, 0.0);
 					glDisable(GL_CULL_FACE);
 					glDisable(GL_LIGHTING);
 					colorTexture		->bind(GL_TEXTURE0);
@@ -961,16 +959,16 @@ void DTree::drawLOD1b()
 			jDataMap			->bind(GL_TEXTURE4);
 			jNormalMap			->bind(GL_TEXTURE5);
 
-			u_time_offset->data = &	g_tree_time_offset_1;
+			//u_time_offset->data = &	g_tree_time_offset_1;
 	
 			//printf("SETTING TEXTURE[%s] loc:%i, unit id: %i\n", colorTexture->inShaderName.c_str(),l2_color, colorTexture->textureUnitNumber);
-			lod1shader2->setTexture(l2_color	, jColorMap			->textureUnitNumber	);
+			lod1shader2->setTexture(l2_color	, jColorMap				->textureUnitNumber	);
 			//printf("SETTING TEXTURE[%s] loc:%i, unit id: %i\n", displacementTexture->inShaderName.c_str(),l2_displ, displacementTexture->textureUnitNumber);
 			lod1shader2->setTexture(l2_displ	, displacementTexture	->textureUnitNumber	);			
 			//printf("SETTING TEXTURE[%s] loc:%i, unit id: %i\n", displacement2Texture->inShaderName.c_str(),l2_displ2, displacement2Texture->textureUnitNumber);
 			lod1shader2->setTexture(l2_displ2	, displacement2Texture	->textureUnitNumber	);
 			//printf("SETTING TEXTURE[%s] loc:%i, unit id: %i\n", dataTexture->inShaderName.c_str(),l2_data, dataTexture->textureUnitNumber);
-			lod1shader2->setTexture(l2_data		, jDataMap			->textureUnitNumber	);
+			lod1shader2->setTexture(l2_data		, jDataMap				->textureUnitNumber	);
 			//printf("SETTING TEXTURE[%s] loc:%i, unit id: %i\n", normalTexture->inShaderName.c_str(),l2_normal, normalTexture->textureUnitNumber);
 			lod1shader2->setTexture(l2_normal	, jNormalMap			->textureUnitNumber	);
 			//glDepthMask(GL_FALSE);
@@ -981,10 +979,10 @@ void DTree::drawLOD1b()
 
 			// for each instance
 
-			for (int i = 0; i < tree_pos.size(); i++){
+			for (int i = 0; i < tree_instances.size(); i++){
 				// determine LOD configuration
-				position = tree_pos[i]->xyz();
-				rotationY= tree_pos[i]->w;
+				position = tree_instances[i]->position;
+				rotationY= tree_instances[i]->rotation_y;
 				glPushMatrix();
 					glTranslate(position);
 					glRotatef(rotationY, 0.0, 1.0 ,0.0);
@@ -996,11 +994,11 @@ void DTree::drawLOD1b()
 					v3 eyeDir = -(p-v).getNormalized();	
 					v3 dirA = v3( -1.0, 0.0, 0.0).getRotated( (rotationY)*DEG_TO_RAD, v3(0.0, 1.0, 0.0));	// A									// A
 					v3 dirB = dirA.getRotated( 60 * DEG_TO_RAD, v3(0.0, 1.0, 0.0));							// B
-					v3 dirC = dirA.getRotated( -60 * DEG_TO_RAD, v3(0.0, 1.0, 0.0));						// C
+					//v3 dirC = dirA.getRotated( -60 * DEG_TO_RAD, v3(0.0, 1.0, 0.0));						// C
 				
 					float cosA = dirA.dot(eyeDir);
 					float cosB = dirB.dot(eyeDir);
-					float cosC = dirC.dot(eyeDir);
+					//float cosC = dirC.dot(eyeDir);
 					int o = 1; 
 					if (cosA<= -0.86 || cosA>=0.86){
 						o = 0;
@@ -1066,9 +1064,9 @@ void DTree::drawLOD2()
 			
 					glRotatef(j*90, 0.0, 1.0, 0.0);
 					glTranslatef((i-(float(sliceCount)/2.f) + 0.5), 0.0, 0.0);
-					glScalef(10.0,10.0,10.0);
+					glScalef(10.0,10.0,-10.0);
 					//glRotatef(90, 0.0, 0.0, 1.0);
-					glRotatef(90, 0.0, 1.0, 0.0);
+					glRotatef(-90, 0.0, 1.0, 0.0);
 					glDisable(GL_CULL_FACE);
 					colorTexture		->bind(GL_TEXTURE0);
 					displacementTexture	->bind(GL_TEXTURE1);
@@ -1106,19 +1104,167 @@ void DTree::drawLOD2()
 				glPopMatrix();
 		} // for j - sliceSets
 	}
-
 }
 
 void DTree::draw(){
-	alpha_c = 1.0;
-	drawLOD1b();
+	/*
+	if (g_draw_lod1_method){
+		drawLOD1b();
+		return;
+	}
+	for (int i = 0; i < tree_instances.size(); i++){
+		// determine LOD configuration
+		position = tree_instances[i]->position;
+		rotationY= tree_instances[i]->rotation_y;
+		glPushMatrix();
+			glTranslate(position);
+			glRotatef(rotationY, 0.0, 1.0 ,0.0);
+			glScalef(10.0, 10.0, 10.0);
+			drawLOD1();
+		glPopMatrix();
+	} // for each position
 	return;
+	// sort positions depending on the distance
+	/*
+	vector<DTreeInstanceDrawData*> lod0;
 
+	vector<DTreeInstanceDrawData*> lod1;
+
+	vector<DTreeInstanceDrawData*> lod2;
+	*/
+	/*
+	if (tree_instances.size()>1){
+		DTreeInstanceData* act = tree_instances[0];
+		DTreeInstanceData* toDraw;
+		float toDraw_dist = 0.0;
+		float act_dist	= act->position.distanceTo(*viewer_position);
+		for (int i=1; i<tree_instances.size(); i++){
+			//v4* act			= tree_instances[i-1];
+			DTreeInstanceData* next		= tree_instances[i];
+			//float act_dist	= act	->distanceTo(*viewer_position);
+			float next_dist	= next->position.distanceTo(*viewer_position);
+
+			if (act_dist < next_dist){
+				// swap 
+				tree_instances[i-1]	= next;
+				tree_instances[i]	= act;
+				toDraw				= next;
+				toDraw_dist			= next_dist;
+			} else {
+				// 
+				toDraw		= act;
+				toDraw_dist = act_dist;
+				act			= next;
+				act_dist	= next_dist;
+			}
+			toDraw->index = i-1;
+			// draw the rigth LOD
+			alpha_c = 1.0;
+			// if LOD vorbidden
+			if (!g_draw_dtree_lod){
+				drawLOD0();
+				return;
+			}
+			// TODO: check if is in front of camera...
+
+			float alpha=0.0;
+			
+			// manage array of LOD0, LOD1, and LODs in transition: LOD0_LOD1...
+
+			if (act_dist >= g_lodTresholds.w){
+				alpha_c = 1.0;
+
+				//lod2.push_back(drawData;
+
+
+				drawLOD2();
+			} else if (act_dist >= g_lodTresholds.z){
+				alpha = (act_dist - g_lodTresholds.z) / (g_lodTresholds.w - g_lodTresholds.z);
+			
+				// // show LOD 1
+				// 	alpha_c = 1.0-alpha;
+				// 	drawLOD1();
+				// 	glDepthMask(GL_FALSE);				
+				// 	// show LOD 2 
+				// 	alpha_c = alpha;
+				// 	drawLOD2();
+				// 	glDepthMask(GL_TRUE);
+			
+			
+				if (alpha<0.5){
+					// show LOD 1
+					alpha_c = 1.0;
+					drawLOD1();
+					glDepthMask(GL_FALSE);
+					// show LOD 2 
+					alpha_c = 2*alpha;
+					drawLOD2();
+					glDepthMask(GL_TRUE);
+
+				} else {
+					// show LOD 2 
+					alpha_c = 1.0;
+					drawLOD2();
+					// show LOD 1 
+					glDepthMask(GL_FALSE);
+					alpha_c = 2*(1-alpha);
+					drawLOD1();
+					glDepthMask(GL_TRUE);
+				
+				}
+			
+			} else if (act_dist >= g_lodTresholds.y){
+				alpha_c = 1.0;
+				drawLOD1();
+			} else if (act_dist >=g_lodTresholds.x){
+				alpha = (act_dist - g_lodTresholds.x) / (g_lodTresholds.y - g_lodTresholds.x);
+			
+				//glColor4f(0.0, 0.0, 0.0, 1.0-alpha);
+				//	drawLOD0();
+				//	glDepthMask(GL_FALSE);
+				//	// show LOD 1 
+				//	glColor4f(0.0, 0.0, 0.0, alpha);
+				//	drawLOD1();
+				//	glDepthMask(GL_TRUE);
+			
+				if (alpha<0.5){
+					// show LOD 0
+					alpha_c = 1.0;
+					drawLOD0();
+					glDepthMask(GL_FALSE);
+					// show LOD 1 
+					alpha_c = 2*alpha;
+					drawLOD1();
+					glDepthMask(GL_TRUE);
+				} else {
+					// show LOD 0
+					glDepthMask(GL_FALSE);
+					alpha_c = 2*(1-alpha);
+					drawLOD0();
+					glDepthMask(GL_TRUE);
+					// show LOD 1 
+					alpha_c = 1.0;
+					drawLOD1();				
+				}
+			
+			} else {
+				alpha_c = 1.0;
+				drawLOD0();
+			}
+
+
+		} // for
+	} // if positions > 1
+
+
+
+	alpha_c = 1.0;
 
 	if (!g_draw_dtree_lod){
 		drawLOD0();
 		return;
 	}
+	*/
 	// get distance to viewer
 	v3		toViewDir = *viewer_position - position;
 	float distance = toViewDir.length();
@@ -1127,23 +1273,25 @@ void DTree::draw(){
 	//v4 lodTresholds = v4 (12.0, 13.0, 50.0, 55.0);
 	//v4 g_lodTresholds = v4 (15.0, 18.0, 50.0, 55.0);
 	if (discrepacy<0.0){ // if is infront of the camera
+
 		float alpha=0.0;
+		
 		if (distance >= g_lodTresholds.w){
 			alpha_c = 1.0;
 			drawLOD2();
 		} else if (distance >= g_lodTresholds.z){
 			alpha = (distance - g_lodTresholds.z) / (g_lodTresholds.w - g_lodTresholds.z);
+			g_tree_lod1_count++;
 			
-			/*
-			// show LOD 1
-				alpha_c = 1.0-alpha;
-				drawLOD1();
-				glDepthMask(GL_FALSE);				
-				// show LOD 2 
-				alpha_c = alpha;
-				drawLOD2();
-				glDepthMask(GL_TRUE);
-			/*/
+			// // show LOD 1
+			// 	alpha_c = 1.0-alpha;
+			// 	drawLOD1();
+			// 	glDepthMask(GL_FALSE);				
+			// 	// show LOD 2 
+			// 	alpha_c = alpha;
+			// 	drawLOD2();
+			// 	glDepthMask(GL_TRUE);
+			
 			
 			if (alpha<0.5){
 				// show LOD 1
@@ -1172,14 +1320,36 @@ void DTree::draw(){
 			drawLOD1();
 		} else if (distance >=g_lodTresholds.x){
 			alpha = (distance - g_lodTresholds.x) / (g_lodTresholds.y - g_lodTresholds.x);
+			g_tree_lod0_count++;
 			/*
-			glColor4f(0.0, 0.0, 0.0, 1.0-alpha);
+			if (alpha<0.5){
+				alpha_c = 1.0 - alpha;
 				drawLOD0();
-				glDepthMask(GL_FALSE);
+				//glDepthMask(GL_FALSE);
 				// show LOD 1 
-				glColor4f(0.0, 0.0, 0.0, alpha);
+				alpha_c = alpha;
 				drawLOD1();
+				//glDepthMask(GL_TRUE);
+			} else {
+					
+				// show LOD 0
+				glDepthMask(GL_FALSE);
+				alpha_c = 1.0-alpha;
+				drawLOD0();
 				glDepthMask(GL_TRUE);
+				// show LOD 1 
+				alpha_c = alpha;
+				drawLOD1();	
+				
+			}
+
+			//glColor4f(0.0, 0.0, 0.0, 1.0-alpha);
+			//	drawLOD0();
+			//	glDepthMask(GL_FALSE);
+			//	// show LOD 1 
+			//	glColor4f(0.0, 0.0, 0.0, alpha);
+			//	drawLOD1();
+			//	glDepthMask(GL_TRUE);
 			/*/
 			if (alpha<0.5){
 				// show LOD 0
@@ -1198,10 +1368,9 @@ void DTree::draw(){
 				glDepthMask(GL_TRUE);
 				// show LOD 1 
 				alpha_c = 1.0;
-				drawLOD1();
-				
+				drawLOD1();				
 			}
-			
+		
 		} else {
 			alpha_c = 1.0;
 			drawLOD0();
@@ -1434,7 +1603,7 @@ void DTree::initLOD1b()
 	// create 2 sliceSets (cross, double sided)
 	v3 dir = v3(-1.0, 0.0, 0.0);
 	v3 right = v3(0.0, 0.0, -1.0);
-	float res = 256;
+	float res = 512;
 	win_resolution = v2 (res, res);
 	
 	DTreeSliceSet * set;
@@ -1471,7 +1640,9 @@ void DTree::initLOD1b()
 	// join textures to one...
 	joinSliceSetsTextures();
 	
-	
+	// create mipmaps
+	jColorMap->generateMipmaps();
+	//jColorMap->setParameterI(GL_TEXTURE_SAMPLES, GL_LINEAR_MIPMAP_LINEAR);
 	
 	// init shaders
 
@@ -1489,7 +1660,7 @@ void DTree::initLOD1b()
 	l2_displ	= lod1shader2->getGLLocation("leaf_noise_tex"	);
 	l2_displ2	= lod1shader2->getGLLocation("branch_noise_tex"	);
 	l2_data		= lod1shader2->getGLLocation("dataMap"			);
-	l2_normal	= lod1shader2->getGLLocation("normalMap"			);
+	l2_normal	= lod1shader2->getGLLocation("normalMap"		);
 
 	lod1shader2->registerUniform("time", UniformType::F1, & g_float_time);
 
@@ -1497,18 +1668,18 @@ void DTree::initLOD1b()
 	lod1shader2->registerUniform("wave_frequency"		, UniformType::F1, & g_tree_wave_frequency		);
 	lod1shader2->registerUniform("movementVectorA"		, UniformType::F2, & g_tree_movementVectorA		);
 	lod1shader2->registerUniform("movementVectorB"		, UniformType::F2, & g_tree_movementVectorB		);
-	lod1shader2->registerUniform("wave_y_offset"			, UniformType::F1, & g_tree_wave_y_offset			);
-	lod1shader2->registerUniform("wave_increase_factor"	, UniformType::F1, & g_tree_wave_increase_factor	);
+	lod1shader2->registerUniform("wave_y_offset"		, UniformType::F1, & g_tree_wave_y_offset		);
+	lod1shader2->registerUniform("wave_increase_factor"	, UniformType::F1, & g_tree_wave_increase_factor);
 	lod1shader2->registerUniform("window_size"			, UniformType::F2, & win_resolution				);
-
 
 	lod1shader2->registerUniform("wood_amplitudes"		, UniformType::F4, & g_tree_wood_amplitudes.data	);
 	lod1shader2->registerUniform("wood_frequencies"		, UniformType::F4, & g_tree_wood_frequencies.data	);
 	lod1shader2->registerUniform("leaf_amplitude"		, UniformType::F1, & g_tree_leaf_amplitude	);
 	lod1shader2->registerUniform("leaf_frequency"		, UniformType::F1, & g_tree_leaf_frequency	);
 
-	int i = lod1shader2->registerUniform("time_offset"	, UniformType::F1, & tree_time_offset);
-	u_time_offset = lod1shader->getUniform(i);
+	int i;
+	// int i = lod1shader2->registerUniform("time_offset"	, UniformType::F1, & tree_time_offset);
+	// u_time_offset = lod1shader2->getUniform(i);
 	
 	/*
 	shader = new Shader("test");
@@ -1567,19 +1738,21 @@ void DTree::initLOD1b()
 	tangentArr0.push_back(v3( 1.0,  0.0,  0.0));
 	tangentArr0.push_back(v3( 1.0,  0.0,  0.0));
 	tangentArr0.push_back(v3( 1.0,  0.0,  0.0));
+	
+	float y_max = 0.97; 
 
-	texCoordArr0.push_back(v2( 0.0,  0.0));
-	texCoordArr0.push_back(v2( 1.0,  0.0));
-	texCoordArr0.push_back(v2( 1.0,  1.0));
-	texCoordArr0.push_back(v2( 0.0,  1.0));
-	texCoordArr0.push_back(v2( 0.0,  0.0));
-	texCoordArr0.push_back(v2( 1.0,  0.0));
-	texCoordArr0.push_back(v2( 1.0,  1.0));
-	texCoordArr0.push_back(v2( 0.0,  1.0));
-	texCoordArr0.push_back(v2( 0.0,  0.0));
-	texCoordArr0.push_back(v2( 1.0,  0.0));
-	texCoordArr0.push_back(v2( 1.0,  1.0));
-	texCoordArr0.push_back(v2( 0.0,  1.0));
+	texCoordArr0.push_back(v2( 0.0,  0.0	));
+	texCoordArr0.push_back(v2( 1.0,  0.0	));
+	texCoordArr0.push_back(v2( 1.0,  y_max	));
+	texCoordArr0.push_back(v2( 0.0,  y_max	));
+	texCoordArr0.push_back(v2( 0.0,  0.0	));
+	texCoordArr0.push_back(v2( 1.0,  0.0	));
+	texCoordArr0.push_back(v2( 1.0,  y_max	));
+	texCoordArr0.push_back(v2( 0.0,  y_max	));
+	texCoordArr0.push_back(v2( 0.0,  0.0	));
+	texCoordArr0.push_back(v2( 1.0,  0.0	));
+	texCoordArr0.push_back(v2( 1.0,  y_max	));
+	texCoordArr0.push_back(v2( 0.0,  y_max	));
 
 	// first slice number, second sliceSet number
 	sliceAtrArr0.push_back(v2( 1.0,  0.0));
@@ -1886,8 +2059,8 @@ void DTree::initLOD2()
 void DTree::init(){
 	initLOD0();
 	initLOD1();
-	initLOD1b();
-	//initLOD2();
+	//initLOD1b();
+	initLOD2();
 }
 
 void DTree::update(double time){
@@ -2051,7 +2224,7 @@ void DTree::createSlices(v3 & direction, v3 & rightVector, bool half){
 	
 
 		// generate mipmaps where needed
-			slice->colormap->generateMipmaps();
+			//slice->colormap->generateMipmaps();
 			//slice->colormap->setParameterI(GL_TEXTURE_MIN_LOD, 0);
 			//slice->colormap->setParameterI(GL_TEXTURE_BASE_LEVEL, 0);
 			
@@ -2106,6 +2279,9 @@ void DTree::createSlices(v3 & direction, v3 & rightVector, bool half){
 		g_window_sizes.y = g_WinHeight;
 		glViewport(0, 0, g_window_sizes.x, g_window_sizes.y);
 		
+		// delete branch texture
+		SAFE_DELETE_PTR ( slice->branchmap );
+
 	} // for each slice
 	SAFE_DELETE_PTR ( depthmap );
 	SAFE_DELETE_PTR ( dataProcessShader );
@@ -2121,7 +2297,7 @@ void DTree::joinSliceSetsTextures(){
 	int loc_datamap		= joinShader->getGLLocation("dataMap");			
 	int loc_normalmap	= joinShader->getGLLocation("normalMap");		
 	int loc_depthmap	= joinShader->getGLLocation("depthMap");		
-	int sliceSetCnt = sliceSets.size();
+	int sliceSetCnt = sliceSets2.size();
 	GLuint fbo = 0;
 	int jResX = slice_count * resolution_x;
 	int jResY = sliceSetCnt * resolution_y;
@@ -2147,7 +2323,7 @@ void DTree::joinSliceSetsTextures(){
 		jDepthMap	= new Texture(GL_TEXTURE_2D, GL_DEPTH_COMPONENT32F, GL_DEPTH_COMPONENT, GL_FLOAT, NULL, jResX, jResY, "depthMap");
 		jDepthMap->textureUnit =  GL_TEXTURE3;
 		jDepthMap->textureUnitNumber =		3;
-		jNormalMap	= new Texture(GL_TEXTURE_2D, GL_RGB, GL_RGB, GL_UNSIGNED_BYTE, NULL, jResX, jResY, "normalMap");
+		jNormalMap	= new Texture(GL_TEXTURE_2D, GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE, NULL, jResX, jResY, "normalMap");
 		jNormalMap->setParameterI(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		//jNormalMap->setParameterI(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		jNormalMap->textureUnit = GL_TEXTURE4;
@@ -2176,24 +2352,27 @@ void DTree::joinSliceSetsTextures(){
 			// draw slice sets
 			for (j=0; j<sliceSetCnt; j++){
 				// draw on proper position
-				slice = sliceSets2[j]->getSlice(i); 
-				x = i*resolution_x;
-				y = j*resolution_y;
-				width = resolution_x;
-				height = resolution_y;
-				slice->colormap->	bind(slice->colormap->textureUnit);
-				slice->datamap->	bind(slice->datamap->textureUnit);
-				slice->normalmap->	bind(slice->normalmap->textureUnit);
-				//slice->depthmap->setParameterI(GL_TEXTURE_COMPARE_MODE, GL_NONE);
-				slice->depthmap->	bind(slice->depthmap->textureUnit);
-				
+				slice	= sliceSets2[j]->getSlice(i); 
+				x		= i*resolution_x;
+				y		= j*resolution_y;
+				width	= resolution_x;
+				height	= resolution_y;
 				joinShader->setTexture(loc_colormap,	slice->colormap->	textureUnitNumber);
 				joinShader->setTexture(loc_datamap,		slice->datamap->	textureUnitNumber);
 				joinShader->setTexture(loc_normalmap,	slice->normalmap->	textureUnitNumber);
 				joinShader->setTexture(loc_depthmap,	slice->depthmap->	textureUnitNumber);
-				
-				slice->colormap->show(i*resolution_x, j*resolution_y, resolution_x, resolution_y, true);	
 
+				slice->colormap->	bind(slice->colormap->textureUnit);
+				slice->datamap->	bind(slice->datamap->textureUnit);
+				slice->normalmap->	bind(slice->normalmap->textureUnit);
+				slice->depthmap->	bind(slice->depthmap->textureUnit);
+				
+				slice->colormap->show(i*resolution_x, j*resolution_y, resolution_x, resolution_y, false);	
+
+				slice->colormap->	unbind();
+				slice->datamap->	unbind();
+				slice->normalmap->	unbind();
+				slice->depthmap->	unbind();
 			}
 		}
 		joinShader->use(false);

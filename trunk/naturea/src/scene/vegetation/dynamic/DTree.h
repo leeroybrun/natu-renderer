@@ -78,6 +78,19 @@ private:
 	m3			rotMatrix;
 };
 
+struct DTreeInstanceData
+{
+	v3		position;
+	float	rotation_y;
+	int		index;
+	float	alpha;
+};
+struct DTreeInstanceDrawData
+{
+	int		index;
+	float	alpha;
+};
+
 
 class DTree :
 	public Vegetation
@@ -143,7 +156,8 @@ public:
 	v3*					viewer_position;
 	v3*					viewer_direction;
 
-	vector<v4*>			tree_pos;
+	vector<DTreeInstanceData*>			tree_instances;
+	vector<DTreeInstanceData*>			tree_instances_lod1;
 private:
 	DTreeBranch			*trunk;
 	vector<DTreeBranch*> branches;

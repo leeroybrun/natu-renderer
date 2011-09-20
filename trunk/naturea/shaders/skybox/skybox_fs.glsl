@@ -1,8 +1,4 @@
 #
-//==============================================================================
-//  God Rays FRAGMENT shader   
-//  inspired by: http://fabiensanglard.net/lightScattering/
-//==============================================================================
 uniform vec4 skycolor;
 uniform sampler2D skybox_tex;
 

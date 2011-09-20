@@ -95,11 +95,13 @@ extern int g_Heightmaps	   ;
 extern int g_Specularmaps  ;
 extern int g_Alphamaps	   ;
 
-extern bool	g_orbit		   ;
-extern float g_orbit_speed ;
-extern float g_orbit_radius;
-extern v3	g_center	   ;
-extern float g_timeDiff;
+
+extern bool						g_draw_lod1_method;
+extern bool						g_orbit			;
+extern float					g_orbit_speed	;
+extern float					g_orbit_radius	;
+extern v3						g_center		;
+extern float					g_timeDiff		;
 
 /**********************************************
 * DYNAMIC TREE
@@ -136,7 +138,7 @@ extern v3		g_leaves_LightDiffuseColor				;
 extern v3		g_snapshot_direction;
 extern int		g_slice_count;
 
-extern int		g_tree_gridSize			;
+extern const int g_tree_gridSize			;
 extern float	g_tree_mean_distance	;
 extern float	g_tree_dither			;
 
@@ -145,4 +147,7 @@ extern int		g_tree_lod1_count;
 extern int		g_tree_lod2_count;
 
 extern bool		g_compressToOneTexture;
+
+extern v3*		g_viewer_position;
+extern v3*		g_viewer_direction;
 #endif

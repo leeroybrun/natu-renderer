@@ -3,6 +3,21 @@
 #include "models\elephant.h"
 #include "../../utility/VBO.h"
 #include "../../scene/vegetation/dynamic/DTree.h"
+#include "../../scene/cameras/Camera.h"
+
+
+class TestInstance{
+public:
+	TestInstance(){}
+	~TestInstance(){}
+
+	m4	transformMatrix;
+	float param1;
+	float x,y,z,r;
+
+};
+
+
 
 class TestModel :
 	public SceneModel
@@ -19,41 +34,16 @@ public:
 
 	virtual void update(double time);
 
-	void		 processTree(DTree * tree, v3 &dir);
-
+	GLuint				i_matricesBuffID;
+	GLuint				i_paramBuffID;
+	GLuint				v_positionsBuffID;
+	GLuint				v_indicesBuffID;
+	float				*matricesBufferData;
+	vector<TestInstance*> instances;
 	Shader				*shader;
 	VBO					*vbo;
-
-	float				tree_time_offset;
-	Uniform*			u_time_offset;	 			
-
-	Texture*			colorMap;
-	Texture*			colorMap2;
-	Texture*			displacementMap;
-	Texture*			displacement2Map;
-	Texture*			weightMap;
-	Texture*			dataMap;
-
-	Texture*			frontDecalMap;
-	Texture*			frontNormalMap;
-	Texture*			frontTranslucencyMap;
-	Texture*			frontHalfLife2Map;
-	Texture*			backDecalMap;
-	Texture*			backNormalMap;
-	Texture*			backTranslucencyMap;
-	Texture*			backHalfLife2Map;
-
-	vector<DTreeSlice*>	slices;
-
-	int					l_color	  ;
-	int					l_displ	  ;
-	int					l_displ2  ;
-	int					l_data	  ;
-	int					l_normal  ;
-
-	v2					win_resolution;
-
-	v3					position;
-	float				y_rotation;
+	EBO					*ebo;
+	Terrain				*terrain;
+	Camera				*camera;
 };
 

@@ -19,21 +19,7 @@ vec3					cam_up = cross(cam_dir, cam_right);
 void main()
 {	
 
-	//float h = gl_FrontMaterial.shininess;
-	//vec3 lightDir = gl_LightSource[0].position.xyz;
-	
-	//vec3 N = normalize(normal_vs);
-	//vec3 L = normalize(lightDir);
-	//vec3 E = normalize(-vPos.xyz);
-	//vec3 R = reflect(-L, N);
-	//float RdotE = max(dot(R, E),0.0);
-	//float NdotL = max(dot(N, L),0.0);
-	//float spec = pow( RdotE, h );
 	vec4 texColor = texture2D(color_texture, gl_TexCoord[0].xy);
-	//vec4 ambient = gl_LightSource[0].ambient;
-	//vec4 diffuse = gl_FrontLightProduct[0].diffuse * NdotL;
-	//vec4 specular = gl_FrontLightProduct[0].specular * spec;
-	//vec3 color = ((texColor) * (ambient + diffuse) + specular).xyz;
 
 	gl_FragData[0] = texColor;
 	vec3 normal;
