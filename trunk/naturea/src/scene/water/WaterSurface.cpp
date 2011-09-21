@@ -53,7 +53,7 @@ void WaterSurface::draw()
 		glBindTexture(GL_TEXTURE_2D, cb_refr_ID);
 		glActiveTexture(GL_TEXTURE2);		
 		glBindTexture(GL_TEXTURE_2D, db_refr_ID);
-		glClientActiveTexture(GL_TEXTURE0);
+			//glClientActiveTexture(GL_TEXTURE0);
 			drawPlane();
 		glBindTexture(GL_TEXTURE_2D, 0);
 	//glDisable(GL_TEXTURE_2D);

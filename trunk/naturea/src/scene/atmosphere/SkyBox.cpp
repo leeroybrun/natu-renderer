@@ -32,10 +32,8 @@ void SkyBox::drawForLOD()
 
 void SkyBox::draw()
 {
-	glEnable(GL_TEXTURE_2D);
 	glDisable(GL_LIGHTING);
 	glDisable(GL_CULL_FACE);
-   glMatrixMode(GL_MODELVIEW);
    glPushMatrix();
     // move with user...
 	glTranslate(p_activeCamera->getPosition());

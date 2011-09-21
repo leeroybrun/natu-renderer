@@ -15,6 +15,7 @@
 #include "scene\Atmosphere\SkyBox.h"
 #include "scene\Atmosphere\Light.h"
 #include "scene\Atmosphere\GodRays.h"
+#include "scene\Atmosphere\Fog.h"
 #include "scene\Water\WaterSurface.h"
 
 
@@ -68,6 +69,7 @@ public:
 	Camera				*p_activeCamera;
 	Light				*p_activeLight;
 	GodRays				*p_godRays;
+	Fog					*p_fog;
 	WaterSurface		*p_waterSurface;
 
 

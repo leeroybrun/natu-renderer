@@ -147,9 +147,9 @@ float	g_tree_wave_increase_factor = 1.0;
 float	g_tree_time_offset_1	= 0.0;
 float	g_tree_time_offset_2	= 0.5;		
 
-const int	g_tree_gridSize		= 100;
-float	g_tree_mean_distance	= 2.0;
-float	g_tree_dither			= 1.0;
+const int	g_tree_gridSize		= 30;
+float	g_tree_mean_distance	= 10.0;
+float	g_tree_dither			= 4.0;
 
 float	g_leaves_MultiplyAmbient			= 0.7;
 float	g_leaves_MultiplyDiffuse			= 0.7;
@@ -172,6 +172,8 @@ float	g_timeDiff				= 0;
 
 v3*		g_viewer_position;
 v3*		g_viewer_direction;
+
+float	g_fog_density = 0.001, g_fog_start = 1.0, g_fog_end=100.0;
 
 float g_CPU_fps;
 float CPU_render_time;
@@ -488,6 +490,11 @@ void initGUI()
 	TwAddVarRO(controlBar, "cosA", TW_TYPE_FLOAT, & g_cosA, " label='cosA' ");
 	TwAddVarRO(controlBar, "cosB", TW_TYPE_FLOAT, & g_cosB, " label='cosB' ");
 	TwAddVarRO(controlBar, "cosC", TW_TYPE_FLOAT, & g_cosC, " label='cosC' ");
+
+	TwAddVarRW(controlBar, "fogDensity"	, TW_TYPE_FLOAT, & g_fog_density,	" label='fog density' min=-1000 max=1000 step=0.1");
+	TwAddVarRW(controlBar, "fogStart"	, TW_TYPE_FLOAT, & g_fog_start,		" label='fog start'	  min=-1000 max=1000 step=0.1");
+	TwAddVarRW(controlBar, "fogEnd"		, TW_TYPE_FLOAT, & g_fog_end,		" label='fog end'	  min=-1000 max=1000 step=0.1");
+
 
 	TwAddVarRW(controlBar, "sw_tree", TW_TYPE_BOOLCPP, & g_draw_dtree, " group='Visibility' ");
 	TwAddVarRW(controlBar, "sw_lod",  TW_TYPE_BOOLCPP, & g_draw_dtree_lod, " group='Visibility'  ");

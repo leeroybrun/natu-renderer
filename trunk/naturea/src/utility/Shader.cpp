@@ -406,7 +406,9 @@ void	Shader::setBoolean(int locIndex, bool value)
 }
 void	Shader::setTexture(int location, int texUnitNumber)
 {
-	glUniform1i(location, texUnitNumber);
+	if (location>-1){
+		glUniform1i(location, texUnitNumber);
+	}
 }
 
 void	Shader::setUniform(Uniform * uni){

@@ -150,4 +150,7 @@ extern bool		g_compressToOneTexture;
 
 extern v3*		g_viewer_position;
 extern v3*		g_viewer_direction;
+
+extern float	g_fog_density, g_fog_start, g_fog_end;
+
 #endif

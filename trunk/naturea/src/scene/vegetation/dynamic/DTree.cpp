@@ -86,9 +86,12 @@ DTree::~DTree(void)
 		SAFE_DELETE_PTR( leaves[i] );
 	}
 	leaves.clear();
-
-	//SAFE_DELETE_PTR( trunk );
-	
+	 
+	// instance matrices...
+	for (i=0; i< instanceMatrices.size(); i++){
+		SAFE_DELETE_PTR( instanceMatrices[i] );
+	}
+	instanceMatrices.clear();
 
 }
 
@@ -761,6 +764,215 @@ Vegetation* DTree::getCopy(){
 	return copy;
 }
 
+void DTree::draw_instance_LOD0(DTreeInstanceData * instance){
+	if (g_draw_lod0){
+		glColor4f(0.0,0.0,0.0, alpha_c);
+		
+		glDisable(GL_CULL_FACE);
+		glPushMatrix();
+		glTranslatef(instance->position.x, instance->position.y, instance->position.z);
+		glRotatef(instance->rotation_y, 0.0, 1.0, 0.0);
+		glScalef( 10.f , -10.f, 10.f);
+	
+		// draw bbox
+		//bbox->draw();
+
+
+		// bind textures
+		dataTexture->bind(GL_TEXTURE1);
+		branchNoiseTexture->bind(GL_TEXTURE2);
+		bColorTexture->bind(GL_TEXTURE4);
+
+		// TODO: use positions
+
+		// draw branches
+		branchesEBO->draw(branchShader);
+
+		bColorTexture->unbind();
+
+		// bind textures
+		leafNoiseTexture->bind(GL_TEXTURE3);
+		frontDecalMap		->bind(GL_TEXTURE4);
+		frontNormalMap		->bind(GL_TEXTURE5);
+		frontTranslucencyMap->bind(GL_TEXTURE6);
+		frontHalfLife2Map	->bind(GL_TEXTURE7);
+		backDecalMap		->bind(GL_TEXTURE8);
+		backNormalMap		->bind(GL_TEXTURE9);
+		backTranslucencyMap	->bind(GL_TEXTURE10);
+		backHalfLife2Map	->bind(GL_TEXTURE11);
+
+		// TODO: use positions
+
+		// draw leaves
+		leavesVBO->draw(leafShader, GL_QUADS, 0);
+
+
+		leafNoiseTexture->unbind();
+		frontDecalMap		->unbind();
+		frontNormalMap		->unbind();
+		frontTranslucencyMap->unbind();
+		frontHalfLife2Map	->unbind();
+		backDecalMap		->unbind();
+		backNormalMap		->unbind();
+		backTranslucencyMap	->unbind();
+		backHalfLife2Map	->unbind();
+		branchNoiseTexture->unbind();
+		dataTexture->unbind();
+		glPopMatrix();
+		glEnable(GL_CULL_FACE);
+	}
+}
+
+void DTree::draw_instance_LOD1(DTreeInstanceData * instance){
+	/*
+	glDisable(GL_CULL_FACE);
+	glUseProgram(shader->programID);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, v_indicesBuffID);
+	// bind positions data
+	glBindBuffer(GL_ARRAY_BUFFER, v_positionsBuffID);
+	glEnableClientState(GL_VERTEX_ARRAY);
+	glVertexPointer(3, GL_FLOAT, 0, BUFFER_OFFSET(0));   //The starting point of the VBO, for the vertices
+	
+	glEnableVertexAttribArray(p1Loc);
+	glEnableVertexAttribArray(tmLoc0);
+	glEnableVertexAttribArray(tmLoc1);
+	glEnableVertexAttribArray(tmLoc2);
+	glEnableVertexAttribArray(tmLoc3);
+	// bind instance data
+
+	// draw type1
+	glBindBuffer(GL_ARRAY_BUFFER, i_paramBuffID);
+	glBufferData(GL_ARRAY_BUFFER, type1Index * 1 * sizeof(float), type1Param1, GL_STREAM_DRAW);
+	glVertexAttribPointer(p1Loc, 1, GL_FLOAT, GL_FALSE, 0, (void*)(0));
+	glVertexAttribDivisor(p1Loc, 1);
+	glBindBuffer(GL_ARRAY_BUFFER, i_matricesBuffID);
+	
+	glVertexAttribPointer(tmLoc0, 4, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 4 * 4, (void*)(0));
+	glVertexAttribPointer(tmLoc1, 4, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 4 * 4, (void*)(sizeof(float) * 4));
+	glVertexAttribPointer(tmLoc2, 4, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 4 * 4, (void*)(sizeof(float) * 8));
+	glVertexAttribPointer(tmLoc3, 4, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 4 * 4, (void*)(sizeof(float) * 12));
+	glVertexAttribDivisor(tmLoc0, 1);
+	glVertexAttribDivisor(tmLoc1, 1);
+	glVertexAttribDivisor(tmLoc2, 1);
+	glVertexAttribDivisor(tmLoc3, 1);	
+
+	glBufferData(GL_ARRAY_BUFFER, type1Index * 16 * sizeof(float), type1Matrices, GL_STREAM_DRAW);
+	glDrawElementsInstanced(GL_QUADS, 8, GL_UNSIGNED_INT, BUFFER_OFFSET(0), type1Index);
+
+	// draw type2
+	glBufferData(GL_ARRAY_BUFFER, type2Index * 16* sizeof(float), type2Matrices, GL_STREAM_DRAW);
+	
+	glBindBuffer(GL_ARRAY_BUFFER, i_paramBuffID);
+	glBufferData(GL_ARRAY_BUFFER, type2Index * 1 * sizeof(float), type2Param1, GL_STREAM_DRAW);
+	glVertexAttribPointer(p1Loc, 1, GL_FLOAT, GL_FALSE, 0, (void*)(0));
+	glVertexAttribDivisor(p1Loc, 1);
+	glDrawElementsInstanced(GL_QUADS, 8, GL_UNSIGNED_INT, BUFFER_OFFSET(8*sizeof(unsigned int)), type2Index);  
+
+
+	// disable all...
+	glDisableVertexAttribArray(tmLoc0);
+	glDisableVertexAttribArray(tmLoc1);
+	glDisableVertexAttribArray(tmLoc2);
+	glDisableVertexAttribArray(tmLoc3);
+	glDisableVertexAttribArray(p1Loc);
+	glDisableClientState(GL_VERTEX_ARRAY);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+	glEnable(GL_CULL_FACE);
+	glUseProgram(0);
+	*/
+}
+
+void DTree::draw_all_instances_LOD1(){
+	
+	if (g_draw_lod1){
+		int i, j, sliceCount, setCount=sliceSets2.size();
+		Texture * colorTexture, * dataTexture, *displacementTexture, *displacement2Texture, *normalTexture;
+		displacementTexture		=	leafNoiseTexture;
+		displacement2Texture	=	branchNoiseTexture;
+		
+		colorTexture			=	jColorMap;
+		dataTexture				=	jDataMap;
+		normalTexture			=	jNormalMap;
+		
+		glDisable(GL_CULL_FACE);
+		glDisable(GL_LIGHTING);
+
+		lod1shader2->use(true);
+			jColorMap			->bind(GL_TEXTURE1);
+			displacementTexture	->bind(GL_TEXTURE2);
+			displacement2Texture->bind(GL_TEXTURE3);
+			jDataMap			->bind(GL_TEXTURE4);
+			jNormalMap			->bind(GL_TEXTURE5);
+
+			lod1shader2->setTexture(l2_color	, jColorMap				->textureUnitNumber	);
+			lod1shader2->setTexture(l2_displ	, displacementTexture	->textureUnitNumber	);			
+			lod1shader2->setTexture(l2_displ2	, displacement2Texture	->textureUnitNumber	);
+			lod1shader2->setTexture(l2_data		, jDataMap				->textureUnitNumber	);
+			lod1shader2->setTexture(l2_normal	, jNormalMap			->textureUnitNumber	);
+			// bind element buffer
+			eboLOD1->bind();
+			// bind vertex attribute buffer
+			lod1vbo2->bind(lod1shader2);	
+
+			// instance matrices VBO
+
+
+			// bind instance data
+			glBindBuffer(GL_ARRAY_BUFFER, i_matricesBuffID);
+			glEnableVertexAttribArray(tmLoc0);
+			glEnableVertexAttribArray(tmLoc1);
+			glEnableVertexAttribArray(tmLoc2);
+			glEnableVertexAttribArray(tmLoc3);
+			glVertexAttribPointer(tmLoc0, 4, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 4 * 4, (void*)(0));
+			glVertexAttribPointer(tmLoc1, 4, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 4 * 4, (void*)(sizeof(float) * 4));
+			glVertexAttribPointer(tmLoc2, 4, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 4 * 4, (void*)(sizeof(float) * 8));
+			glVertexAttribPointer(tmLoc3, 4, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 4 * 4, (void*)(sizeof(float) * 12));
+			glVertexAttribDivisor(tmLoc0, 1);
+			glVertexAttribDivisor(tmLoc1, 1);
+			glVertexAttribDivisor(tmLoc2, 1);
+			glVertexAttribDivisor(tmLoc3, 1);
+			for (int i=0; i<instanceMatrices.size(); i++){
+				// transfer data to buffer
+				glBufferData(GL_ARRAY_BUFFER, typeIndices[i] * 16 * sizeof(float), instanceMatrices[i], GL_STREAM_DRAW);
+				int off = i*(3*3*4*sizeof(unsigned int));
+				void * offset = BUFFER_OFFSET(off);
+				// draw instanced
+				eboLOD1->drawInstanced(GL_QUADS, 3*3*4, GL_UNSIGNED_INT, offset, typeIndices[i]);  
+
+			} // for each configuration
+			
+			// disable all...
+			glDisableVertexAttribArray(tmLoc0);
+			glDisableVertexAttribArray(tmLoc1);
+			glDisableVertexAttribArray(tmLoc2);
+			glDisableVertexAttribArray(tmLoc3);
+			glBindBuffer(GL_ARRAY_BUFFER, 0);
+			eboLOD1->unbind();
+			lod1vbo2->unbind(lod1shader2);
+			
+			colorTexture		->unbind();
+			displacementTexture	->unbind();
+			displacement2Texture->unbind();
+			dataTexture			->unbind();
+			normalTexture		->unbind();
+			// turn shader off
+		lod1shader2->use(false);
+		glUseProgram(0);	
+		glEnable(GL_CULL_FACE);
+		glEnable(GL_LIGHTING);
+	}
+}
+
+void DTree::draw_instance_LOD2(DTreeInstanceData * instance){
+
+}
+
+void DTree::draw_all_instances_LOD2(){
+
+}
+
+
 void DTree::drawLOD0()
 {
 	if (g_draw_lod0){
@@ -1278,11 +1490,11 @@ void DTree::draw(){
 		
 		if (distance >= g_lodTresholds.w){
 			alpha_c = 1.0;
-			drawLOD2();
+			//drawLOD2();
 		} else if (distance >= g_lodTresholds.z){
 			alpha = (distance - g_lodTresholds.z) / (g_lodTresholds.w - g_lodTresholds.z);
 			g_tree_lod1_count++;
-			
+			/*
 			// // show LOD 1
 			// 	alpha_c = 1.0-alpha;
 			// 	drawLOD1();
@@ -1314,7 +1526,7 @@ void DTree::draw(){
 				glDepthMask(GL_TRUE);
 				
 			}
-			
+			*/
 		} else if (distance >=g_lodTresholds.y){
 			alpha_c = 1.0;
 			drawLOD1();
@@ -1377,6 +1589,116 @@ void DTree::draw(){
 		}
 
 	} // if in front of camera plane
+}
+
+void DTree::prepareForRender(){
+	g_tree_lod1_count = 0;
+	// go through instances and put them in proper render pipelines
+	// TODO: this part can be PARALLEL to the rendering thread...
+	DTreeInstanceData * instance;
+	int i;
+	for (i=0; i<typeIndices.size(); i++){
+		typeIndices[i] = 0;
+	}
+	int instanceCount = tree_instances.size();
+	DTreeInstanceData * act_instance = tree_instances[0] ;
+	DTreeInstanceData * next_instance;
+	act_instance->eye_dir =  act_instance->position - *g_viewer_position;
+	act_instance->distance =act_instance->eye_dir.length();
+	act_instance->eye_dir.normalize();
+	act_instance->discrepacy = g_viewer_direction->dot(act_instance->eye_dir);
+	
+	DTreeInstanceData* done_instance;
+	// go through instances, perform one bubble sort walktrough & split into different render queues
+	DTreeInstanceData* rest_instance = act_instance;
+	//int i=1;
+	for (int i=1; i<tree_instances.size(); i++){
+		next_instance = tree_instances[i];
+		next_instance->eye_dir = next_instance->position - *g_viewer_position;
+		next_instance->distance= next_instance->eye_dir.length();
+		next_instance->eye_dir.normalize();
+		next_instance->discrepacy = g_viewer_direction->dot(next_instance->eye_dir);
+		if (next_instance->distance>act_instance->distance){
+			// swap
+			tree_instances[i-1]	= next_instance;
+			tree_instances[i]	= act_instance;
+			done_instance		= next_instance;
+			rest_instance		= NULL;
+		} else {
+			done_instance	= act_instance;
+			act_instance	= next_instance;
+			rest_instance = act_instance;
+		}
+		// draw only instances near the view angle
+		enqueueInRenderList(done_instance);
+	} // loop over instances
+	if (rest_instance!=NULL){
+		enqueueInRenderList(rest_instance);
+	}
+
+}
+void DTree::render(){
+	// render LOD2 instances
+
+	// render LOD1-LOD2 transitioning instances
+
+	// render LOD1 instances
+	draw_all_instances_LOD1();
+	// render LOD0-LOD1 transitioning instances
+
+	// render LOD0 instances
+}
+
+void DTree::draw2(){
+	prepareForRender();
+	render();
+	
+
+
+
+}
+void DTree::enqueueInRenderList(DTreeInstanceData * instance){
+	
+	if(instance->discrepacy>0.6){
+			instance->dirA.y = 0.0;
+			instance->dirB.y = 0.0;
+			instance->eye_dir.y = 0.0;
+			instance->eye_dir.normalize();
+			// determine LOD pipeline
+			/*
+			if (instance->distance>g_lodTresholds.w){
+				// LOD 2
+				// TODO: instanced drawing of LOD2
+			} else if (instance->distance>g_lodTresholds.z){
+				// transition between LOD1-LOD2
+				// TODO: direct drawing of LOD2 & LOD1
+			} else*/
+			if (instance->distance>g_lodTresholds.y){
+				g_tree_lod1_count++;
+				// LOD1
+				// determine the order of slices to render
+				float cosA = instance->dirA.dot(instance->eye_dir);
+				float cosB = instance->dirB.dot(instance->eye_dir);
+				int offset = 1;
+				if (cosA<= -0.86 || cosA>=0.86){
+					// B
+					offset = 0;
+				} else if (cosB<= -0.86 || cosB>=0.86){
+					// C
+					offset = 2;
+				} 
+				// copy matrices (and other instance attributes to array for VBO)
+				memcpy( instanceMatrices[offset]+typeIndices[offset]*16, instance->transformMatrix.m, 16*sizeof(float));
+				typeIndices[offset] += 1;
+			} else if (instance->distance>g_lodTresholds.x){
+				//	transition between LOD0-LOD1
+				// TODO: direct drawing of LOD0 & LOD1
+				//draw_instance_LOD0(done_instance);
+			} else {
+				// LOD0
+				//draw_instance_LOD0(done_instance);
+			}
+		}
 }
 
 void DTree::drawForLOD(){
@@ -2054,6 +2376,72 @@ void DTree::initLOD2()
 {
 
 
+}
+
+void DTree::init2(v4 ** positions_rotations, int count){
+
+	/*****
+	* LOD is made of 3 slice sets... due to blending problems we need to 
+	* switch the rendering order of the sliceSets -> there are 3 types of
+	* meshes [A,B,C] (just different EBO), from which the best is chosen on the fly...
+	*/
+	// init instances
+	DTreeInstanceData * instance;
+	v4 * pos_rot;
+	float cosA, sinA;
+	for (int i=0; i< count; i++){
+		pos_rot = positions_rotations[i];
+		instance = new DTreeInstanceData();
+		instance->position	= pos_rot->xyz();
+		instance->rotation_y= pos_rot->w;
+		cosA = cos(DEG_TO_RAD*instance->rotation_y);
+		sinA = sin(DEG_TO_RAD*instance->rotation_y);
+		// this matrix is passed to each instanced geometry and vertex shader 
+		// ensures the proper positioning...
+		// note, that by changing the order of matrices passed to VS,
+		// we can influence the order of rendered instances
+		m4 matrix(cosA			,	0			,	-sinA	,	0	,
+				  0				,	1			,	0		,	0	,
+				  sinA			,	0			,	cosA	,	0	,
+				  instance->position.x,	instance->position.y, instance->position.z,	1);
+		instance->transformMatrix = matrix; // copy matrix
+
+		// to be able to determine the proper type to display,
+		// we need to know from which angle are we looking at the geometry
+		// so we precalculate all we can now, to spare time in draw calls
+		instance->dirA = v3( -1.0, 0.0, 0.0).getRotated( instance->rotation_y*DEG_TO_RAD, v3(0.0, 1.0, 0.0));	// A									// A
+		instance->dirB = instance->dirA.getRotated( 60 * DEG_TO_RAD, v3(0.0, 1.0, 0.0));				// B
+
+		
+		instance->alpha = 1.0;
+		instance->index = i;
+		tree_instances.push_back(instance);
+	}
+	// init instance matrices
+	instanceMatrices.push_back( new float[ 16 * count]); // A
+	instanceMatrices.push_back( new float[ 16 * count]); // B
+	instanceMatrices.push_back( new float[ 16 * count]); // C
+	typeIndices.push_back(0);
+	typeIndices.push_back(1);
+	typeIndices.push_back(2);
+
+	initLOD0();
+	//initLOD1();
+	initLOD1b();
+	initLOD2();
+
+	tmLoc0 = lod1shader2->getAttributeLocation("transformMatrix");
+	tmLoc1 = tmLoc0 + 1;
+	tmLoc2 = tmLoc0 + 2;
+	tmLoc3 = tmLoc0 + 3;
+
+	// init instance matrices VBO
+	i_matricesBuffID = 0;
+	glGenBuffers(1, &i_matricesBuffID);
+	glBindBuffer(GL_ARRAY_BUFFER, i_matricesBuffID);
+		// load data
+		glBufferData(GL_ARRAY_BUFFER, count * 16* sizeof(float), NULL, GL_STREAM_DRAW);  
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
 void DTree::init(){

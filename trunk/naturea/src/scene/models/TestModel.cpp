@@ -6,6 +6,7 @@ TestModel::TestModel(void)
 	shader				= NULL;
 	vbo					= NULL;
 	ebo					= NULL;
+	
 }
 
 
@@ -14,100 +15,73 @@ TestModel::~TestModel(void)
 	SAFE_DELETE_PTR (shader					);
 	SAFE_DELETE_PTR (vbo					);
 	SAFE_DELETE_PTR (ebo					);
-	
+	SAFE_DELETE_ARRAY_PTR(	type1Matrices	);
+	SAFE_DELETE_ARRAY_PTR(	type2Matrices	);
+	SAFE_DELETE_ARRAY_PTR(	type1Param1		);
+	SAFE_DELETE_ARRAY_PTR(	type2Param1		);
 }
 
+void TestModel::enqueueInRenderList(TestInstance * instance){
+	//if(instance->discrepacy>0.5){
+		if (instance->distance>10.0){
+			memcpy( type1Matrices+type1Index*16, instance->transformMatrix.m, 16*sizeof(float));
+			type1Param1[type1Index] = 0.3; //instance->param1;
+			type1Index += 1;
+		} else {
+			memcpy( type2Matrices+type2Index*16, instance->transformMatrix.m, 16*sizeof(float));
+			type2Param1[type2Index] = 0.8; //instance->param1;
+			type2Index += 1;
+		}
+	//}
+}
 
-void TestModel::draw()
-{
-	//const float frustum_treshold = 0.70710678118654752440084436210485;
-	//float frustum_treshold = camera->frustum_treshold;
-	//m4 mv;
-	//m4 p;
-	//glGetFloatv(GL_MODELVIEW_MATRIX, mv.m);
-	//glGetFloatv(GL_PROJECTION_MATRIX, p.m);
-	//m4 MVP = mv*p;
-
-
-
+void TestModel::prepareForRender(){
+	type1Index = 0;
+	type2Index = 0;
+	
+	// go through instances, perform one bubble sort walktrough & split into different render queues
 	TestInstance * instance;
-	float * type1Matrices = new float[16*instances.size()];
-	float * type2Matrices = new float[16*instances.size()];
-	float * type1Param1   = new float[instances.size()];
-	float * type2Param1   = new float[instances.size()];
-	int type1Index = 0;
-	int type2Index = 0;
+	int i;
 	int instanceCount = instances.size();
 	TestInstance * act_instance = instances[0] ;
 	TestInstance * next_instance;
-	float dx = act_instance->x - g_viewer_position->x;
-	float dy = act_instance->y - g_viewer_position->y;
-	float dz = act_instance->z - g_viewer_position->z;
-
-	float dist = sqrt(dx*dx + dy*dy + dz*dz);
-	float act_dist = dist;
-	float next_dist;
-	float done_dist;
-
-	act_instance->transformMatrix;
-
-	v3	  act_eye_dir(dx,dy,dz); 
-	//v4	  act_proj = MVP*act_instance->transformMatrix*v4(act_eye_dir);
-	act_eye_dir.normalize();
-	float act_disc = g_viewer_direction->dot(act_eye_dir);
+	act_instance->eye_dir = act_instance->position - *g_viewer_position;
+	act_instance->distance =act_instance->eye_dir.length();
+	act_instance->eye_dir.normalize();
+	act_instance->discrepacy = g_viewer_direction->dot(act_instance->eye_dir);
 	
-	v3	  next_eye_dir;
-	v4	  next_proj;
-	float next_disc;
-	float done_disc;
-	v4	  done_proj;
 	TestInstance* done_instance;
 	// go through instances, perform one bubble sort walktrough & split into different render queues
+	
+	//int i=1;
+	TestInstance * orphan = act_instance;
 	for (int i=1; i<instances.size(); i++){
-		next_instance = instances[i];
-		dx = next_instance->x - g_viewer_position->x;
-		dy = next_instance->y - g_viewer_position->y;
-		dz = next_instance->z - g_viewer_position->z;
-		next_eye_dir = v3(dx, dy, dz);
-		//next_proj = MVP*next_instance->transformMatrix*v4(next_eye_dir);
-		next_eye_dir.normalize();
-		next_disc = g_viewer_direction->dot(next_eye_dir);
-		next_dist = sqrt(dx*dx + dy*dy + dz*dz);
-		if (next_dist>act_dist){
+		next_instance =instances[i];
+		next_instance->eye_dir = next_instance->position - *g_viewer_position;
+		next_instance->distance= next_instance->eye_dir.length();
+		next_instance->eye_dir.normalize();
+		next_instance->discrepacy = g_viewer_direction->dot(next_instance->eye_dir);
+		if (next_instance->distance>act_instance->distance){
 			// swap
 			instances[i-1]	= next_instance;
 			instances[i]	= act_instance;
-			done_instance	= next_instance;
-			done_dist		= next_dist;
-			done_disc		= next_disc;
-			//done_proj		= next_proj;
+			orphan = NULL;
+			enqueueInRenderList( next_instance );
 		} else {
-			done_instance	= act_instance;
-			done_dist		= act_dist;
-			done_disc		= act_disc;
-			//done_proj		= act_proj;
+			enqueueInRenderList( act_instance );
 			act_instance	= next_instance;
-			act_dist		= next_dist;
-			act_disc		= next_disc;
-			act_eye_dir		= next_eye_dir;
-			//act_proj		= next_proj;
+			orphan = act_instance;
 		}
-		//done_proj = done_proj / done_proj.w;
-		//printf ("i: %i _ ", i); done_proj.printOut();
-
-		if(done_disc>0.5){
-			if (done_dist>10.0){
-				memcpy( type1Matrices+type1Index*16, done_instance->transformMatrix.m, 16*sizeof(float));
-				type1Param1[type1Index] = 0.3; //instance->param1;
-				type1Index += 1;
-			} else {
-				memcpy( type2Matrices+type2Index*16, done_instance->transformMatrix.m, 16*sizeof(float));
-				type2Param1[type2Index] = 0.8; //instance->param1;
-				type2Index += 1;
-			}
-		}
+	} // loop over instances
+	if (orphan!=NULL){
+		enqueueInRenderList( orphan );
 	}
-	//printf("T1: %i, T2: %i\n", type1Index, type2Index);
+	printf("grid: %i, count: %i\n", g_tree_gridSize* g_tree_gridSize, type1Index + type2Index);
+}
+
+
+
+void TestModel::render(){
 	glDisable(GL_CULL_FACE);
 	glUseProgram(shader->programID);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, v_indicesBuffID);
@@ -115,12 +89,7 @@ void TestModel::draw()
 	glBindBuffer(GL_ARRAY_BUFFER, v_positionsBuffID);
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glVertexPointer(3, GL_FLOAT, 0, BUFFER_OFFSET(0));   //The starting point of the VBO, for the vertices
-	int p1Loc = glGetAttribLocation(shader->programID, "param1");
-	int tmLoc = glGetAttribLocation(shader->programID, "transformMatrix");
-	int tmLoc0 = tmLoc + 0;
-	int tmLoc1 = tmLoc + 1;
-	int tmLoc2 = tmLoc + 2;
-	int tmLoc3 = tmLoc + 3;
+	
 	glEnableVertexAttribArray(p1Loc);
 	glEnableVertexAttribArray(tmLoc0);
 	glEnableVertexAttribArray(tmLoc1);
@@ -168,12 +137,12 @@ void TestModel::draw()
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	glEnable(GL_CULL_FACE);
 	glUseProgram(0);
-	// free memory
-	delete [] type1Matrices ;
-	delete [] type2Matrices ;
-	delete [] type1Param1   ;
-	delete [] type2Param1   ;
+}
 
+void TestModel::draw()
+{
+	prepareForRender();
+	render();	
 }
 
 void TestModel::drawForLOD()
@@ -194,21 +163,21 @@ void TestModel::init()
 	for (int i=0; i<grid_size; i++){
 		for (int j=0; j<grid_size; j++){
 			instance = new TestInstance();
-			instance->x = i*step - 0.5*grid_size*step + randomf(-g_tree_dither, g_tree_dither);
-			instance->z = j*step - 0.5*grid_size*step + randomf(-g_tree_dither, g_tree_dither);
-			float xt	= instance->x + terrain->sz_x/2.0;
-			float yt	= instance->z + terrain->sz_y/2.0;
-			instance->y	= terrain->getHeightAt(xt,yt);
+			instance->position.x = i*step - 0.5*grid_size*step + randomf(-g_tree_dither, g_tree_dither);
+			instance->position.z = j*step - 0.5*grid_size*step + randomf(-g_tree_dither, g_tree_dither);
+			float xt	= instance->position.x + terrain->sz_x/2.0;
+			float yt	= instance->position.z + terrain->sz_y/2.0;
+			instance->position.y	= terrain->getHeightAt(xt,yt);
 
 
-			instance->r = randomf(0.0, 90.0);
-			cosA = cos(DEG_TO_RAD*instance->r);
-			sinA = sin(DEG_TO_RAD*instance->r);
+			instance->rotation_y = randomf(0.0, 90.0);
+			cosA = cos(DEG_TO_RAD*instance->rotation_y);
+			sinA = sin(DEG_TO_RAD*instance->rotation_y);
 
 			m4 matrix(cosA			,	0			,	-sinA	,	0	,
 					  0				,	1			,	0		,	0	,
 					  sinA			,	0			,	cosA	,	0	,
-					  instance->x	,	instance->y	,	instance->z		,	1	);
+					  instance->position.x	,	instance->position.y	,	instance->position.z		,	1	);
 
 			instance->transformMatrix = matrix; // copy matrix
 			instance->param1 = float(i)/float(grid_size);
@@ -258,6 +227,18 @@ void TestModel::init()
 		// load data
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, 16 * sizeof(unsigned int), INDICES, GL_STATIC_DRAW);  
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+
+	p1Loc			= glGetAttribLocation(shader->programID, "param1");
+	tmLoc			= glGetAttribLocation(shader->programID, "transformMatrix");
+	tmLoc0			= tmLoc + 0;
+	tmLoc1			= tmLoc + 1;
+	tmLoc2			= tmLoc + 2;
+	tmLoc3			= tmLoc + 3;
+	type1Matrices	= new float[16*instances.size()];
+	type2Matrices	= new float[16*instances.size()];
+	type1Param1		= new float[instances.size()];
+	type2Param1		= new float[instances.size()];
 }
 
 void TestModel::update(double time)

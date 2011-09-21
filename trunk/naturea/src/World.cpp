@@ -20,6 +20,7 @@ World::World(void)
 	p_test_model2		= NULL;
 
 	tree_positions		= NULL;
+	p_fog				= NULL;
 }
 
 
@@ -41,6 +42,7 @@ World::~World(void)
 	SAFE_DELETE_PTR( p_test_model	);
 	SAFE_DELETE_PTR( p_test_model2	);
 
+	SAFE_DELETE_PTR ( p_fog );
 	/*
 	for (int i=0; i<100; i++){
 		SAFE_DELETE_PTR ( tree_positions[i] );
@@ -89,7 +91,7 @@ void World::endLODBuffer()
 
 void World::draw()
 {
-
+	
 	// preprocess - one pass for LOD & occlusion queries
 	if (g_orbit){
 		p_activeCamera->orbitY(g_center, g_orbit_radius, g_timeDiff*g_orbit_speed);
@@ -111,7 +113,7 @@ void World::draw()
 	// 2nd pass (water)
 	//p_activeCamera->shoot();
 	p_activeLight->turnOn();
-
+	
 	
 
 	/*
@@ -145,8 +147,12 @@ void World::draw()
 	if (g_draw_light_direction){
 		p_activeLight->draw();
 	}
-	p_skybox->draw();
 	p_terrain->draw();
+	p_skybox->draw();
+	p_fog->turnOn();
+	
+	
+	
 	/*
 	if (p_activeCamera->getPosition().y>=WATER_HEIGHT-1.0){
 		//p_fog->turnOn();
@@ -168,7 +174,9 @@ void World::draw()
 	drawWithAlpha();
 	
 	glDisable(GL_BLEND);
-	
+
+	p_fog->turnOff();
+
 	if (g_godraysEnabled){
 		v3 lightDir = (p_activeLight->position.xyz()).getNormalized();
 		p_godRays->lightDirDOTviewDirValue = lightDir.dot(p_activeCamera->getDirection());
@@ -181,7 +189,7 @@ void World::draw()
 		show_textures();
 	}
 	//p_terrain->drawNormals();
-	//p_fog->turnOff();
+	
 
 	
 
@@ -219,7 +227,8 @@ void World::drawWithAlpha(){
 		// 
 	}
 	/***/
-	p_test_model->draw();
+	//p_test_model->draw();
+	p_dtree->draw2();
 	if (g_draw_low_vegetation){
 		p_grass_growth->draw();
 		p_tree1_growth->draw();
@@ -360,7 +369,7 @@ void World::init()
 	p_terrain->init();
 
 	p_godRays = new GodRays(&shaderManager, p_activeLight);
-	
+	p_fog	  = new Fog(g_fog_density, g_fog_start, g_fog_end, v4(0.8, 0.8, 1.0, 1.0));
 	int count = 0;
 	// plant grass	
 	printf("Planting grass...\n");
@@ -410,22 +419,22 @@ void World::init()
  	count = tree2_planter.plantVegetationCount(g_Tree2Count);
 	printf("count: %i\n", count);
 	
-	/*
+	
+	
+	
 	printf("---- DYNAMIC TREE INIT BEGIN");
 	p_dtree = new DTree(&textureManager, &shaderManager);\
 		p_dtree->loadOBJT( DYN_TREE::OBJT_FILENAME );
-		p_dtree->init();
+		//p_dtree->init();
 		p_dtree->viewer_direction = &p_activeCamera->direction;
 		p_dtree->viewer_position = &p_activeCamera->position;
 	printf("----- END DYNAMIC TREE INIT ");
-	*/
-	// generate initial slices for tree
 	
 //===============================================================================
 // TEST OBJECT INIT
 //===============================================================================
 	// positions
-	/*
+	
 	tree_positions = new v4*[g_tree_gridSize*g_tree_gridSize];
 	
 	float x,y,xt,yt,z,r;
@@ -440,23 +449,24 @@ void World::init()
 			yt = z + p_terrain->sz_y/2.0;
 			y = p_terrain->getHeightAt(xt,yt);
 			tree_positions[i*g_tree_gridSize + j] = new v4(x,y,z,r);
-			DTreeInstanceData * idata = new DTreeInstanceData();
-			idata->alpha = 1.0;
-			idata->index = instance_index;
-			instance_index++;
-			idata->position = v3(x,y,z);
-			idata->rotation_y = r;
-			p_dtree->tree_instances.push_back( idata );
+			//DTreeInstanceData * idata = new DTreeInstanceData();
+			//idata->alpha = 1.0;
+			//idata->index = instance_index;
+			//instance_index++;
+			//idata->position = v3(x,y,z);
+			//idata->rotation_y = r;
+			//p_dtree->tree_instances.push_back( idata );
 		}
 	}
-	*/
+	p_dtree->init2(tree_positions,g_tree_gridSize*g_tree_gridSize); 
+	/*
 	
 	p_test_model = new TestModel();
 	p_test_model->terrain = p_terrain;
 	p_test_model->camera = p_activeCamera;
 	p_test_model->init();
-
-
+	
+	*/
 	printf("WORLD CREATED:\n");
 
 }

@@ -8,7 +8,7 @@ EBO::EBO(void)
 
 EBO::~EBO(void)
 {
-	
+	glDeleteBuffers(1, &id);
 }
 
 bool EBO::save(string filename)
@@ -57,6 +57,10 @@ void EBO::draw(Shader * shader)
 
 void EBO::draw(GLenum _dataType, GLenum _primitiveType, int _indicesCount, const void * _offset){
 	glDrawElements(_primitiveType, _indicesCount, _dataType, _offset);
+}
+void EBO::drawInstanced(GLenum _primitiveType, int _indicesCount, GLenum _dataType, const void * _offset, int _instanceCount){
+	glDrawElementsInstanced(_primitiveType, _indicesCount, _dataType, _offset, _instanceCount);
+
 }
 
 void EBO::bind()

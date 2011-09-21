@@ -291,18 +291,14 @@ void Texture::bind(GLenum texUnit)
 {
 	textureUnit = texUnit;
 	textureUnitNumber = texUnitToNumber(texUnit);
-	//glEnable(GL_TEXTURE_2D);
 	glActiveTexture(texUnit);
-	//glClientActiveTexture(texUnit);
 	glBindTexture(GL_TEXTURE_2D, id);
 }
 
 void Texture::unbind()
 {
 	glActiveTexture(textureUnit);
-	//glClientActiveTexture(textureUnit);
 	glBindTexture(GL_TEXTURE_2D, 0);
-	//glDisable(GL_TEXTURE_2D);
 }
 
 void Texture::generateMipmaps()
