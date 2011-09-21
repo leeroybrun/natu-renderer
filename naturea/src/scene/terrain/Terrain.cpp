@@ -51,7 +51,7 @@ void  Terrain::drawForLOD()
 
 void Terrain::draw()
 {	
-	material->use();
+	//material->use();
 	// bind textures
 	for (int i=0; i<TERRAIN_TEX_COUNT; i++){
 		textureManager->bindTexture(textureIds[i], GL_TEXTURE0+GLuint(i));
@@ -139,8 +139,8 @@ void Terrain::drawOverWater(){
 			glVertexPointer(channels[VERTEX], glTypes[VERTEX], 0, BUFFER_OFFSET(offsets[VERTEX]));
 			glNormalPointer(glTypes[NORMAL], 0, BUFFER_OFFSET( offsets[NORMAL] ) );
 			
-			glActiveTexture(GL_TEXTURE0);
-			glClientActiveTexture(GL_TEXTURE0);
+			//glActiveTexture(GL_TEXTURE0);
+			//glClientActiveTexture(GL_TEXTURE0);
 			
 			glTexCoordPointer(channels[TEXCOORD0], glTypes[TEXCOORD0], 0, BUFFER_OFFSET(offsets[TEXCOORD0]));
 			
@@ -189,8 +189,8 @@ void Terrain::drawUnderWater(){
 			glVertexPointer(channels[VERTEX], glTypes[VERTEX], 0, BUFFER_OFFSET(offsets[VERTEX]));
 			glNormalPointer(glTypes[NORMAL], 0, BUFFER_OFFSET( offsets[NORMAL] ) );
 			
-			glActiveTexture(GL_TEXTURE0);
-			glClientActiveTexture(GL_TEXTURE0);
+			//glActiveTexture(GL_TEXTURE0);
+			//glClientActiveTexture(GL_TEXTURE0);
 			
 			glTexCoordPointer(channels[TEXCOORD0], glTypes[TEXCOORD0], 0, BUFFER_OFFSET(offsets[TEXCOORD0]));
 			
@@ -424,6 +424,9 @@ void Terrain::loadTextures(string filename, int count){
 		sprintf(def_filename, filename.c_str(), i+1);
 		sprintf(sh_name, "terrain_tex_%02i", i+1);
 		texId = textureManager->loadTexture( string(def_filename) , string(sh_name), true, false);
+		Texture * tex = textureManager->getTexture(texId);
+		tex->textureUnit = GL_TEXTURE0 + i;
+		tex->textureUnitNumber = i;
 		shader->linkTexture(textureManager->getTexture(texId));
 		textureIds.push_back(texId);
 	}

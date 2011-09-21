@@ -9,12 +9,8 @@ uniform	sampler2D   dataMap;
 uniform float		time;
 
 uniform float		time_offset;
-uniform float		wave_amplitude;
-uniform float		wave_frequency;
 uniform	vec2		movementVectorA;
 uniform	vec2		movementVectorB;
-uniform float		wave_y_offset;
-uniform float		wave_increase_factor;	
 uniform vec2		window_size;
 
 uniform vec4		wood_amplitudes;
@@ -31,9 +27,11 @@ varying vec2		sliceDesc;
 #define sliceCnt		3
 #define sliceSetsCnt	3
 					 
+float		fogFactor;
 
 void	main()
 {	
+	
 	float sizeFactor = 1.0/max(window_size.x, window_size.y);
 
 	float t			= time*10.0*leaf_frequency*sizeFactor+time_offset;
@@ -42,7 +40,7 @@ void	main()
 
 	vec2 texC		= gl_TexCoord[0].st;
 	vec2 fpos		= clamp ( texC + sliceDesc , sliceDesc, sliceDesc+vec2(1.0, 1.0) ) / vec2(sliceCnt,sliceSetsCnt);
-
+	
 	vec2 texCoordA	= fpos+t*movVectorA;
 	vec2 texCoordB	= fpos+t*movVectorB; // gl_TexCoord[0].st+t*movVectorB;
 	
@@ -78,14 +76,14 @@ void	main()
 		newPos = b1 + rotatedDifVec;
 	}
 	
-	angle = dist0 * (texture2D(branch_noise_tex, (ti * b0 * wood_frequencies.x)).s*2.0-1.0) * si.x;
-	cosA = cos (angle); 
-	sinA = sin (angle);
-	difVec = (newPos - b0);
-	R = mat2(	 cosA	, sinA,
- 				-sinA	, cosA );
-	rotatedDifVec = R*difVec;
-	newPos = b0 + rotatedDifVec;
+	// angle = dist0 * (texture2D(branch_noise_tex, (ti * b0 * wood_frequencies.x)).s*2.0-1.0) * si.x;
+	// cosA = cos (angle); 
+	// sinA = sin (angle);
+	// difVec = (newPos - b0);
+	// R = mat2(	 cosA	, sinA,
+ 	// 			-sinA	, cosA );
+	// rotatedDifVec = R*difVec;
+	// newPos = b0 + rotatedDifVec;
 	newPos = clamp ( newPos  , vec2(0.0, 0.0), vec2(1.0, 1.0) );// + sliceDesc ) / vec2(sliceCnt,sliceSetsCnt);
 	newPos = (newPos + sliceDesc) / vec2(sliceCnt,sliceSetsCnt);
 	texCoordA = (texture2D(leaf_noise_tex, texCoordA).st*2.0 - vec2(1.0));
@@ -108,9 +106,34 @@ void	main()
 		if (color.a<0.5){discard;}
 		
 	}
+
+
+	const float LOG2 = 1.442695;
+	float z = gl_FragCoord.z /gl_FragCoord.w;
+	/*
+	fogFactor = exp2(  -gl_Fog.density * 
+					   gl_Fog.density * 
+					   z * 
+					   z * 
+					   LOG2 );
+	*/
+	fogFactor = z*gl_Fog.density;
+	fogFactor = clamp(fogFactor, 0.0, 1.0);
+
+	//vec3 c = vec3(fogFactor, 1.0, 1.0);
+	color = mix(gl_Fog.color, color, 1.0 - fogFactor );
+	//color.rgb = color.rgb*c;
 	
-	color.a = 1.0;
+	//vec4 color = texture2D(colorMap, fpos);
+	//if (color.a<0.5){discard;}
+	color.a = 1.0 - clamp(-2.0 + 4.0*abs(dot(normalize(normalDir), normalize(eyeDir))), 0.0, 1.0);
+	//color.rgb = vec3(z*0.001);
 	gl_FragData[0] = color;
 	gl_FragData[1] = color * vec4(0.5, 0.5, 0.5, 1.0);
-
+	/*
+	vec4 color = vec4 (1.0, 0.0, 0.0, 0.5);
+	
+	gl_FragData[0] = color;
+	gl_FragData[1] = color * vec4(0.5, 0.5, 0.5, 1.0);
+	*/
 }

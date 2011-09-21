@@ -19,11 +19,11 @@ Fog::~Fog(void)
 }
 void Fog::init()
 {
-	glFogi(GL_FOG_COORD_SRC, GL_FOG_COORDINATE);
+	glFogi(GL_FOG_COORD_SRC, GL_FRAGMENT_DEPTH);
 	glFogi(GL_FOG_MODE, GL_EXP2);			// Fog Mode
 	glFogfv(GL_FOG_COLOR, color.data);		// Set Fog Color
 	glFogf(GL_FOG_DENSITY, density);		// How Dense Will The Fog Be
-	glHint(GL_FOG_HINT, GL_DONT_CARE);		// Fog Hint Value
+	//glHint(GL_FOG_HINT, GL_DONT_CARE);		// Fog Hint Value
 	glFogf(GL_FOG_START, start);			// Fog Start Depth
 	glFogf(GL_FOG_END, end);				// Fog End Depth
 }

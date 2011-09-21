@@ -174,8 +174,8 @@ void Grass::draw()
 			glVertexPointer(3,GL_FLOAT, 0, BUFFER_OFFSET(offsets.position));
 			glNormalPointer(GL_FLOAT, 0, BUFFER_OFFSET(offsets.normal));
 			
-			glActiveTexture(GL_TEXTURE0);
-			glClientActiveTexture(GL_TEXTURE0);
+			//glActiveTexture(GL_TEXTURE0);
+			//glClientActiveTexture(GL_TEXTURE0);
 			
 			glTexCoordPointer(2,GL_FLOAT, 0, BUFFER_OFFSET(offsets.texCoord));
 			glDrawArrays(GL_QUADS, 0, vertices.size());

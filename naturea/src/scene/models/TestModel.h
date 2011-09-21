@@ -13,8 +13,12 @@ public:
 
 	m4	transformMatrix;
 	float param1;
-	float x,y,z,r;
-
+	//float x,y,z,r;
+	v3		position;
+	float	rotation_y;
+	float	distance;
+	float	discrepacy;
+	v3		eye_dir;	
 };
 
 
@@ -25,6 +29,11 @@ class TestModel :
 public:
 	TestModel(void);
 	~TestModel(void);
+
+	void		 prepareForRender();
+	void		 render();
+
+	void enqueueInRenderList(TestInstance * instance);
 
 	virtual void draw();
 
@@ -45,5 +54,21 @@ public:
 	EBO					*ebo;
 	Terrain				*terrain;
 	Camera				*camera;
+
+
+	float *				type1Matrices  ;
+	float *				type2Matrices  ;
+	float *				type1Param1    ;
+	float *				type2Param1    ;
+
+	int type1Index ;
+	int type2Index ;
+
+	int p1Loc 	   ;
+	int tmLoc 	   ;
+	int tmLoc0	   ;
+	int tmLoc1	   ;
+	int tmLoc2	   ;
+	int tmLoc3	   ;
 };
 

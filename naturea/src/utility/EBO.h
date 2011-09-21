@@ -19,7 +19,7 @@ public:
 	void bind();
 	void unbind();
 	void draw(GLenum _dataType, GLenum _primitiveType, int _indicesCount, const void * offset);
-
+	void drawInstanced(GLenum _primitiveType, int _indicesCount, GLenum _dataType, const void * _offset, int _instanceCount);
 	void draw(Shader * shader);
 	int getID(){
 		return id;

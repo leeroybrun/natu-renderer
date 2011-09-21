@@ -82,6 +82,12 @@ struct DTreeInstanceData
 {
 	v3		position;
 	float	rotation_y;
+	m4		transformMatrix;
+	v3		dirA;
+	v3		dirB;
+	float	distance;
+	float	discrepacy;
+	v3		eye_dir;	
 	int		index;
 	float	alpha;
 };
@@ -90,7 +96,6 @@ struct DTreeInstanceDrawData
 	int		index;
 	float	alpha;
 };
-
 
 class DTree :
 	public Vegetation
@@ -115,16 +120,22 @@ public:
 
 	Vegetation* getCopy();
 
+	void draw2();
+	void draw_instance_LOD0(DTreeInstanceData * instance);
+	void draw_instance_LOD1(DTreeInstanceData * instance);
+	void draw_all_instances_LOD1();
+	void draw_instance_LOD2(DTreeInstanceData * instance);
+	void draw_all_instances_LOD2();
+
 	void draw();
-
 	void drawForLOD();
-
 	void drawLOD0();
 	void drawLOD1();
 	void drawLOD1b();
 	void drawLOD2();
 
 	void init();
+	void init2(v4 ** positions_rotations, int count);
 	void initLOD0();
 	void initLOD1();
 	void initLOD1b();
@@ -158,6 +169,7 @@ public:
 
 	vector<DTreeInstanceData*>			tree_instances;
 	vector<DTreeInstanceData*>			tree_instances_lod1;
+
 private:
 	DTreeBranch			*trunk;
 	vector<DTreeBranch*> branches;
@@ -227,7 +239,22 @@ private:
 	VBO		*				lod1vbo;
 
 
+	int						ctr;
+	float					alpha_c;
 
+	/***************************************
+	* LOD 1 data
+	*/
+	vector<float *>			instanceMatrices;
+	vector<int>				typeIndices;
+	GLuint					i_matricesBuffID;
+	GLuint					i_paramBuffID;
+	GLuint					v_ordAttribsBuffID;
+	GLuint					v_indicesBuffID;
+	GLint					tmLoc0;
+	GLint					tmLoc1;
+	GLint					tmLoc2;
+	GLint					tmLoc3;
 	int						l2_color	;
 	int						l2_displ	;
 	int						l2_displ2	;
@@ -237,8 +264,8 @@ private:
 	Shader	*				lod1shader2	;
 	VBO		*				lod1vbo2	;
 	EBO		*				eboLOD1	;
-	int						ctr;
-	float					alpha_c;
-	
+	void enqueueInRenderList(DTreeInstanceData * instance);
+	void prepareForRender();
+	void render();
 };
 
