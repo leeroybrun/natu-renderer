@@ -284,6 +284,7 @@
     <None Include="shaders\test2_vs.glsl" />
     <None Include="shaders\test3_fs.glsl" />
     <None Include="shaders\test3_vs.glsl" />
+    <None Include="shaders\test3_vs_instanced.glsl" />
     <None Include="shaders\test_fs.glsl" />
     <None Include="shaders\test_instancing_fs.glsl" />
     <None Include="shaders\test_instancing_vs.glsl" />
