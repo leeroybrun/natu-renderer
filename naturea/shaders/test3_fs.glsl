@@ -76,19 +76,18 @@ void	main()
 		newPos = b1 + rotatedDifVec;
 	}
 	
-	// angle = dist0 * (texture2D(branch_noise_tex, (ti * b0 * wood_frequencies.x)).s*2.0-1.0) * si.x;
-	// cosA = cos (angle); 
-	// sinA = sin (angle);
-	// difVec = (newPos - b0);
-	// R = mat2(	 cosA	, sinA,
- 	// 			-sinA	, cosA );
-	// rotatedDifVec = R*difVec;
-	// newPos = b0 + rotatedDifVec;
+	angle = dist0 * (texture2D(branch_noise_tex, (ti * b0 * wood_frequencies.x)).s*2.0-1.0) * si.x;
+	cosA = cos (angle); 
+	sinA = sin (angle);
+	difVec = (newPos - b0);
+	R = mat2(	 cosA	, sinA,
+ 				-sinA	, cosA );
+	rotatedDifVec = R*difVec;
+	newPos = b0 + rotatedDifVec;
 	newPos = clamp ( newPos  , vec2(0.0, 0.0), vec2(1.0, 1.0) );// + sliceDesc ) / vec2(sliceCnt,sliceSetsCnt);
 	newPos = (newPos + sliceDesc) / vec2(sliceCnt,sliceSetsCnt);
 	texCoordA = (texture2D(leaf_noise_tex, texCoordA).st*2.0 - vec2(1.0));
 	texCoordB = (texture2D(leaf_noise_tex, texCoordB).st*2.0 - vec2(1.0));
-	
 	
 	//newPos = fpos;
 
@@ -107,7 +106,6 @@ void	main()
 		
 	}
 
-
 	const float LOG2 = 1.442695;
 	float z = gl_FragCoord.z /gl_FragCoord.w;
 	fogFactor = z*gl_Fog.density*0.5;
@@ -122,7 +120,8 @@ void	main()
 	color.a = 1.0 - clamp(-2.0 + 4.0*abs(dot(normalize(normalDir), normalize(eyeDir))), 0.0, 1.0);
 	//color.rgb = vec3(z*0.001);
 	gl_FragData[0] = color * gl_Color;
-	gl_FragData[1] = color * vec4(0.5, 0.5, 0.5, 1.0);
+	//gl_FragData[1] = vec4(0.0, 0.0, 0.0, 1.0);
+	gl_FragData[1] = color * vec4(0.2, 0.2, 0.2, 1.0);
 /*
 	vec4 color = vec4 (1.0, 0.0, 0.0, 1.0);
 	

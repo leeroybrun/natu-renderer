@@ -317,6 +317,7 @@ void main()
 	color.a = gl_Color.a;
 	//if (texture2D(frontDecalMap, gl_TexCoord[0].yx).a<0.9) discard;
 	gl_FragData[0] = color;
-	gl_FragData[1] = color * vec4(0.5, 0.5, 0.5, 1.0);
+	gl_FragData[1] = color * vec4(0.2, 0.2, 0.2, 1.0);
+	//gl_FragData[1] =vec4(0.0, 0.0, 0.0, 1.0);
 	
 }

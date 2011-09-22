@@ -25,6 +25,8 @@ private:
 	GLuint			 originalDepth;	
 	GLuint			 forRaysColor;
 	GLint			 forRaysColorLocation;
+	GLuint			 forBloomColor;
+	GLint			 forBloomColorLocation;
 	GLint			 lightDOTviewLocation;
 
 	GLint			 lightPosLocation;
