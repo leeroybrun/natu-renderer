@@ -10,7 +10,7 @@ GodRays::GodRays(ShaderManager *shManager, Light *_light)
 	shader = shaderManager->getShader(shId);
 	forRaysColorLocation = shader->getLocation("rtex");
 	originalColorLocation = shader->getLocation("otex");
-	
+	//forBloomColorLocation = shader->getLocation("btex");
 	lightPosLocation = shader->getLocation("lightPositionOnScreen");
 	lightDOTviewLocation = shader->getLocation("lightDirDOTviewDir");
 
@@ -30,6 +30,14 @@ GodRays::GodRays(ShaderManager *shManager, Light *_light)
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, g_WinWidth, g_WinHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
    
+	//glGenTextures(1, &forBloomColor);
+	//	glBindTexture(GL_TEXTURE_2D, forRaysColor);
+	//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+	//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+	//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	//	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, g_WinWidth, g_WinHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
+   
 	   
 	glGenTextures(1, &originalDepth );
 		glBindTexture(GL_TEXTURE_2D, originalDepth );
@@ -42,6 +50,7 @@ GodRays::GodRays(ShaderManager *shManager, Light *_light)
 		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fboId);
 		glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_2D, originalColor, 0);
 		glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT1_EXT, GL_TEXTURE_2D, forRaysColor, 0);
+		//glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT2_EXT, GL_TEXTURE_2D, forBloomColor, 0);
 		glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT, GL_TEXTURE_2D, originalDepth, 0);
 		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
 	 assert(glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT)==GL_FRAMEBUFFER_COMPLETE_EXT);
@@ -59,6 +68,7 @@ GodRays::~GodRays(void)
 	glDeleteTextures(1, &originalColor);
 	glDeleteTextures(1, &originalDepth);
 	glDeleteTextures(1, &forRaysColor);
+	glDeleteTextures(1, &forBloomColor);
 }
 
 void GodRays::begin()
@@ -67,10 +77,12 @@ void GodRays::begin()
 	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fboId);
     // prenastavit viewport
 		glViewport(0,0,g_WinWidth, g_WinHeight);
-		glClearColor(0.f, 0.f, 0.f, 1.f);
+		glClearColor(0.f, 0.f, 0.f, 0.f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		GLenum buffers[2] = {GL_COLOR_ATTACHMENT0_EXT, GL_COLOR_ATTACHMENT1_EXT};
 		glDrawBuffersARB(2, buffers);
+		//GLenum buffers[3] = {GL_COLOR_ATTACHMENT0_EXT, GL_COLOR_ATTACHMENT1_EXT, GL_COLOR_ATTACHMENT2_EXT};
+		//glDrawBuffersARB(3, buffers);
 		// now render scene...
 	    
 }
@@ -112,10 +124,13 @@ void GodRays::end()
 	glBindTexture(GL_TEXTURE_2D, originalColor);
 	glActiveTexture(GL_TEXTURE1);
 	glBindTexture(GL_TEXTURE_2D, forRaysColor);
+	glActiveTexture(GL_TEXTURE2);
+	glBindTexture(GL_TEXTURE_2D, forBloomColor);
 	glColor4f(1.f,1.f,1.f,1.f);
 	shader->use(true);
 	shader->setUniform1i(originalColorLocation, 0);
  	shader->setUniform1i(forRaysColorLocation, 1);
+	//shader->setUniform1i(forBloomColorLocation, 1);
 	
 	shader->setUniform2f(lightPosLocation, lposScreen.x,lposScreen.y );
 	shader->setUniform1f(lightDOTviewLocation, lightDirDOTviewDirValue);
@@ -160,6 +175,9 @@ void GodRays::windowSizeChanged(int width, int height)
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
 	glBindTexture(GL_TEXTURE_2D, forRaysColor);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+	//glBindTexture(GL_TEXTURE_2D, forBloomColor);
+	//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
+	
 	glBindTexture(GL_TEXTURE_2D, 0 );
 }
 
