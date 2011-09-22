@@ -121,7 +121,7 @@ bool	g_draw_dtree_lod		= true;
 bool	g_draw_lod0		= true;
 bool	g_draw_lod1		= true;
 bool	g_draw_lod2		= true;
-v4		g_lodTresholds	= v4(10, 15, 20, 25);
+v4		g_lodTresholds	= v4(16, 23, 50, 60);
 bool	g_draw_low_vegetation	= true;
 bool	g_draw_dtree			= true;
 bool	g_draw_light_direction	= false;
@@ -133,10 +133,10 @@ bool	g_draw_light_direction	= false;
 */
 v3		g_tree_wind_direction	= v3(1.0, 0.0, 0.0);
 float	g_tree_wind_strength	= 0.0;
-v4		g_tree_wood_amplitudes	= v4(1.0, 0.4, 0.2, 0.1);
-v4		g_tree_wood_frequencies	= v4(0.0, 0.0, 0.0, 0.0);
-float	g_tree_leaf_amplitude	= 0.8;
-float	g_tree_leaf_frequency	= 2.0;
+v4		g_tree_wood_amplitudes	= v4(1.0, 0.8, 0.2, 0.1);
+v4		g_tree_wood_frequencies	= v4(0.0, 1.5, 0.0, 0.0);
+float	g_tree_leaf_amplitude	= 2.4;
+float	g_tree_leaf_frequency	= 15.0;
 int		g_tree_slice_count		= 3;
 float	g_tree_wave_amplitude	= 0.005;
 float	g_tree_wave_frequency	= 0.5;
@@ -147,11 +147,11 @@ float	g_tree_wave_increase_factor = 1.0;
 float	g_tree_time_offset_1	= 0.0;
 float	g_tree_time_offset_2	= 0.5;		
 
-const int	g_tree_gridSize		= 30;
-float	g_tree_mean_distance	= 10.0;
+const int	g_tree_gridSize		= 32;
+float	g_tree_mean_distance	= 8.0;
 float	g_tree_dither			= 4.0;
 
-float	g_leaves_MultiplyAmbient			= 0.7;
+float	g_leaves_MultiplyAmbient			= 1.0;
 float	g_leaves_MultiplyDiffuse			= 0.7;
 float	g_leaves_MultiplySpecular			= 0.3;
 float	g_leaves_MultiplyTranslucency		= 0.6;
@@ -177,6 +177,8 @@ v3*		g_viewer_direction;
 
 float	g_fog_density = 0.006, g_fog_start = 1.0, g_fog_end=100.0;
 
+
+bool	g_debug = false;
 float g_CPU_fps;
 float CPU_render_time;
 

@@ -1642,12 +1642,14 @@ void DTree::prepareForRender(){
 			tree_instances[i-1]	->index = i-1;
 			tree_instances[i]	= act_instance;
 			tree_instances[i]	->index = i;
+			
 			done_instance		= next_instance;
-			rest_instance		= NULL;
+			//if (i==1){ done_instance=NULL; }
+			rest_instance		= act_instance;
 		} else {
 			done_instance	= act_instance;
 			act_instance	= next_instance;
-			rest_instance = act_instance;
+			rest_instance	= act_instance;
 		}
 		// draw only instances near the view angle
 		enqueueInRenderList(done_instance);
@@ -1729,7 +1731,6 @@ void DTree::render(){
 	g_tree_lod1_count	= countRenderQueues[2];
 	g_tree_lod12_count	= countRenderQueues[3];	 
 	g_tree_lod2_count	= countRenderQueues[4];
-
 }
 
 void DTree::draw2(){
@@ -1738,8 +1739,8 @@ void DTree::draw2(){
 	
 }
 void DTree::enqueueInRenderList(DTreeInstanceData * instance){
+	if (instance!=NULL){
 	int LODindex = 0;
-	
 	if (instance->distance<=g_lodTresholds.x){
 		//	LOD0
 		g_tree_lod0_count++;
@@ -1747,7 +1748,7 @@ void DTree::enqueueInRenderList(DTreeInstanceData * instance){
 		instancesInRenderQueues[LODindex][countRenderQueues[LODindex]] = instance;
 		countRenderQueues[LODindex]+=1;
 		return;
-	} 
+	}
 	
 	if(instance->discrepacy>0.5){
 		instance->dirA.y = 0.0;
@@ -1812,6 +1813,7 @@ void DTree::enqueueInRenderList(DTreeInstanceData * instance){
 		}*/
 		instancesInRenderQueues[LODindex][countRenderQueues[LODindex]] = instance;
 		countRenderQueues[LODindex]+=1;
+	}
 	}
 }
 
@@ -2487,7 +2489,7 @@ void DTree::initLOD2()
 }
 
 void DTree::init2(v4 ** positions_rotations, int count){
-
+	swapCnt= 0;
 	/*****
 	* LOD is made of 3 slice sets... due to blending problems we need to 
 	* switch the rendering order of the sliceSets -> there are 3 types of

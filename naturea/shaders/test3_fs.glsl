@@ -32,7 +32,7 @@ float		fogFactor;
 void	main()
 {	
 	
-	float sizeFactor = 1.0/max(window_size.x, window_size.y);
+	float sizeFactor = 1.5/max(window_size.x, window_size.y);
 
 	float t			= time*10.0*leaf_frequency*sizeFactor+time_offset;
 	vec2 movVectorA = movementVectorA;
@@ -110,7 +110,7 @@ void	main()
 
 	const float LOG2 = 1.442695;
 	float z = gl_FragCoord.z /gl_FragCoord.w;
-	fogFactor = z*gl_Fog.density;
+	fogFactor = z*gl_Fog.density*0.5;
 	fogFactor = clamp(fogFactor, 0.0, 1.0);
 
 	//vec3 c = vec3(fogFactor, 1.0, 1.0);
