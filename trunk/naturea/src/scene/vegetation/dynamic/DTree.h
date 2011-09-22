@@ -272,5 +272,7 @@ private:
 	void enqueueInRenderList(DTreeInstanceData * instance);
 	void prepareForRender();
 	void render();
+
+	int swapCnt;
 };
 
