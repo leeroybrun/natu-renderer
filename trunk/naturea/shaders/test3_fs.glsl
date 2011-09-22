@@ -110,13 +110,6 @@ void	main()
 
 	const float LOG2 = 1.442695;
 	float z = gl_FragCoord.z /gl_FragCoord.w;
-	/*
-	fogFactor = exp2(  -gl_Fog.density * 
-					   gl_Fog.density * 
-					   z * 
-					   z * 
-					   LOG2 );
-	*/
 	fogFactor = z*gl_Fog.density;
 	fogFactor = clamp(fogFactor, 0.0, 1.0);
 
@@ -128,12 +121,12 @@ void	main()
 	//if (color.a<0.5){discard;}
 	color.a = 1.0 - clamp(-2.0 + 4.0*abs(dot(normalize(normalDir), normalize(eyeDir))), 0.0, 1.0);
 	//color.rgb = vec3(z*0.001);
-	gl_FragData[0] = color;
+	gl_FragData[0] = color * gl_Color;
 	gl_FragData[1] = color * vec4(0.5, 0.5, 0.5, 1.0);
-	/*
-	vec4 color = vec4 (1.0, 0.0, 0.0, 0.5);
+/*
+	vec4 color = vec4 (1.0, 0.0, 0.0, 1.0);
 	
-	gl_FragData[0] = color;
+	gl_FragData[0] = color * gl_Color;
 	gl_FragData[1] = color * vec4(0.5, 0.5, 0.5, 1.0);
-	*/
+*/	
 }

@@ -351,8 +351,6 @@ void World::init()
 	g_viewer_position = & (p_activeCamera->position);
 	g_viewer_direction= & (p_activeCamera->direction);
 
-
-
 	// sun
 	p_activeLight = new Light(&textureManager);
 	p_activeLight->init(); // setup framebuffers for shadow mapping
@@ -369,7 +367,7 @@ void World::init()
 	p_terrain->init();
 
 	p_godRays = new GodRays(&shaderManager, p_activeLight);
-	p_fog	  = new Fog(g_fog_density, g_fog_start, g_fog_end, v4(0.8, 0.8, 1.0, 1.0));
+	p_fog	  = new Fog(g_fog_density, g_fog_start, g_fog_end, v4(0.55, 0.55, 0.6, 1.0)*0.6);
 	int count = 0;
 	// plant grass	
 	printf("Planting grass...\n");

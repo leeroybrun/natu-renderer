@@ -675,5 +675,8 @@
     <None Include="shaders\test_instancing_vs.glsl">
       <Filter>Shaders\testing</Filter>
     </None>
+    <None Include="shaders\test3_vs_instanced.glsl">
+      <Filter>Shaders\testing</Filter>
+    </None>
   </ItemGroup>
 </Project>

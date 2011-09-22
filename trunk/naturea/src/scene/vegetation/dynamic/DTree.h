@@ -90,6 +90,7 @@ struct DTreeInstanceData
 	v3		eye_dir;	
 	int		index;
 	float	alpha;
+	int		offset;
 };
 struct DTreeInstanceDrawData
 {
@@ -247,6 +248,9 @@ private:
 	*/
 	vector<float *>			instanceMatrices;
 	vector<int>				typeIndices;
+	vector<DTreeInstanceData**> instancesInRenderQueues;
+	vector<int>				countRenderQueues;
+
 	GLuint					i_matricesBuffID;
 	GLuint					i_paramBuffID;
 	GLuint					v_ordAttribsBuffID;
@@ -262,6 +266,7 @@ private:
 	int						l2_normal	;
 	vector<DTreeSliceSet*>	sliceSets2	;
 	Shader	*				lod1shader2	;
+	int						isInstancingEnabled;
 	VBO		*				lod1vbo2	;
 	EBO		*				eboLOD1	;
 	void enqueueInRenderList(DTreeInstanceData * instance);

@@ -145,6 +145,8 @@ extern float	g_tree_dither			;
 extern int		g_tree_lod0_count;
 extern int		g_tree_lod1_count;
 extern int		g_tree_lod2_count;
+extern int		g_tree_lod01_count;
+extern int		g_tree_lod12_count;
 
 extern bool		g_compressToOneTexture;
 

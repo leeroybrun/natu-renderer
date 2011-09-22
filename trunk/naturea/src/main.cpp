@@ -162,6 +162,8 @@ v3		g_leaves_LightDiffuseColor			= v3(0.2, 0.2, 0.2);
 int		g_tree_lod0_count					 = 0;
 int		g_tree_lod1_count					 = 0;
 int		g_tree_lod2_count					 = 0;
+int		g_tree_lod01_count					 = 0;
+int		g_tree_lod12_count					 = 0;
 
 bool	g_draw_lod1_method		= true;
 bool	g_orbit					= true;
@@ -173,7 +175,7 @@ float	g_timeDiff				= 0;
 v3*		g_viewer_position;
 v3*		g_viewer_direction;
 
-float	g_fog_density = 0.001, g_fog_start = 1.0, g_fog_end=100.0;
+float	g_fog_density = 0.006, g_fog_start = 1.0, g_fog_end=100.0;
 
 float g_CPU_fps;
 float CPU_render_time;
@@ -568,6 +570,8 @@ void initGUI()
 	TwAddVarRO(controlBar, "LOD0_count", TW_TYPE_INT32, &(g_tree_lod0_count), " label='LOD0 instance count' group=Statistics ");
 	TwAddVarRO(controlBar, "LOD1_count", TW_TYPE_INT32, &(g_tree_lod1_count), " label='LOD1 instance count' group=Statistics ");
 	TwAddVarRO(controlBar, "LOD2_count", TW_TYPE_INT32, &(g_tree_lod2_count), " label='LOD2 instance count' group=Statistics ");
+	TwAddVarRO(controlBar, "LOD01_count", TW_TYPE_INT32, &(g_tree_lod01_count), " label='LOD01 instance count' group=Statistics ");
+	TwAddVarRO(controlBar, "LOD12_count", TW_TYPE_INT32, &(g_tree_lod12_count), " label='LOD12 instance count' group=Statistics ");
 	
 	
 	TwAddVarRO(controlBar, "GPU_fps", TW_TYPE_FLOAT, &(g_Statistics.fps), 
