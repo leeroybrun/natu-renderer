@@ -36,9 +36,6 @@ attribute vec4			x_vals;
 attribute float			branch_index;
 attribute vec2			texCoords0;
 
-varying vec3			normal_v;
-varying vec3			normal_vs_v;
-varying vec3			tangent_vs_v;
 varying vec3			ts_viewDir_v;
 varying vec3			ts_lightDir_v;
 varying float			level;
@@ -49,8 +46,8 @@ varying vec2			b2_origin;
 varying vec3			b_lengths;
 
 varying vec4			vPos;
-vec3					normal_vs = normal;
-vec3					tangent_vs = tangent;
+varying vec3			normal_vs;
+varying vec3			tangent_vs;
 vec4					color;	
 vec3					oVec=vec3(1.0, 1.0, 1.0);
 
@@ -196,7 +193,7 @@ void animateBranchVertex(inout vec3 position)
 	
 	position = centerB;// + position.x*bs + position.y*br;
 	tangent_vs	 = tangent.x * bt + tangent.y * bs + tangent.z * br;
-	normal_vs	 = normal.x  * bt + normal.y  * bs + normal.z  * br;	
+	normal_vs	 = normal.x  * bt + normal.y  * bs + normal.z  * br;
 }
 
 
@@ -225,18 +222,11 @@ void animateLeafVertex(in vec3 origin, inout vec3 position, inout vec3 o_normal,
 	vec3 bitangent = cross(normalize(o_normal), normalize(o_tangent));
 
 	// rotate tangent & binormal
-	bitangent = normalize (bitangent + o_normal*amplitude.x);
-	o_normal = normalize (cross(o_tangent, bitangent));
-	o_tangent = normalize (tangent + o_normal*amplitude.y*0.5);
+	o_tangent = normalize ( o_tangent + o_normal*amplitude.x	);
+	o_normal  = normalize ( cross(o_tangent, bitangent)			);
+	o_normal  = normalize ( o_normal + bitangent*amplitude.y	);
+	o_tangent = normalize ( cross (bitangent, o_normal	)		);
 	
-	
-	o_normal = normalize(cross(o_tangent, bitangent));
-	//o_tangent = normalize(cross (bitangent, o_normal));
-	
-	
-
-	//position = origin + scaleL * ( texCoords0.x * o_tangent + texCoords0.y * bitangent);
-
 	/*
 
 
@@ -332,6 +322,10 @@ void main()
 {
 	color		= WHITE;
     vec3 vertex = gl_Vertex.xyz;
+
+	normal_vs  = normal;
+	tangent_vs = tangent;
+
     //vec3 norm	= normal;
     //vec3 tang	= tangent;
     //float bi	= branch_index;
@@ -345,7 +339,7 @@ void main()
 	//animateLeafVertex(leafOrigin, vertex, normal_vs, tangent_vs);
 	
 	
-	normal_vs = -normal_vs;
+	//normal_vs = -normal_vs;
 	
 	vec3 bitangent = cross (normal_vs, tangent_vs);
 
@@ -364,8 +358,6 @@ void main()
 
 
 	vertex = leafOrigin + (vertex.x*bitangent + vertex.y*tangent_vs);
-	//normal_vs = -normal_vs;
-	normal_v = gl_NormalMatrix * normal_vs.xzy;
 	normal_vs = gl_NormalMatrix * normal_vs;
 	tangent_vs = gl_NormalMatrix * tangent_vs;
 	
@@ -379,9 +371,6 @@ void main()
 	gl_TexCoord[0].y = 1.0 - gl_TexCoord[0].y;
 	//gl_FrontColor = color;
     gl_Position = gl_ModelViewProjectionMatrix * vec4(vertex,1.0);
-
-	tangent_vs_v = tangent_vs;
-	normal_vs_v  = normal_vs; 
 
 }
 

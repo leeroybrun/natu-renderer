@@ -230,8 +230,16 @@ namespace DYN_TREE
 {
 	const static char * SHADER_BRANCH_V			= "shaders/dynamic_tree/branch_vs.glsl";
 	const static char * SHADER_BRANCH_F			= "shaders/dynamic_tree/branch_fs.glsl";
+	const static char * SHADER_BRANCH_VN		= "shaders/dynamic_tree/n_branch_vs.glsl";
+	const static char * SHADER_BRANCH_FN		= "shaders/dynamic_tree/n_branch_fs.glsl";
+	const static char * SHADER_BRANCH_GN		= "shaders/dynamic_tree/n_branch_gs.glsl";
 	const static char * SHADER_LEAF_V			= "shaders/dynamic_tree/leaf_vs.glsl";
 	const static char * SHADER_LEAF_F			= "shaders/dynamic_tree/leaf_fs.glsl";
+	const static char * SHADER_LEAF_VN			= "shaders/dynamic_tree/n_leaf_vs.glsl";
+	const static char * SHADER_LEAF_FN			= "shaders/dynamic_tree/n_leaf_fs.glsl";
+	const static char * SHADER_LEAF_GN			= "shaders/dynamic_tree/n_leaf_gs.glsl";
+	
+	
 	// LOD
 	const static char * SHADER_BRANCH_LOD_V		= "shaders/dynamic_tree/lod_branch_vs.glsl";
 	const static char * SHADER_BRANCH_LOD_F		= "shaders/dynamic_tree/lod_branch_fs.glsl";

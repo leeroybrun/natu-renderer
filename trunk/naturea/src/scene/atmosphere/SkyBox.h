@@ -35,8 +35,10 @@ public:
 	void connectShadowMap(int shadowMapTMID);
 	
 	vector<int> textureIds;
-	Camera* p_activeCamera;
-	Light*	p_light;
+	Camera*		p_activeCamera;
+	Light*		p_light;
+	Shader*		shader;
+	int			tex_loc;
 };
 
 #endif

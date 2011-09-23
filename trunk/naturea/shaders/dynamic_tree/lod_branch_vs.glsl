@@ -185,9 +185,10 @@ void animateBranchVertex(inout vec3 position)
         bs	= sv3; //normalize(sv3);
     }
 	
-	position = centerB + position.x*bs + position.y*br;
-	tangent_vs	 = tangent.x * bt + tangent.y * bs + tangent.z * br;
-	normal_vs	 = normal.x  * bt + normal.y  * bs + normal.z  * br;	
+	vec3	offset = position.x*bs + position.y*br;
+	position = centerB + offset;
+	normal_vs = normalize(offset);
+    tangent_vs	 = bt;
 }
 
 void main()
@@ -196,10 +197,10 @@ void main()
     animateBranchVertex(vertex);
 	gl_TexCoord[0] = vec4(texCoords0, 0.0, 0.0);	
 	//normal_vs = gl_NormalMatrix * normal_vs;
-	normal_vs  = normal;
-	tangent_vs = tangent;
-	normal_vs = -normal_vs;
-	normal_v = gl_NormalMatrix * normal_vs.xzy;
+	//normal_vs  = normal;
+	//tangent_vs = tangent;
+	//normal_vs = -normal_vs;
+	//normal_v = gl_NormalMatrix * normal_vs.xzy;
 	normal_vs = gl_NormalMatrix * normal_vs;
 	tangent_vs = gl_NormalMatrix * tangent_vs;
 

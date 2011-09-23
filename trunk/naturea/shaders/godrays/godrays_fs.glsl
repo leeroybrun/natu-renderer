@@ -8,8 +8,8 @@ uniform sampler2D otex;
 //uniform sampler2D btex;
 
 const int NUM_SAMPLES = 32;
-const int BLOOM_SAMPLES = 3;
-const float bloomDistance = 0.01/BLOOM_SAMPLES;
+const int BLOOM_SAMPLES = 4;
+const float bloomDistance = 0.05/BLOOM_SAMPLES;
 uniform vec2 lightPositionOnScreen;
 uniform float lightDirDOTviewDir;
 
@@ -20,25 +20,27 @@ void main(void)
 	//origColor = vec4(0.1)+origColor;
 	vec4  raysColor = texture2D(rtex, gl_TexCoord[0].st);
 	//float bcolor   = texture2D(btex,  gl_TexCoord[0].st).x;
+	
 	vec4 bloom = vec4(0.0);
 	float xd,yd,l;
-	float divideFactor = 50.0;
-	//if (length(raysColor.xyz)<0.1){
+	float divideFactor = 0.6 * BLOOM_SAMPLES*BLOOM_SAMPLES;
+	//if (length(raysColor.xyz)<0.4){
 		for (int x=-BLOOM_SAMPLES; x<BLOOM_SAMPLES; x++){
 			for (int y=-BLOOM_SAMPLES; y<BLOOM_SAMPLES; y++){
 				xd = float(x)/float(BLOOM_SAMPLES);
 				yd = float(y)/float(BLOOM_SAMPLES);
 				l = sqrt(xd*xd+yd*yd);
 				vec4 c = texture2D(rtex, gl_TexCoord[0].st + vec2(xd,yd)*l*bloomDistance);
-				if (length(c.rgb)>0.4){
+				//if (length(c.rgb)>0.25){
 					bloom += c;
 					divideFactor+= l;
-				}
+				//}
 			}
 		}
-		
 		origColor += (bloom/divideFactor);
+		
 	//}
+	
 	//====================================================================
 	// Sun position on screen - check algorithm
 	//--------------------------------------------------------------------
@@ -50,7 +52,7 @@ void main(void)
 	//}
 	//return;
 	//--------------------------------------------------------------------
-
+	
 	if (lightDirDOTviewDir>0.0){
 		float exposure	= 0.1/NUM_SAMPLES;
 		float decay		= 1.0;
@@ -78,6 +80,8 @@ void main(void)
 		gl_FragColor = origColor;
 	}
 	
-	//gl_FragColor = origColor;
+	/*/
+	gl_FragColor = origColor;
+	/*/
 }
 
