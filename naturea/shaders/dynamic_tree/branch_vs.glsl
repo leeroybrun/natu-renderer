@@ -133,8 +133,8 @@ void animateBranchVertex(inout vec3 position)
 		// bend function
 		fu	= xvals_f.x	* amp0;
 		fu_deriv = xvals_deriv.x / length0 * amp0 ;
-		if (abs(fu_deriv.x - 0.0)<EPSILON){ fu_deriv.x = EPSILON;}
-		if (abs(fu_deriv.y - 0.0)<EPSILON){ fu_deriv.y = EPSILON;}
+		if (abs(fu_deriv.x)<EPSILON){ fu_deriv.x = EPSILON;}
+		if (abs(fu_deriv.y)<EPSILON){ fu_deriv.y = EPSILON;}
 			s = sqrt(ONE2+fu_deriv*fu_deriv);
 			d = fu / fu_deriv * (s - ONE2);
 			corr_s = (tv + sv0*fu_deriv.x)/s.x * d.x;
@@ -162,8 +162,8 @@ void animateBranchVertex(inout vec3 position)
         center		= centerB + x_vals.y * length1 * tv;
         fu			= xvals_f.y	 * amp1;
         fu_deriv	= xvals_deriv.y / length1 * amp1 ;
-		if (abs(fu_deriv.x - 0.0)<EPSILON){ fu_deriv.x = EPSILON;}
-		if (abs(fu_deriv.y - 0.0)<EPSILON){ fu_deriv.y = EPSILON;}
+		if (abs(fu_deriv.x)<EPSILON){ fu_deriv.x = EPSILON;}
+		if (abs(fu_deriv.y)<EPSILON){ fu_deriv.y = EPSILON;}
 			s = sqrt(ONE2+fu_deriv*fu_deriv);
 			d = fu / fu_deriv * (s - ONE2);
 			corr_s = (tv + sv1*fu_deriv.x)/s.x * d.x;
@@ -191,8 +191,8 @@ void animateBranchVertex(inout vec3 position)
         center		= centerB + x_vals.z * length2 * tv;
         fu			= xvals_f.z * amp2;
         fu_deriv	= xvals_deriv.z / length2 * amp2 ;
-		if (abs(fu_deriv.x - 0.0)<EPSILON){ fu_deriv.x = EPSILON;}
-		if (abs(fu_deriv.y - 0.0)<EPSILON){ fu_deriv.y = EPSILON;}
+		if (abs(fu_deriv.x)<EPSILON){ fu_deriv.x = EPSILON;}
+		if (abs(fu_deriv.y)<EPSILON){ fu_deriv.y = EPSILON;}
 			s = sqrt(ONE2+fu_deriv*fu_deriv);
 			d = fu / fu_deriv * (s - ONE2);
 			corr_s = (tv + sv2*fu_deriv.x)/s.x * d.x;
@@ -245,16 +245,10 @@ void animateBranchVertex(inout vec3 position)
 	 // br normal
 	 // bs bitangent on the circle around branch
 	 //oVec = vec3(abs(dot(br, bs)), abs(dot(bs,bt)), abs(dot(bt,br)));
-
-	position = centerB + position.x*bs + position.y*br;
-    //normal_vs	= normalize(normal);
-	//tangent_vs	= normalize(tangent);
-	tangent_vs	 = tangent.x * bt + tangent.y * bs + tangent.z * br;
-	normal_vs	 = normal.x  * bt + normal.y  * bs + normal.z  * br;
-	//tangent_vs = normalize(tangent_vs);
-	//normal_vs = normalize(normal_vs);
-	//vec3 binormal = cross(tangent_vs, normal_vs);
-	//tangent_vs = cross(normal_vs, binormal);
+	vec3	offset = position.x*bs + position.y*br;
+	position = centerB + offset;
+	normal_vs = normalize(offset);
+    tangent_vs	 = bt;
 		
 }
 
@@ -268,8 +262,8 @@ void main()
 	
 
 	
-	normal_vs = gl_NormalMatrix * normal;
-	tangent_vs = gl_NormalMatrix * tangent;
+	normal_vs = gl_NormalMatrix * normal_vs;
+	tangent_vs = gl_NormalMatrix * tangent_vs;
 	
 	vPos = gl_ModelViewMatrix * vec4(vertex,1.0);
 	//gl_FrontColor = vec4(gl_NormalMatrix * oVec, 1.0);

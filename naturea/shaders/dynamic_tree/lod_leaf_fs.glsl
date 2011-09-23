@@ -30,9 +30,6 @@ uniform vec2			window_size;
 #define SQRT3  0.57735026918962576450914878050196
 #define SQRT23 0.81649658092772603273242802490196	
 
-varying vec3			normal_v;
-varying vec3			normal_vs_v;
-varying vec3			tangent_vs_v;
 varying vec4			vPos;
 varying vec3			o_normal;
 varying vec3			ts_viewDir_v;
@@ -47,9 +44,9 @@ uniform vec3			cam_dir;
 uniform vec3			cam_right;
 vec3					cam_up = cross(cam_dir, cam_right);
 
-vec3			normal_vs		= normal_vs_v;
-vec3			tangent_vs		= tangent_vs_v;
-vec3			ts_normal;
+varying vec3			normal_vs;
+varying vec3			tangent_vs;
+vec3					ts_normal;
 								  
 vec3			ts_viewDir		= normalize(ts_viewDir_v);
 vec3			ts_lightDir		= normalize(ts_lightDir_v);
@@ -266,19 +263,19 @@ void colorize(out vec4 outColor, in vec3 normal, in vec3 tangent, in vec3 bitang
 
 void main()
 {	
-	normal_vs = normalize(normal_vs);
-	tangent_vs = normalize(tangent_vs);
+	vec3 normal_v = normalize(normal_vs);
+	vec3 tangent_v = normalize(tangent_vs);
 
 
-	vec3 bitangent = cross(normal_vs, tangent_vs);
+	vec3 bitangent = cross(normal_v, tangent_v);
 	vec4 color;
 
-	colorize(color, normal_vs, tangent_vs, bitangent);
+	colorize(color, normal_v, tangent_v, bitangent);
 	gl_FragData[0] = color;
-	vec3 normal;
-	vec3 nor = normalize(normal_v);
-	normal = normalize(vec3(dot( cam_up, nor ), dot( cam_right, nor ), dot( cam_dir, nor )));
-	gl_FragData[1] = vec4(normal*0.5 + vec3(0.5) , 0.0);
+	//vec3 normal;
+	vec3 nor = normal_v;
+	//normal = normalize(vec3(dot( cam_up, nor ), dot( cam_right, nor ), dot( cam_dir, nor )));
+	gl_FragData[1] = vec4(nor*0.5 + vec3(0.5) , 0.0);
 	gl_FragData[2] = vec4(b0_origin*0.5+vec2(0.5),b1_origin*0.5+vec2(0.5));
 	
 }

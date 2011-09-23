@@ -775,6 +775,7 @@ Vegetation* DTree::getCopy(){
 }
 
 void DTree::draw_instance_LOD0(DTreeInstanceData * instance){
+	//drawNormals(instance);
 	if (g_draw_lod0){
 		glColor4f(1.0,1.0,1.0, instance->alpha);
 		
@@ -897,7 +898,7 @@ void DTree::draw_instance_LOD1(DTreeInstanceData * instance){
 void DTree::draw_all_instances_LOD1(){
 	
 	if (g_draw_lod1){
-		glColor4f(1.0,1.0,1.0, 1.0);	
+		glColor4f(1.0, 1.0, 1.0, 1.0);	
 		int i, j, sliceCount, setCount=sliceSets2.size();
 		Texture * colorTexture, * dataTexture, *displacementTexture, *displacement2Texture, *normalTexture;
 		displacementTexture		=	leafNoiseTexture;
@@ -1330,6 +1331,62 @@ void DTree::drawLOD2()
 				glPopMatrix();
 		} // for j - sliceSets
 	}
+}
+
+void DTree::drawNormals(DTreeInstanceData* instance){
+	glColor4f(1.0,1.0,1.0, instance->alpha);
+		
+	glDisable(GL_CULL_FACE);
+	glPushMatrix();
+	glTranslatef(instance->position.x, instance->position.y, instance->position.z);
+	glRotatef(instance->rotation_y+180, 0.0, 1.0, 0.0);
+	glScalef( 10.f , -10.f, 10.f);
+	
+	// draw bbox
+	//bbox->draw();
+
+
+	// bind textures
+	dataTexture->bind(GL_TEXTURE1);
+	branchNoiseTexture->bind(GL_TEXTURE2);
+	bColorTexture->bind(GL_TEXTURE4);
+
+	// TODO: use positions
+
+	// draw branches
+	//branchesEBO->draw(n_branchShader);
+
+	
+	leafNoiseTexture->bind(GL_TEXTURE3);
+	frontDecalMap		->bind(GL_TEXTURE4);
+	frontNormalMap		->bind(GL_TEXTURE5);
+	frontTranslucencyMap->bind(GL_TEXTURE6);
+	frontHalfLife2Map	->bind(GL_TEXTURE7);
+	backDecalMap		->bind(GL_TEXTURE8);
+	backNormalMap		->bind(GL_TEXTURE9);
+	backTranslucencyMap	->bind(GL_TEXTURE10);
+	backHalfLife2Map	->bind(GL_TEXTURE11);
+
+	// TODO: use positions
+
+	// draw leaves
+	leavesVBO->draw(n_leafShader, GL_QUADS, 0);
+
+
+	leafNoiseTexture->unbind();
+	frontDecalMap		->unbind();
+	frontNormalMap		->unbind();
+	frontTranslucencyMap->unbind();
+	frontHalfLife2Map	->unbind();
+	backDecalMap		->unbind();
+	backNormalMap		->unbind();
+	backTranslucencyMap	->unbind();
+	backHalfLife2Map	->unbind();
+	branchNoiseTexture->unbind();
+	dataTexture->unbind();
+	
+	glPopMatrix();
+	glEnable(GL_CULL_FACE);
 }
 
 void DTree::draw(){
@@ -1909,6 +1966,11 @@ void DTree::initLOD0()
 
 
 	// init shaders
+	n_branchShader = new Shader("n_branch");
+	n_branchShader->loadShader(DYN_TREE::SHADER_BRANCH_VN,DYN_TREE::SHADER_BRANCH_FN, DYN_TREE::SHADER_BRANCH_GN, 3, GL_TRIANGLES, GL_LINE_STRIP);  
+	n_leafShader = new Shader("n_leaf");
+	n_leafShader->loadShader(DYN_TREE::SHADER_LEAF_VN,DYN_TREE::SHADER_LEAF_FN, DYN_TREE::SHADER_LEAF_GN, 3*4+4, GL_TRIANGLES, GL_LINE_STRIP);  
+
 	branchShader = new Shader("branch");
 	branchShader->loadShader(DYN_TREE::SHADER_BRANCH_V,DYN_TREE::SHADER_BRANCH_F); 
 	leafShader = new Shader("leaf");
@@ -1923,6 +1985,10 @@ void DTree::initLOD0()
 	// connect textures with shader
 	branchShader->linkTexture(branchNoiseTexture);
 	branchShader->linkTexture(bColorTexture);
+
+	n_branchShader->linkTexture(branchNoiseTexture);
+	n_branchShader->linkTexture(bColorTexture);
+
 	bLODShader->linkTexture(branchNoiseTexture);
 	bLODShader->linkTexture(bColorTexture);
 
@@ -1937,6 +2003,20 @@ void DTree::initLOD0()
 	leafShader->linkTexture(backNormalMap		);
 	leafShader->linkTexture(backTranslucencyMap	);
 	leafShader->linkTexture(backHalfLife2Map	);
+
+	n_leafShader->linkTexture(branchNoiseTexture);
+	n_leafShader->linkTexture(leafNoiseTexture);
+	//n_leafShader->linkTexture(lColorTexture);
+	n_leafShader->linkTexture(frontDecalMap		);
+	n_leafShader->linkTexture(frontNormalMap		);
+	n_leafShader->linkTexture(frontTranslucencyMap);
+	n_leafShader->linkTexture(frontHalfLife2Map	);
+	n_leafShader->linkTexture(backDecalMap		);
+	n_leafShader->linkTexture(backNormalMap		);
+	n_leafShader->linkTexture(backTranslucencyMap	);
+	n_leafShader->linkTexture(backHalfLife2Map	);
+
+
 
 	lLODShader->linkTexture(branchNoiseTexture	);
 	lLODShader->linkTexture(leafNoiseTexture	);
@@ -1961,6 +2041,16 @@ void DTree::initLOD0()
 	branchShader->registerUniform("wood_amplitudes",		UniformType::F4,	& g_tree_wood_amplitudes.data);
 	branchShader->registerUniform("wood_frequencies",		UniformType::F4,	& g_tree_wood_frequencies.data);
 	branchShader->registerUniform("window_size",			UniformType::F2,	& g_window_sizes.data);		
+
+	n_branchShader->registerUniform("branch_count",			UniformType::F1,	& this->branchCountF);
+	n_branchShader->registerUniform("time",					UniformType::F1,	& g_float_time);
+	n_branchShader->registerUniform("wind_direction",		UniformType::F3,	& g_tree_wind_direction.data);
+	n_branchShader->registerUniform("wind_strength",		UniformType::F1,	& g_tree_wind_strength);
+	n_branchShader->registerUniform("wood_amplitudes",		UniformType::F4,	& g_tree_wood_amplitudes.data);
+	n_branchShader->registerUniform("wood_frequencies",		UniformType::F4,	& g_tree_wood_frequencies.data);
+	n_branchShader->registerUniform("window_size",			UniformType::F2,	& g_window_sizes.data);		
+
+
 
 	bLODShader->registerUniform("branch_count",				UniformType::F1,	& this->branchCountF);
 	bLODShader->registerUniform("time",						UniformType::F1,	& g_float_time);
@@ -1990,6 +2080,24 @@ void DTree::initLOD0()
 	leafShader->registerUniform("LightDiffuseColor",		UniformType::F3,	& g_leaves_LightDiffuseColor.data);
 	leafShader->registerUniform("window_size",				UniformType::F2,	& g_window_sizes.data);		
 
+	n_leafShader->registerUniform("branch_count",			UniformType::F1,	& this->branchCountF);
+	n_leafShader->registerUniform("time",					UniformType::F1,	& g_float_time);
+	n_leafShader->registerUniform("wind_direction",			UniformType::F3,	& g_tree_wind_direction.data);
+	n_leafShader->registerUniform("wind_strength",			UniformType::F1,	& g_tree_wind_strength);
+	n_leafShader->registerUniform("wood_amplitudes",		UniformType::F4,	& g_tree_wood_amplitudes.data);
+	n_leafShader->registerUniform("wood_frequencies",		UniformType::F4,	& g_tree_wood_frequencies.data);
+	n_leafShader->registerUniform("leaf_amplitude",			UniformType::F1,	& g_tree_leaf_amplitude);
+	n_leafShader->registerUniform("leaf_frequency",			UniformType::F1,	& g_tree_leaf_frequency);
+	n_leafShader->registerUniform("MultiplyAmbient",		UniformType::F1,	& g_leaves_MultiplyAmbient);
+	n_leafShader->registerUniform("MultiplyDiffuse",		UniformType::F1,	& g_leaves_MultiplyDiffuse);
+	n_leafShader->registerUniform("MultiplySpecular",		UniformType::F1,	& g_leaves_MultiplySpecular);
+	n_leafShader->registerUniform("MultiplyTranslucency",	UniformType::F1,	& g_leaves_MultiplyTranslucency);
+	n_leafShader->registerUniform("ReduceTranslucencyInShadow", UniformType::F1,& g_leaves_ReduceTranslucencyInShadow);
+	n_leafShader->registerUniform("shadow_intensity",		UniformType::F1,	& g_leaves_shadow_intensity);
+	n_leafShader->registerUniform("LightDiffuseColor",		UniformType::F3,	& g_leaves_LightDiffuseColor.data);
+	n_leafShader->registerUniform("window_size",			UniformType::F2,	& g_window_sizes.data);		
+
+
 	lLODShader->registerUniform("branch_count",				UniformType::F1,	& this->branchCountF);
 	lLODShader->registerUniform("time",						UniformType::F1,	& g_float_time);
 	lLODShader->registerUniform("wind_direction",			UniformType::F3,	& g_tree_wind_direction.data);
@@ -2013,7 +2121,9 @@ void DTree::initLOD0()
 	// link data texture
 	//dataTexture->save("dataTexture.png");
 	branchShader->linkTexture(dataTexture);
+	n_branchShader->linkTexture(dataTexture);
 	leafShader	->linkTexture(dataTexture);
+	n_leafShader->linkTexture(dataTexture);
 	bLODShader	->linkTexture(dataTexture);
 	lLODShader	->linkTexture(dataTexture);
 
@@ -2023,7 +2133,9 @@ void DTree::initLOD0()
 
 	// link vbos & shaders
 	branchesVBO	->compileWithShader(branchShader);
+	branchesVBO ->compileWithShader(n_branchShader);
 	leavesVBO	->compileWithShader(leafShader);
+	leavesVBO	->compileWithShader(n_leafShader);
 
 	branchesVBO	->compileWithShader(bLODShader);
 	leavesVBO	->compileWithShader(lLODShader);

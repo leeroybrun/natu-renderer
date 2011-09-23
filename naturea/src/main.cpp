@@ -134,9 +134,9 @@ bool	g_draw_light_direction	= false;
 v3		g_tree_wind_direction	= v3(1.0, 0.0, 0.0);
 float	g_tree_wind_strength	= 0.0;
 v4		g_tree_wood_amplitudes	= v4(1.0, 0.8, 0.2, 0.1);
-v4		g_tree_wood_frequencies	= v4(0.0, 1.5, 0.0, 0.0);
+v4		g_tree_wood_frequencies	= v4(0.0, 0.0, 0.0, 0.0);
 float	g_tree_leaf_amplitude	= 2.4;
-float	g_tree_leaf_frequency	= 15.0;
+float	g_tree_leaf_frequency	= 0.0;
 int		g_tree_slice_count		= 3;
 float	g_tree_wave_amplitude	= 0.005;
 float	g_tree_wave_frequency	= 0.5;
@@ -147,7 +147,7 @@ float	g_tree_wave_increase_factor = 1.0;
 float	g_tree_time_offset_1	= 0.0;
 float	g_tree_time_offset_2	= 0.5;		
 
-const int	g_tree_gridSize		= 32;
+const int	g_tree_gridSize		= 20;
 float	g_tree_mean_distance	= 8.0;
 float	g_tree_dither			= 4.0;
 

@@ -234,6 +234,9 @@
     <Filter Include="_binaries">
       <UniqueIdentifier>{391f5d9e-345b-4731-b8cf-cffe27ca35f0}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Shaders\dynaTree\debug">
+      <UniqueIdentifier>{d7865f9b-a469-4f44-becc-aaaf15af78d2}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp" />
@@ -677,6 +680,24 @@
     </None>
     <None Include="shaders\test3_vs_instanced.glsl">
       <Filter>Shaders\testing</Filter>
+    </None>
+    <None Include="shaders\dynamic_tree\n_branch_gs.glsl">
+      <Filter>Shaders\dynaTree\debug</Filter>
+    </None>
+    <None Include="shaders\dynamic_tree\n_branch_fs.glsl">
+      <Filter>Shaders\dynaTree\debug</Filter>
+    </None>
+    <None Include="shaders\dynamic_tree\n_branch_vs.glsl">
+      <Filter>Shaders\dynaTree\debug</Filter>
+    </None>
+    <None Include="shaders\dynamic_tree\n_leaf_fs.glsl">
+      <Filter>Shaders\dynaTree\debug</Filter>
+    </None>
+    <None Include="shaders\dynamic_tree\n_leaf_gs.glsl">
+      <Filter>Shaders\dynaTree\debug</Filter>
+    </None>
+    <None Include="shaders\dynamic_tree\n_leaf_vs.glsl">
+      <Filter>Shaders\dynaTree\debug</Filter>
     </None>
   </ItemGroup>
 </Project>

@@ -1,17 +1,17 @@
 #version 120
 
 
-varying vec3 normal_vs;
-varying vec3 tangent_vs;
-varying float level;
-varying vec4 vPos;
-varying vec3 lightDir;
+varying vec3			normal_vs;
+varying vec3			tangent_vs;
+varying float			level;
+varying vec4			vPos;
+varying vec3			lightDir;
 
 varying vec2			b0_origin;
 varying vec2			b1_origin;
 varying vec2			b2_origin;
 
-uniform sampler2D color_texture;
+uniform sampler2D		color_texture;
 uniform vec2			window_size;
 
 void main()

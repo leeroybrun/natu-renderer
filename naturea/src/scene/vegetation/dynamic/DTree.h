@@ -274,5 +274,13 @@ private:
 	void render();
 
 	int swapCnt;
+
+
+	VBO *				n_branchesVBO;
+	VBO	*				n_leavesVBO;
+	Shader *			n_branchShader;
+	Shader *			n_leafShader;
+	//void				initNormals();
+	void				drawNormals(DTreeInstanceData * instance);
 };
 

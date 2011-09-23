@@ -255,6 +255,7 @@
     <None Include="shaders\cube_fs.glsl" />
     <None Include="shaders\cube_vs.glsl" />
     <None Include="shaders\dynamic_tree\branch_fs.glsl" />
+    <None Include="shaders\dynamic_tree\n_branch_gs.glsl" />
     <None Include="shaders\dynamic_tree\branch_vs.glsl" />
     <None Include="shaders\dynamic_tree\join_fs.glsl" />
     <None Include="shaders\dynamic_tree\join_vs.glsl" />
@@ -264,6 +265,11 @@
     <None Include="shaders\dynamic_tree\lod_branch_vs.glsl" />
     <None Include="shaders\dynamic_tree\lod_leaf_fs.glsl" />
     <None Include="shaders\dynamic_tree\lod_leaf_vs.glsl" />
+    <None Include="shaders\dynamic_tree\n_branch_fs.glsl" />
+    <None Include="shaders\dynamic_tree\n_branch_vs.glsl" />
+    <None Include="shaders\dynamic_tree\n_leaf_fs.glsl" />
+    <None Include="shaders\dynamic_tree\n_leaf_gs.glsl" />
+    <None Include="shaders\dynamic_tree\n_leaf_vs.glsl" />
     <None Include="shaders\dynamic_tree\preprocess_fs.glsl" />
     <None Include="shaders\dynamic_tree\preprocess_vs.glsl" />
     <None Include="shaders\godrays\godrays_fs.glsl" />

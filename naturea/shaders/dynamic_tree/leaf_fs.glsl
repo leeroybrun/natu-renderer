@@ -30,16 +30,13 @@ uniform vec2			window_size;
 #define SQRT3  0.57735026918962576450914878050196
 #define SQRT23 0.81649658092772603273242802490196	
 
-varying vec3			normal_vs_v;
-varying vec3			tangent_vs_v;
+varying vec3			normal_vs;
+varying vec3			tangent_vs;
 varying vec4			vPos;
 varying vec3			o_normal;
 varying vec3			ts_viewDir_v;
 varying vec3			ts_lightDir_v;
 
-
-vec3			normal_vs		= normal_vs_v;
-vec3			tangent_vs		= tangent_vs_v;
 								  
 vec3			ts_viewDir		= normalize(ts_viewDir_v);
 vec3			ts_lightDir		= normalize(ts_lightDir_v);
@@ -305,14 +302,14 @@ void colorize(out vec4 outColor, in vec3 normal, in vec3 tangent, in vec3 bitang
 
 void main()
 {	
-	normal_vs = normalize(normal_vs);
-	tangent_vs = normalize(tangent_vs);
 
+	vec3 normal_v = normalize(normal_vs);
+	vec3 tangent_v = normalize(tangent_vs);
 
-	vec3 bitangent = cross(normal_vs, tangent_vs);
+	vec3 bitangent = cross(normal_v, tangent_v);
 	vec4 color;
 
-	colorize(color, normal_vs, tangent_vs, bitangent);
+	colorize(color, normal_v, tangent_v, bitangent);
 	//color = 0.5*texture2D(frontDecalMap, gl_TexCoord[0].yx) + 0.2*texture2D(frontTranslucencyMap, gl_TexCoord[0].yx + ts_lightDir.xy );
 	color.a = gl_Color.a;
 	//if (texture2D(frontDecalMap, gl_TexCoord[0].yx).a<0.9) discard;
