@@ -121,12 +121,10 @@ bool	g_draw_dtree_lod		= true;
 bool	g_draw_lod0		= true;
 bool	g_draw_lod1		= true;
 bool	g_draw_lod2		= true;
-v4		g_lodTresholds	= v4(16, 23, 50, 60);
+v4		g_lodTresholds	= v4(16, 20, 50, 60);
 bool	g_draw_low_vegetation	= true;
 bool	g_draw_dtree			= true;
 bool	g_draw_light_direction	= false;
-
-
 
 /**************************
 * DYNAMIC TREE
@@ -147,9 +145,9 @@ float	g_tree_wave_increase_factor = 1.0;
 float	g_tree_time_offset_1	= 0.0;
 float	g_tree_time_offset_2	= 0.5;		
 
-const int	g_tree_gridSize		= 20;
-float	g_tree_mean_distance	= 8.0;
-float	g_tree_dither			= 4.0;
+const int	g_tree_gridSize		= 10;
+float	g_tree_mean_distance	= 10.0;
+float	g_tree_dither			= 0.0;
 
 float	g_leaves_MultiplyAmbient			= 1.0;
 float	g_leaves_MultiplyDiffuse			= 0.7;
@@ -177,6 +175,9 @@ v3*		g_viewer_direction;
 
 float	g_fog_density = 0.006, g_fog_start = 1.0, g_fog_end=100.0;
 
+v3		g_tintColor = v3(1.0, 1.0, 1.0);
+float	g_tintFactor= 1.0;
+float	g_varA = 1.0;
 
 bool	g_debug = false;
 float g_CPU_fps;
@@ -489,9 +490,12 @@ void initGUI()
 	TwBar *controlBar = TwNewBar("Controls");
 	TwDefine(" Controls position='0 0' size='250 550' refresh=0.3 \
 			 valueswidth=80 ");
+	TwAddVarRW(controlBar, "tintColor",	 TW_TYPE_COLOR3F, & g_tintColor.data, " label='tintColor' ");
+	TwAddVarRW(controlBar, "tintFactor", TW_TYPE_FLOAT, & g_tintFactor, " label='tintFactor' min=0 max=2 step=0.01 ");
+
 
 	TwAddVarRW(controlBar, "offset", TW_TYPE_INT32, & g_offset, " label='offset' min=0 max=2 step=1 ");
-	TwAddVarRO(controlBar, "cosA", TW_TYPE_FLOAT, & g_cosA, " label='cosA' ");
+	TwAddVarRW(controlBar, "varA", TW_TYPE_FLOAT, & g_varA, " label='varA' min=-2.0 max=2.0 step=0.001");
 	TwAddVarRO(controlBar, "cosB", TW_TYPE_FLOAT, & g_cosB, " label='cosB' ");
 	TwAddVarRO(controlBar, "cosC", TW_TYPE_FLOAT, & g_cosC, " label='cosC' ");
 
@@ -532,9 +536,6 @@ void initGUI()
 	TwAddVarRW(controlBar, "time_offset1", TW_TYPE_FLOAT, &g_tree_time_offset_1, "group='LOD' label='distortion time offset 1' min=-10 max=10 step=0.001");
 	TwAddVarRW(controlBar, "time_offset2", TW_TYPE_FLOAT, &g_tree_time_offset_2, "group='LOD' label='distortion time offset 2' min=-10 max=10 step=0.001");
 
-	TwAddVarRW(controlBar, "wave_movA", TW_TYPE_DIR3F, &g_tree_movementVectorA, "group='LOD' label='distortion mov vector A' ");
-	TwAddVarRW(controlBar, "wave_movB", TW_TYPE_DIR3F, &g_tree_movementVectorB, "group='LOD' label='distortion mov vector B' ");
-
 	TwAddVarRW(controlBar, "MultiplyAmbient",			TW_TYPE_FLOAT,		&g_leaves_MultiplyAmbient			, "group='Leaves' label='k ambient' min=0 max=5 step=0.001 ");
 	TwAddVarRW(controlBar, "MultiplyDiffuse",			TW_TYPE_FLOAT,		&g_leaves_MultiplyDiffuse			, "group='Leaves' label='k diffuse' min=0 max=5 step=0.001");
 	TwAddVarRW(controlBar, "MultiplySpecular",			TW_TYPE_FLOAT,		&g_leaves_MultiplySpecular			, "group='Leaves' label='k specular' min=0 max=10 step=0.001");
@@ -543,15 +544,12 @@ void initGUI()
 	TwAddVarRW(controlBar, "shadow_intensity",			TW_TYPE_FLOAT,		&g_leaves_shadow_intensity			, "group='Leaves' label='shadow intensity' min=-10 max=10 step=0.001");
 	TwAddVarRW(controlBar, "LightDiffuseColor",			TW_TYPE_COLOR3F,	&g_leaves_LightDiffuseColor.data	, "group='Leaves' label='light diffuse color' ");
 	
-	/*
-
-	TwAddVarRW(controlBar, "parallax", TW_TYPE_BOOLCPP, &g_ParallaxMappingEnabled, 
-		" help='Parallax mapping enabled' ");
+	//TwAddVarRW(controlBar, "parallax", TW_TYPE_BOOLCPP, &g_ParallaxMappingEnabled, 
+	//	" help='Parallax mapping enabled' ");
 	TwAddVarRW(controlBar, "parallaxScale", TW_TYPE_FLOAT, &g_ParallaxScale, 
 		" help='Parallax scale value' step=0.001");
 	TwAddVarRW(controlBar, "parallaxBias", TW_TYPE_FLOAT, &g_ParallaxBias, 
 		" help='Parallax bias value' step=0.001");
-		*/
 
 
 	// camera mode
