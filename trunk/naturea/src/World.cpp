@@ -176,13 +176,13 @@ void World::draw()
 	glDisable(GL_BLEND);
 
 	p_fog->turnOff();
-
+	p_activeLight->draw();
 	if (g_godraysEnabled){
 		v3 lightDir = (p_activeLight->position.xyz()).getNormalized();
 		p_godRays->lightDirDOTviewDirValue = lightDir.dot(p_activeCamera->getDirection());
 		p_godRays->end();
 	}
-
+	
 	if(g_showTextures){
 		//p_water->showTextures();
 		p_activeLight->showTextures();
@@ -442,7 +442,7 @@ void World::init()
 		for (int j=0; j<g_tree_gridSize; j++){
 			x = (i - g_tree_gridSize/2)*g_tree_mean_distance + randomf(-diff, diff);
 			z = (j - g_tree_gridSize/2)*g_tree_mean_distance + randomf(-diff, diff);
-			r = randomf(-180, 180);
+			r = 0.0;// randomf(-180, 180);
 			xt = x + p_terrain->sz_x/2.0;
 			yt = z + p_terrain->sz_y/2.0;
 			y = p_terrain->getHeightAt(xt,yt);

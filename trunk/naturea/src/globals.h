@@ -90,10 +90,10 @@ extern int						g_GrassCount;
 extern int						g_Tree1Count;
 extern int						g_Tree2Count;
 
-extern int g_Bumpmaps	   ;
-extern int g_Heightmaps	   ;
-extern int g_Specularmaps  ;
-extern int g_Alphamaps	   ;
+extern int						g_Bumpmaps	   ;
+extern int						g_Heightmaps	   ;
+extern int						g_Specularmaps  ;
+extern int						g_Alphamaps	   ;
 
 
 extern bool						g_draw_lod1_method;
@@ -155,4 +155,9 @@ extern v3*		g_viewer_direction;
 
 extern float	g_fog_density, g_fog_start, g_fog_end;
 extern	bool	g_debug;
+
+extern v3		g_tintColor ;
+extern float	g_tintFactor;
+
+extern float	g_varA;
 #endif

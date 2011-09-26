@@ -7,23 +7,30 @@ uniform sampler2D rtex;
 uniform sampler2D otex;
 //uniform sampler2D btex;
 
-const int NUM_SAMPLES = 32;
-const int BLOOM_SAMPLES = 4;
-const float bloomDistance = 0.05/BLOOM_SAMPLES;
-uniform vec2 lightPositionOnScreen;
-uniform float lightDirDOTviewDir;
+uniform vec3		tintColor;
+uniform float		tintFactor;
+
+const int			NUM_SAMPLES = 30;
+const int			BLOOM_SAMPLES = 4;
+const float			bloomDistance = 0.05/BLOOM_SAMPLES;
+uniform vec2		lightPositionOnScreen;
+uniform float		lightDirDOTviewDir;
 
 void main(void)
 {
 
 	vec4  origColor = texture2D(otex, gl_TexCoord[0].st);
+	origColor.rgb *= (tintColor*tintFactor);
+	origColor.rgb = pow(origColor.rgb,1/1.2);
+
+	
 	//origColor = vec4(0.1)+origColor;
 	vec4  raysColor = texture2D(rtex, gl_TexCoord[0].st);
 	//float bcolor   = texture2D(btex,  gl_TexCoord[0].st).x;
 	
 	vec4 bloom = vec4(0.0);
 	float xd,yd,l;
-	float divideFactor = 0.6 * BLOOM_SAMPLES*BLOOM_SAMPLES;
+	float divideFactor = 0.8 * BLOOM_SAMPLES*BLOOM_SAMPLES;
 	//if (length(raysColor.xyz)<0.4){
 		for (int x=-BLOOM_SAMPLES; x<BLOOM_SAMPLES; x++){
 			for (int y=-BLOOM_SAMPLES; y<BLOOM_SAMPLES; y++){
@@ -31,10 +38,10 @@ void main(void)
 				yd = float(y)/float(BLOOM_SAMPLES);
 				l = sqrt(xd*xd+yd*yd);
 				vec4 c = texture2D(rtex, gl_TexCoord[0].st + vec2(xd,yd)*l*bloomDistance);
-				//if (length(c.rgb)>0.25){
+				if (length(c.rgb)>0.1){
 					bloom += c;
 					divideFactor+= l;
-				//}
+				}
 			}
 		}
 		origColor += (bloom/divideFactor);

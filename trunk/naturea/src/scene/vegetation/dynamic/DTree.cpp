@@ -2211,15 +2211,19 @@ void DTree::initLOD1b()
 	lod1shader2->registerUniform("time", UniformType::F1, & g_float_time);
 	lod1shader2->registerUniform("instancing", UniformType::I1, & isInstancingEnabled);
 
-	lod1shader2->registerUniform("movementVectorA"		, UniformType::F2, & g_tree_movementVectorA		);
-	lod1shader2->registerUniform("movementVectorB"		, UniformType::F2, & g_tree_movementVectorB		);
-	lod1shader2->registerUniform("window_size"			, UniformType::F2, & win_resolution				);
+	lod1shader2->registerUniform("movementVectorA"		, UniformType::F2, & g_tree_movementVectorA			);
+	lod1shader2->registerUniform("movementVectorB"		, UniformType::F2, & g_tree_movementVectorB			);
+	lod1shader2->registerUniform("window_size"			, UniformType::F2, & win_resolution					);
 
 	lod1shader2->registerUniform("wood_amplitudes"		, UniformType::F4, & g_tree_wood_amplitudes.data	);
 	lod1shader2->registerUniform("wood_frequencies"		, UniformType::F4, & g_tree_wood_frequencies.data	);
-	lod1shader2->registerUniform("leaf_amplitude"		, UniformType::F1, & g_tree_leaf_amplitude	);
-	lod1shader2->registerUniform("leaf_frequency"		, UniformType::F1, & g_tree_leaf_frequency	);
+	lod1shader2->registerUniform("leaf_amplitude"		, UniformType::F1, & g_tree_leaf_amplitude			);
+	lod1shader2->registerUniform("leaf_frequency"		, UniformType::F1, & g_tree_leaf_frequency			);
 
+	lod1shader2->registerUniform("varA"					, UniformType::F1, & g_varA							);
+
+	lod1shader2->registerUniform("scale"				, UniformType::F1, & g_ParallaxScale				);
+	lod1shader2->registerUniform("bias"					, UniformType::F1, & g_ParallaxBias					);
 
 	int i;
 	// int i = lod1shader2->registerUniform("time_offset"	, UniformType::F1, & tree_time_offset);
@@ -2257,31 +2261,31 @@ void DTree::initLOD1b()
 	vertexArr0.push_back(v3( 0.1,  1.0,  0.5 ));
 	vertexArr0.push_back(v3( 0.1,  1.0, -0.5 ));
 
-	normalArr0.push_back(v3( 0.0,  0.0,  1.0));
-	normalArr0.push_back(v3( 0.0,  0.0,  1.0));
-	normalArr0.push_back(v3( 0.0,  0.0,  1.0));
-	normalArr0.push_back(v3( 0.0,  0.0,  1.0));
-	normalArr0.push_back(v3( 0.0,  0.0,  1.0));
-	normalArr0.push_back(v3( 0.0,  0.0,  1.0));
-	normalArr0.push_back(v3( 0.0,  0.0,  1.0));
-	normalArr0.push_back(v3( 0.0,  0.0,  1.0));
-	normalArr0.push_back(v3( 0.0,  0.0,  1.0));
-	normalArr0.push_back(v3( 0.0,  0.0,  1.0));
-	normalArr0.push_back(v3( 0.0,  0.0,  1.0));
-	normalArr0.push_back(v3( 0.0,  0.0,  1.0));
+	normalArr0.push_back(v3( 1.0,  0.0,  0.0));
+	normalArr0.push_back(v3( 1.0,  0.0,  0.0));
+	normalArr0.push_back(v3( 1.0,  0.0,  0.0));
+	normalArr0.push_back(v3( 1.0,  0.0,  0.0));
+	normalArr0.push_back(v3( 1.0,  0.0,  0.0));
+	normalArr0.push_back(v3( 1.0,  0.0,  0.0));
+	normalArr0.push_back(v3( 1.0,  0.0,  0.0));
+	normalArr0.push_back(v3( 1.0,  0.0,  0.0));
+	normalArr0.push_back(v3( 1.0,  0.0,  0.0));
+	normalArr0.push_back(v3( 1.0,  0.0,  0.0));
+	normalArr0.push_back(v3( 1.0,  0.0,  0.0));
+	normalArr0.push_back(v3( 1.0,  0.0,  0.0));
 
-	tangentArr0.push_back(v3( 1.0,  0.0,  0.0));
-	tangentArr0.push_back(v3( 1.0,  0.0,  0.0));
-	tangentArr0.push_back(v3( 1.0,  0.0,  0.0));
-	tangentArr0.push_back(v3( 1.0,  0.0,  0.0));
-	tangentArr0.push_back(v3( 1.0,  0.0,  0.0));
-	tangentArr0.push_back(v3( 1.0,  0.0,  0.0));
-	tangentArr0.push_back(v3( 1.0,  0.0,  0.0));
-	tangentArr0.push_back(v3( 1.0,  0.0,  0.0));
-	tangentArr0.push_back(v3( 1.0,  0.0,  0.0));
-	tangentArr0.push_back(v3( 1.0,  0.0,  0.0));
-	tangentArr0.push_back(v3( 1.0,  0.0,  0.0));
-	tangentArr0.push_back(v3( 1.0,  0.0,  0.0));
+	tangentArr0.push_back(v3( 0.0,  0.0,  1.0));
+	tangentArr0.push_back(v3( 0.0,  0.0,  1.0));
+	tangentArr0.push_back(v3( 0.0,  0.0,  1.0));
+	tangentArr0.push_back(v3( 0.0,  0.0,  1.0));
+	tangentArr0.push_back(v3( 0.0,  0.0,  1.0));
+	tangentArr0.push_back(v3( 0.0,  0.0,  1.0));
+	tangentArr0.push_back(v3( 0.0,  0.0,  1.0));
+	tangentArr0.push_back(v3( 0.0,  0.0,  1.0));
+	tangentArr0.push_back(v3( 0.0,  0.0,  1.0));
+	tangentArr0.push_back(v3( 0.0,  0.0,  1.0));
+	tangentArr0.push_back(v3( 0.0,  0.0,  1.0));
+	tangentArr0.push_back(v3( 0.0,  0.0,  1.0));
 	
 	float y_max = 0.97; 
 

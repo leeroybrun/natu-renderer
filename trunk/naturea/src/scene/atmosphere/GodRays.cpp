@@ -8,6 +8,10 @@ GodRays::GodRays(ShaderManager *shManager, Light *_light)
 	shaderManager = shManager;
 	int shId = shaderManager->loadShader("GodRays", GODRAYS_VS_FILENAME, GODRAYS_FS_FILENAME);
 	shader = shaderManager->getShader(shId);
+	shader->registerUniform("tintColor", UniformType::F3, g_tintColor.data);
+	shader->registerUniform("tintFactor", UniformType::F1, &g_tintFactor);
+	
+
 	forRaysColorLocation = shader->getLocation("rtex");
 	originalColorLocation = shader->getLocation("otex");
 	//forBloomColorLocation = shader->getLocation("btex");

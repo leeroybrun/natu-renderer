@@ -12,6 +12,6 @@ void main(void)
 
 	gl_FragData[0] = origColor;
 	//skycolor.a = 0.5;
-	gl_FragData[1] = origColor*origColor * clamp(PdotL*3.0, 0.2, 1.0);
+	gl_FragData[1] = origColor * origColor * clamp(PdotL*4.0, 0.5, 1.0);
 }
 

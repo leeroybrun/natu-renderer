@@ -9,6 +9,7 @@ varying vec3			normalDir;
 varying float			alpha;
 varying vec2			sliceDesc;
 attribute mat4			transformMatrix;
+varying vec3			lightDir_ts;
 
 #define LOG2 1.442695
 void main()
@@ -22,7 +23,15 @@ void main()
 
 	normalDir = (gl_NormalMatrix * T * normal);
 	
-	
+	// calc tangent space...
+	vec3 bitangent = cross (normal, tangent);
+	mat3 TBN_Matrix;// = mat3 (tangent_vs, bitangent, normal_vs);
+    TBN_Matrix[0] =  gl_NormalMatrix * tangent; 
+    TBN_Matrix[1] =  gl_NormalMatrix * bitangent; 
+    TBN_Matrix[2] =  gl_NormalMatrix * normal; 
+
+	lightDir_ts = normalize( (gl_LightSource[0].position).xyz * TBN_Matrix );
+
 	sliceDesc = sliceDescription;
 	gl_TexCoord[0] = vec4(texCoords0, 0.0, 0.0);
 

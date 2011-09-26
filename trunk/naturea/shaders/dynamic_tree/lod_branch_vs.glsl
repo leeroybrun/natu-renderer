@@ -201,6 +201,7 @@ void main()
 	//tangent_vs = tangent;
 	//normal_vs = -normal_vs;
 	//normal_v = gl_NormalMatrix * normal_vs.xzy;
+	//normal_vs = normalize(vertex);
 	normal_vs = gl_NormalMatrix * normal_vs;
 	tangent_vs = gl_NormalMatrix * tangent_vs;
 
