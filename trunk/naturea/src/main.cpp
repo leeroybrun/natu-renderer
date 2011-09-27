@@ -153,7 +153,7 @@ float	g_tree_wave_increase_factor = 1.0;
 float	g_tree_time_offset_1	= 0.0;
 float	g_tree_time_offset_2	= 0.5;		
 
-const int	g_tree_gridSize		= 20;
+const int	g_tree_gridSize		= 30;
 float	g_tree_mean_distance	= 8.0;
 float	g_tree_dither			= 3.5;
 
@@ -502,14 +502,14 @@ void initGUI()
 	TwAddVarRW(controlBar, "tintFactor", TW_TYPE_FLOAT, & g_tintFactor, " label='tintFactor' min=0 max=2 step=0.01 ");
 
 
-	TwAddVarRW(controlBar, "offset", TW_TYPE_INT32, & g_offset, " label='offset' min=0 max=2 step=1 ");
-	TwAddVarRW(controlBar, "varA", TW_TYPE_FLOAT, & g_varA, " label='varA' min=-2.0 max=2.0 step=0.001");
-	TwAddVarRO(controlBar, "cosB", TW_TYPE_FLOAT, & g_cosB, " label='cosB' ");
-	TwAddVarRO(controlBar, "cosC", TW_TYPE_FLOAT, & g_cosC, " label='cosC' ");
+	//TwAddVarRW(controlBar, "offset", TW_TYPE_INT32, & g_offset, " label='offset' min=0 max=2 step=1 ");
+	//TwAddVarRW(controlBar, "varA", TW_TYPE_FLOAT, & g_varA, " label='varA' min=-2.0 max=2.0 step=0.001");
+	//TwAddVarRO(controlBar, "cosB", TW_TYPE_FLOAT, & g_cosB, " label='cosB' ");
+	//TwAddVarRO(controlBar, "cosC", TW_TYPE_FLOAT, & g_cosC, " label='cosC' ");
 
-	TwAddVarRW(controlBar, "fogDensity"	, TW_TYPE_FLOAT, & g_fog_density,	" label='fog density' min=-1000 max=1000 step=0.1");
-	TwAddVarRW(controlBar, "fogStart"	, TW_TYPE_FLOAT, & g_fog_start,		" label='fog start'	  min=-1000 max=1000 step=0.1");
-	TwAddVarRW(controlBar, "fogEnd"		, TW_TYPE_FLOAT, & g_fog_end,		" label='fog end'	  min=-1000 max=1000 step=0.1");
+	//TwAddVarRW(controlBar, "fogDensity"	, TW_TYPE_FLOAT, & g_fog_density,	" label='fog density' min=-1000 max=1000 step=0.1");
+	//TwAddVarRW(controlBar, "fogStart"	, TW_TYPE_FLOAT, & g_fog_start,		" label='fog start'	  min=-1000 max=1000 step=0.1");
+	//TwAddVarRW(controlBar, "fogEnd"		, TW_TYPE_FLOAT, & g_fog_end,		" label='fog end'	  min=-1000 max=1000 step=0.1");
 
 
 	TwAddVarRW(controlBar, "sw_tree", TW_TYPE_BOOLCPP, & g_draw_dtree, " group='Visibility' ");
@@ -528,8 +528,8 @@ void initGUI()
 	TwAddVarRW(controlBar, "sw_light", TW_TYPE_BOOLCPP, & g_draw_light_direction, " group='Visibility'  ");
 
 	TwAddVarRW(controlBar, "sw_orbit", TW_TYPE_BOOLCPP, & g_orbit, " group='General' label='Orbit(ON/OFF)'");
-	TwAddVarRW(controlBar, "sw_orbit_speed", TW_TYPE_FLOAT, & g_orbit_speed, " group='General' min=-10 max=100 step=0.1 label='orbit speed'");
-	TwAddVarRW(controlBar, "sw_orbit_radius", TW_TYPE_FLOAT, & g_orbit_radius, " group='General' min=-10 max=100 step=0.1 label='orbit radius'");
+	TwAddVarRW(controlBar, "sw_orbit_speed", TW_TYPE_FLOAT, & g_orbit_speed, " group='General' min=-100 max=100 step=0.01 label='orbit speed'");
+	TwAddVarRW(controlBar, "sw_orbit_radius", TW_TYPE_FLOAT, & g_orbit_radius, " group='General' min=-100 max=100 step=0.1 label='orbit radius'");
 	TwAddVarRW(controlBar, "sw_lod1_ab", TW_TYPE_BOOLCPP, & g_draw_lod1_method, " group='General'  ");
 
 	TwAddVarRW(controlBar, "snapshotDir", TW_TYPE_DIR3F, &g_snapshot_direction, 
@@ -554,19 +554,19 @@ void initGUI()
 	
 	//TwAddVarRW(controlBar, "parallax", TW_TYPE_BOOLCPP, &g_ParallaxMappingEnabled, 
 	//	" help='Parallax mapping enabled' ");
-	TwAddVarRW(controlBar, "parallaxScale", TW_TYPE_FLOAT, &g_ParallaxScale, 
-		" help='Parallax scale value' step=0.001");
-	TwAddVarRW(controlBar, "parallaxBias", TW_TYPE_FLOAT, &g_ParallaxBias, 
-		" help='Parallax bias value' step=0.001");
+	// TwAddVarRW(controlBar, "parallaxScale", TW_TYPE_FLOAT, &g_ParallaxScale, 
+	// 	" help='Parallax scale value' step=0.001");
+	// TwAddVarRW(controlBar, "parallaxBias", TW_TYPE_FLOAT, &g_ParallaxBias, 
+	// 	" help='Parallax bias value' step=0.001");
 
 
 	// camera mode
 	TwEnumVal cam_mode[] = 
 	{ 
-		{ CameraMode::FREE				 , "Free"					},
-		{ CameraMode::TERRAIN_RESTRICTED   , "Terrain restricted"     },
-		{ CameraMode::TERRAIN_CONNECTED    , "Terrain connected"      },
-		{ CameraMode::WALK				 , "Walk"					}
+		{ CameraMode::FREE					, "Free"					},
+		{ CameraMode::TERRAIN_RESTRICTED	, "Terrain restricted"     },
+		{ CameraMode::TERRAIN_CONNECTED		, "Terrain connected"      },
+		{ CameraMode::WALK					, "Walk"					}
 
 	};
 
