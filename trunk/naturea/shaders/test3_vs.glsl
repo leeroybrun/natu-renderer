@@ -1,4 +1,5 @@
 #version 120
+#extension GL_EXT_draw_instanced: enable
 
 attribute vec3		normal;
 attribute vec3		tangent;
@@ -56,7 +57,6 @@ void main()
 	//alpha = clamp(abs(dot(normalize(normalDir), normalize(eyeDir))), gl_Color.a, 1.0);
 	//alpha = gl_Color.a;
 	//gl_FrontColor = vec4(normal, alpha);
-	
 	gl_FrontColor	= gl_Color;
 }
 

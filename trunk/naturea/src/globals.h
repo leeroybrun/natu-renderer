@@ -55,12 +55,18 @@ extern	bool					g_godraysEnabled;
 extern	bool					g_fastMode;
 extern	v4						g_light_position;
 extern	v4						g_light_direction;
+extern	bool					g_light_showDir;
 extern	bool					g_drawingReflection;
 extern	bool					g_showTextures;
 extern  bool					g_ParallaxMappingEnabled;
 extern  float					g_ParallaxScale;
 extern  float					g_ParallaxBias;
 
+extern	float					g_god_expo			  ;
+extern	float					g_god_decay			  ;
+extern	float					g_god_density		  ;
+extern	float					g_god_weight		  ;
+extern	float					g_illuminationDecay	  ;
 
 
 extern	bool					g_draw_lod0				;

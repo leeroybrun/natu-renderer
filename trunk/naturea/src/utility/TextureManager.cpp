@@ -52,9 +52,8 @@ int	TextureManager::loadTexture(string filename,string inShaderName,bool buildMi
 
 int TextureManager::loadTexture(string filename,string inShaderName, GLint unitNumber, bool buildMipmaps, GLint wrapMode, GLint filterMode, bool makeFloat)
 {
-	Texture *texture = new Texture();
+	Texture *texture = new Texture(inShaderName);
 	texture->load(filename, unitNumber, buildMipmaps, wrapMode, filterMode, makeFloat);
-	texture->inShaderName = inShaderName;
 	textures.push_back(texture);
 	return textures.size()-1;
 }

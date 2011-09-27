@@ -10,6 +10,14 @@ uniform sampler2D otex;
 uniform vec3		tintColor;
 uniform float		tintFactor;
 
+uniform	float expo;
+uniform	float decay;
+uniform	float density;
+uniform	float weight;
+uniform	float illuminationDecay;
+
+
+
 const int			NUM_SAMPLES = 30;
 const int			BLOOM_SAMPLES = 4;
 const float			bloomDistance = 0.05/BLOOM_SAMPLES;
@@ -61,25 +69,24 @@ void main(void)
 	//--------------------------------------------------------------------
 	
 	if (lightDirDOTviewDir>0.0){
-		float exposure	= 0.1/NUM_SAMPLES;
-		float decay		= 1.0;
-		float density	= 0.3;
-		float weight	= 6.0;
-		float illuminationDecay = 1.0;
+		float exposure	= expo/NUM_SAMPLES;
+		//float decay		= 1.0;
+		//float density	= 0.8;
+		//float weight	= 6.0;
+		//float illuminationDecay = 1.1;
 
 		vec2 deltaTextCoord = vec2( gl_TexCoord[0].st - lightPositionOnScreen);
 		vec2 textCoo = gl_TexCoord[0].st;
 		deltaTextCoord *= 1.0 / float(NUM_SAMPLES) * density;
-	
-
-
 		for(int i=0; i < NUM_SAMPLES ; i++)
 		{
 			textCoo -= deltaTextCoord;
 			vec4 tsample = texture2D(rtex, textCoo );
-			tsample *= illuminationDecay * weight;
-			raysColor += tsample;
-			illuminationDecay *= decay;
+			//if (length(tsample.rgb)<0.5){
+				tsample *= illuminationDecay * weight;
+				raysColor += tsample;
+				illuminationDecay *= decay;
+			//}
 		}
 		raysColor *= exposure * lightDirDOTviewDir;
 		gl_FragColor = origColor + raysColor;

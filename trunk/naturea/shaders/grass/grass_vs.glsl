@@ -3,7 +3,7 @@
 //  Grass VERTEX shader   
 //
 //==============================================================================
-#define TIME_REDUCTION 0.01
+#define TIME_REDUCTION 0.05
 varying vec3	eye;
 varying vec3	normal;
 uniform float	time;
@@ -29,17 +29,18 @@ void main()
 
 	if (gl_MultiTexCoord0.t>0.0){
 		// shift upper vertices...
-		float posWeight = 0.1;
-		dudv = (texture2D(grass_wave_texture, wind_direction*time*TIME_REDUCTION+posWeight*vertex.xz).xy - vec2(0.5))*2.0;
+		float posWeight = 0.001;
+		dudv = 0.2 * (texture2D(grass_wave_texture, wind_direction*time*TIME_REDUCTION+vertex.xz*posWeight).xy*2.0 - vec2(1.0));
+		//dudv = 0.5 * (texture2D(grass_wave_texture, vec2(time, time)).xy*2.0 - vec2(1.0));
+		
 		//dudv = vec2(wind_direction.x*sin(time+posWeight*position.x), wind_direction.y*sin(time+posWeight*position.y));
 
 	}
 	//col = vec4 (dudv*5.0, 1.0, 1.0);
-	position.x = dudv.x + position.x;
-	position.z = dudv.y + position.z;
-	gl_Position = gl_ProjectionMatrix * (position);//gl_ModelViewMatrix * gl_Vertex;
+	vertex.x = dudv.x + vertex.x;
+	vertex.z = dudv.y + vertex.z;
+	gl_Position = gl_ModelViewProjectionMatrix * (vertex);//gl_ModelViewMatrix * gl_Vertex;
 	//gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;
-	vec2 d = dudv*5.0;
 	
 	lightSpacePosition = LightMVPCameraVInverseMatrix*(position);
 	//gl_FrontColor = vec4(d*0.5+0.5, 0.0, 1.0);

@@ -44,12 +44,30 @@ Camera::~Camera() {
    glDeleteBuffers(1,&index_vbo);
 }
 
-void Camera::setPositon(float x, float y, float z) {
-	position = v3(x, y, z);
+void Camera::setPosition(float x, float y, float z) {
+	setPosition( v3(x, y, z));
 }
 
-void Camera::setPositon(v3 _v) {
+void Camera::setPosition(v3 _v) {
 	position = _v;
+	if (terrain!=NULL && mode!=FREE){
+		float x = position.x +terrain->sz_x/2.0;
+		float z = position.z +terrain->sz_y/2.0;
+		switch (mode){
+			case TERRAIN_RESTRICTED:
+				position.y = max(terrain->getHeightAt(x, z)+HUMAN_HEIGHT, position.y);
+				break;
+			case TERRAIN_CONNECTED:
+				position.y = terrain->getHeightAt(x, z)+HUMAN_HEIGHT;
+				break;
+			case WALK:
+				activityFactor += HUMAN_ACTIVITY_INCR;
+				activityFactor = min(activityFactor, HUMAN_MAX_ACTIVITY);
+				position.y = terrain->getHeightAt(x,z)+HUMAN_HEIGHT;
+
+		}
+
+	}
 }
 
 v3 Camera::getPosition(void) {
@@ -198,7 +216,8 @@ void Camera::orbitY(v3 &center, float radius, float angleDiff){
 	angle += angleDiff;
 	float cosA = cos(angle);
 	float sinA = sin(angle);
-	position = center + v3(radius*cosA,0.0,radius*sinA);
+	setPosition(center + v3(radius*cosA,0.0,radius*sinA));
+
 	setLookAtPoint(center);
 }
 
@@ -259,25 +278,8 @@ void Camera::move(v3 & dist)
 {
 		g_center = g_center + dist;
 		position = position + dist;
+		setPosition(position);
 		
-		if (terrain!=NULL && mode!=FREE){
-			float x = position.x +terrain->sz_x/2.0;
-			float z = position.z +terrain->sz_y/2.0;
-			switch (mode){
-			case TERRAIN_RESTRICTED:
-				position.y = max(terrain->getHeightAt(x, z)+HUMAN_HEIGHT, position.y);
-				break;
-			case TERRAIN_CONNECTED:
-				position.y = terrain->getHeightAt(x, z)+HUMAN_HEIGHT;
-				break;
-			case WALK:
-				activityFactor += HUMAN_ACTIVITY_INCR;
-				activityFactor = min(activityFactor, HUMAN_MAX_ACTIVITY);
-				position.y = terrain->getHeightAt(x,z)+HUMAN_HEIGHT;
-
-			}
-
-		}
 	// restrict to the world cube
 }
 

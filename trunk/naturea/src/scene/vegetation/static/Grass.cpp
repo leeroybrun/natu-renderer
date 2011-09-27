@@ -18,7 +18,7 @@ Grass::Grass(Grass* copy):
 	LCmatrixLoc = copy->LCmatrixLoc;
 	fastModeLoc	= copy->fastModeLoc;
 	shadowMappingEnabledLoc = copy->shadowMappingEnabledLoc;
-
+	textureWaveId= copy->textureWaveId;
 
 }
 Grass::~Grass(void)
@@ -107,7 +107,8 @@ void Grass::init()
 	t->setParameterI(GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
 	t->setParameterI(GL_TEXTURE_WRAP_R, GL_MIRRORED_REPEAT);
                     
-	textureWaveId = textureManager->loadTexture(GRASS_TEX_NAME, "grass_wave_tex", 1, false, GL_REPEAT, GL_NEAREST);
+	textureWaveId = textureManager->loadTexture(GRASS_WAVE_TEX_NAME, "grass_wave_texture", 1, false, GL_REPEAT, GL_LINEAR, false);
+	
 	shader->linkTexture(textureManager->getTexture(textureId));
 	shader->linkTexture(textureManager->getTexture(textureWaveId));
 	VBOdataCount = cross_vertexCount;
@@ -142,7 +143,6 @@ void Grass::init()
 		*/
 		vertices.push_back(v);
 	}
-	
 }
 
 void Grass::update(double time)
