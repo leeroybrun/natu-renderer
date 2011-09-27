@@ -42,16 +42,16 @@
 
 
 
-#define GRASS_COUNT				200
+#define GRASS_COUNT				5000
 //#define GRASS_TEX_NAME			"textures/grass/grass_01.png"
 #define GRASS_TEX_NAME			"textures/grass/grass_multitextureVert.png"
-#define GRASS_WAVE_TEX_NAME		"textures/grass/dudv_02.png"
+#define GRASS_WAVE_TEX_NAME		"textures/grass/dudv03.png"
 #define GRASS_VS_FILENAME		"shaders/grass/grass_vs.glsl"
 #define GRASS_FS_FILENAME		"shaders/grass/grass_fs.glsl"
-#define GRASS_MIN_HEIGHT		1.f
-#define GRASS_MAX_HEIGHT		5.f
-#define GRASS_MIN_DIST			0.2f
-#define GRASS_SCALE				2.f
+#define GRASS_MIN_HEIGHT		4.f
+#define GRASS_MAX_HEIGHT		10.f
+#define GRASS_MIN_DIST			0.05f
+#define GRASS_SCALE				1.f
 
 
 #define TREE1_COUNT				50
@@ -88,7 +88,7 @@
 //#define WATER_DUDV_MAP			"textures/water/water_dudv.png"
 
 #define HUMAN_SPEED				0.3f
-#define HUMAN_HEIGHT			2.f
+#define HUMAN_HEIGHT			1.8f
 #define HUMAN_BREATH_FREQ		0.6f
 #define HUMAN_BREATH_AMPL		0.08f
 #define HUMAN_ACTIVITY_DECAY    0.995f

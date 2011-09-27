@@ -11,8 +11,8 @@ public:
 	~Camera();
 	void set(Camera * _cam);
 	void setup(v3 & pos, v3 & dir, v3 &up, int *w, int *h, float fo, float n, float fa);
-	void setPositon(float x, float y, float z);
-	void setPositon(v3 _v);
+	void setPosition(float x, float y, float z);
+	void setPosition(v3 _v);
 	v3 getPosition();
 	void setDirection(float x, float y, float z);
 	void setDirection(v3 _v);

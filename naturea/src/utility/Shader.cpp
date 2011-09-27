@@ -95,7 +95,7 @@ bool Shader::loadShader(string vs_filename, string fs_filename)
 	}
 	timeLocation = glGetUniformLocation(programID, "time");
 	printf(" (time location: %i)\n", timeLocation);
-	printf("+ SUCCESS (shader ID= %i)\n", this->programID);
+	printf("+ SUCCESS [%s] (shader ID= %i)\n",this->name.c_str(), this->programID);
 
 	return true;
 }
@@ -221,6 +221,8 @@ bool Shader::loadShader(
 		pauseAndExit();
 		return false;
 	}
+	timeLocation = glGetUniformLocation(programID, "time");
+	printf(" (time location: %i)\n", timeLocation);
 	printf("+ SUCCESS (shader ID= %i)\n", this->programID);
 	return true;
 

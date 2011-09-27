@@ -72,8 +72,16 @@ GLuint pqid					= 0;
 
 GLint result_available		= 0;
 
+float	g_god_expo			= 0.1;
+float	g_god_decay			= 1.0;
+float	g_god_density		= 0.8;
+float	g_god_weight		= 6.0;
+float	g_illuminationDecay	= 1.1;
+
+
 v4 g_light_position			= LIGHT_POSITION;
 v4 g_light_direction		= LIGHT_DIRECTION;
+bool g_light_showDir		= true;
 bool g_godraysEnabled		= true;
 bool g_fastMode				= false;
 bool g_drawingReflection	= false;
@@ -121,7 +129,7 @@ bool	g_draw_dtree_lod		= true;
 bool	g_draw_lod0		= true;
 bool	g_draw_lod1		= true;
 bool	g_draw_lod2		= true;
-v4		g_lodTresholds	= v4(16, 20, 50, 60);
+v4		g_lodTresholds	= v4(15, 20, 50, 60);
 bool	g_draw_low_vegetation	= true;
 bool	g_draw_dtree			= true;
 bool	g_draw_light_direction	= false;
@@ -132,9 +140,9 @@ bool	g_draw_light_direction	= false;
 v3		g_tree_wind_direction	= v3(1.0, 0.0, 0.0);
 float	g_tree_wind_strength	= 0.0;
 v4		g_tree_wood_amplitudes	= v4(1.0, 0.8, 0.2, 0.1);
-v4		g_tree_wood_frequencies	= v4(0.0, 0.0, 0.0, 0.0);
+v4		g_tree_wood_frequencies	= v4(0.4, 1.2, 0.0, 0.0);
 float	g_tree_leaf_amplitude	= 2.4;
-float	g_tree_leaf_frequency	= 0.0;
+float	g_tree_leaf_frequency	= 5.0;
 int		g_tree_slice_count		= 3;
 float	g_tree_wave_amplitude	= 0.005;
 float	g_tree_wave_frequency	= 0.5;
@@ -145,9 +153,9 @@ float	g_tree_wave_increase_factor = 1.0;
 float	g_tree_time_offset_1	= 0.0;
 float	g_tree_time_offset_2	= 0.5;		
 
-const int	g_tree_gridSize		= 10;
-float	g_tree_mean_distance	= 10.0;
-float	g_tree_dither			= 0.0;
+const int	g_tree_gridSize		= 20;
+float	g_tree_mean_distance	= 8.0;
+float	g_tree_dither			= 3.5;
 
 float	g_leaves_MultiplyAmbient			= 1.0;
 float	g_leaves_MultiplyDiffuse			= 0.7;
@@ -636,11 +644,18 @@ void initGUI()
 	TwAddVarRW(controlBar, "z_translate", TW_TYPE_FLOAT, &(g_light_position.z), 
 	" label='z' group=Light help='z translation' ");   
 	*/
+	TwAddVarRW(controlBar, "g_god_expo			", TW_TYPE_FLOAT, &(g_god_expo			), " label='g_god_expo'				group=Light min=0 max=5 step=0.01");  
+	TwAddVarRW(controlBar, "g_god_decay			", TW_TYPE_FLOAT, &(g_god_decay			), " label='g_god_decay'			group=Light min=0 max=5 step=0.01");  
+	TwAddVarRW(controlBar, "g_god_density		", TW_TYPE_FLOAT, &(g_god_density		), " label='g_god_density'			group=Light min=0 max=5 step=0.01");  
+	TwAddVarRW(controlBar, "g_god_weight		", TW_TYPE_FLOAT, &(g_god_weight		), " label='g_god_weight'			group=Light min=0 max=5 step=0.01");  
+	TwAddVarRW(controlBar, "g_illuminationDecay	", TW_TYPE_FLOAT, &(g_illuminationDecay	), " label='g_illuminationDecay'	group=Light min=0 max=5 step=0.01"); 
+
 	TwAddVarRW(controlBar, "godrays", TW_TYPE_BOOLCPP, &(g_godraysEnabled), 
 		" label='God rays enabled' group=Light help='enable/disable god rays' ");  
 	TwAddVarRW(controlBar, "light_direction", TW_TYPE_DIR3F, &(g_light_position), 
 		" label='light direction' group=Light help='adjust direction of light' ");  
-
+	TwAddVarRW(controlBar, "light_dir", TW_TYPE_BOOLCPP, &(g_light_showDir), 
+		" label='Show direction' group=Light help='enable/disable showing lightdir' ");  
 
 	TwAddVarRW(controlBar, "fbos", TW_TYPE_BOOLCPP, &(g_showTextures), 
 		" label='Show FBOs' group=Debug help='enable/disable FBO display' "); 
@@ -669,9 +684,9 @@ void initGUI()
 	// TwAddVarRW(controlBar, "slice_count", TW_TYPE_INT32, & g_tree_slice_count, " group='Tree' min=0 max=10 step=1 ");
 
 
-	TwAddVarCB(controlBar, "Tree 2 count", TW_TYPE_INT16, cbSetTree2Count, cbGetTree2Count, NULL, " group='Vegetation' min=0 max=10000 step=1 ");
-	TwAddVarCB(controlBar, "Tree 1 count", TW_TYPE_INT16, cbSetTree1Count, cbGetTree1Count, NULL, " group='Vegetation' min=0 max=10000 step=1 ");
-	TwAddVarCB(controlBar, "Grass count", TW_TYPE_INT16, cbSetGrassCount, cbGetGrassCount, NULL, " group='Vegetation' min=0 max=10000 step=1 ");
+	TwAddVarCB(controlBar, "Tree 2 count", TW_TYPE_INT32, cbSetTree2Count, cbGetTree2Count, NULL, " group='Vegetation' min=0 max=10000 step=1 ");
+	TwAddVarCB(controlBar, "Tree 1 count", TW_TYPE_INT32, cbSetTree1Count, cbGetTree1Count, NULL, " group='Vegetation' min=0 max=10000 step=1 ");
+	TwAddVarCB(controlBar, "Grass count", TW_TYPE_INT32, cbSetGrassCount, cbGetGrassCount, NULL, " group='Vegetation' min=0 max=100000 step=1 ");
 
 	TwAddVarRW(controlBar, "Change1", TW_TYPE_FLOAT, &g_terrain_border_values.x, " group='Surfaces' label='Snow height' min=-5 max=30 step=0.5 help='Snow height' ");
 	TwAddVarRW(controlBar, "Change1a", TW_TYPE_FLOAT, &g_terrain_border_widths.x, " group='Surfaces' label='Snow-rock transition' min=0 max=5 step=0.5 help='Transition 1' ");

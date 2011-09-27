@@ -16,7 +16,7 @@ void main()
 {
 vec2 st = gl_TexCoord[0].st + vec2(0.0, 0.01);
 	vec4 tex_color = texture2D(grass_tex, st);
-	if (tex_color.a<0.1){
+	if (tex_color.a<0.5){
 		discard;
 	}
 	if (fastMode>0){

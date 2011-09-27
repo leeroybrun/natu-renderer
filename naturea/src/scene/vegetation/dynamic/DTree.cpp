@@ -1679,7 +1679,7 @@ void DTree::prepareForRender(){
 	DTreeInstanceData * act_instance = tree_instances[0] ;
 	DTreeInstanceData * next_instance;
 	act_instance->eye_dir =  act_instance->position - *g_viewer_position;
-	act_instance->distance =act_instance->eye_dir.length();
+	act_instance->distance = act_instance->eye_dir.length();
 	act_instance->eye_dir.normalize();
 	act_instance->discrepacy = g_viewer_direction->dot(act_instance->eye_dir);
 	
@@ -1693,13 +1693,12 @@ void DTree::prepareForRender(){
 		next_instance->distance= next_instance->eye_dir.length();
 		next_instance->eye_dir.normalize();
 		next_instance->discrepacy = g_viewer_direction->dot(next_instance->eye_dir);
-		if (next_instance->distance>act_instance->distance){
+		if (next_instance->distance > act_instance->distance){
 			// swap
 			tree_instances[i-1]	= next_instance;
 			tree_instances[i-1]	->index = i-1;
 			tree_instances[i]	= act_instance;
 			tree_instances[i]	->index = i;
-			
 			done_instance		= next_instance;
 			//if (i==1){ done_instance=NULL; }
 			rest_instance		= act_instance;
@@ -2224,6 +2223,15 @@ void DTree::initLOD1b()
 
 	lod1shader2->registerUniform("scale"				, UniformType::F1, & g_ParallaxScale				);
 	lod1shader2->registerUniform("bias"					, UniformType::F1, & g_ParallaxBias					);
+
+	lod1shader2->registerUniform("MultiplyAmbient",				UniformType::F1,	& g_leaves_MultiplyAmbient);
+	lod1shader2->registerUniform("MultiplyDiffuse",				UniformType::F1,	& g_leaves_MultiplyDiffuse);
+	lod1shader2->registerUniform("MultiplySpecular",			UniformType::F1,	& g_leaves_MultiplySpecular);
+	lod1shader2->registerUniform("MultiplyTranslucency",		UniformType::F1,	& g_leaves_MultiplyTranslucency);
+	lod1shader2->registerUniform("ReduceTranslucencyInShadow",	UniformType::F1,	& g_leaves_ReduceTranslucencyInShadow);
+	lod1shader2->registerUniform("shadow_intensity",			UniformType::F1,	& g_leaves_shadow_intensity);
+	lod1shader2->registerUniform("LightDiffuseColor",			UniformType::F3,	& g_leaves_LightDiffuseColor.data);
+
 
 	int i;
 	// int i = lod1shader2->registerUniform("time_offset"	, UniformType::F1, & tree_time_offset);

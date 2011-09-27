@@ -8,9 +8,14 @@ GodRays::GodRays(ShaderManager *shManager, Light *_light)
 	shaderManager = shManager;
 	int shId = shaderManager->loadShader("GodRays", GODRAYS_VS_FILENAME, GODRAYS_FS_FILENAME);
 	shader = shaderManager->getShader(shId);
-	shader->registerUniform("tintColor", UniformType::F3, g_tintColor.data);
-	shader->registerUniform("tintFactor", UniformType::F1, &g_tintFactor);
-	
+	shader->registerUniform("tintColor",	UniformType::F3, g_tintColor.data);
+	shader->registerUniform("tintFactor",	UniformType::F1, &g_tintFactor);
+	shader->registerUniform("expo",			UniformType::F1,		&g_god_expo			);
+	shader->registerUniform("decay",		UniformType::F1,		&g_god_decay		);
+	shader->registerUniform("density",		UniformType::F1,		&g_god_density		);
+	shader->registerUniform("weight",		UniformType::F1,		&g_god_weight		);
+	shader->registerUniform("illuminationDecay", UniformType::F1,	&g_illuminationDecay);
+
 
 	forRaysColorLocation = shader->getLocation("rtex");
 	originalColorLocation = shader->getLocation("otex");
