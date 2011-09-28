@@ -61,10 +61,6 @@ int g_Heightmaps			= 0;
 int g_Specularmaps			= 0;
 int g_Alphamaps				= 0;
 
-
-
-
-
 bool tqAvailable			= false;
 GLuint tqid					= 0;
 bool pqAvailable			= false;
@@ -153,9 +149,9 @@ float	g_tree_wave_increase_factor = 1.0;
 float	g_tree_time_offset_1	= 0.0;
 float	g_tree_time_offset_2	= 0.5;		
 
-const int	g_tree_gridSize		= 30;
+const int	g_tree_gridSize		= 33;
 float	g_tree_mean_distance	= 8.0;
-float	g_tree_dither			= 3.5;
+float	g_tree_dither			= 3.0;
 
 float	g_leaves_MultiplyAmbient			= 1.0;
 float	g_leaves_MultiplyDiffuse			= 0.7;

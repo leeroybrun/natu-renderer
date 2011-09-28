@@ -91,6 +91,7 @@ struct DTreeInstanceData
 	int		index;
 	float	alpha;
 	int		offset;
+	v3		colorVariance;
 };
 struct DTreeInstanceDrawData
 {
@@ -172,6 +173,7 @@ public:
 	vector<DTreeInstanceData*>			tree_instances_lod1;
 
 private:
+	int					instanceFloatCount;
 	DTreeBranch			*trunk;
 	vector<DTreeBranch*> branches;
 	vector<DTreeLeaf*>	 leaves;
@@ -255,10 +257,15 @@ private:
 	GLuint					i_paramBuffID;
 	GLuint					v_ordAttribsBuffID;
 	GLuint					v_indicesBuffID;
+
 	GLint					tmLoc0;
 	GLint					tmLoc1;
 	GLint					tmLoc2;
 	GLint					tmLoc3;
+	GLint					iaLoc1;
+	GLint					iu1Loc1;
+	GLint					iu0Loc1;
+
 	int						l2_color	;
 	int						l2_displ	;
 	int						l2_displ2	;

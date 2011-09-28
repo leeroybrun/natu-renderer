@@ -35,6 +35,8 @@ varying vec2		sliceDesc;
 
 varying mat3		TBN_Matrix;
 
+varying vec3		colorVar;
+
 uniform float		MultiplyAmbient			;
 uniform float		MultiplyDiffuse			;
 uniform float		MultiplySpecular		;
@@ -101,6 +103,7 @@ void	main()
  				-sinA	, cosA );
 	rotatedDifVec = R*difVec;
 	newPos = b0 + rotatedDifVec;
+	
 	newPos = clamp ( newPos  , vec2(0.0, 0.0), vec2(1.0, 1.0) );// + sliceDesc ) / vec2(sliceCnt,sliceSetsCnt);
 	newPos = (newPos + sliceDesc) / vec2(sliceCnt,sliceSetsCnt);
 	texCoordA = (texture2D(leaf_noise_tex, texCoordA).st*2.0 - vec2(1.0));
@@ -116,90 +119,80 @@ void	main()
 	float branchFlag = fragmentNormalBranch.w + fragmentNormalLeaf.w;
 	vec2 lookUpPos;
 	float leaf = 1.0;
-		if (branchFlag>0.5){
-			// trunk / branch 
-			leaf = 0.0;
-			fragmentNormal = fragmentNormalBranch;
-			fragmentNormal.xyz = fragmentNormal.xyz*2.0 - vec3(1.0);
-			/* pseudo-parallax mapping */
-			//float height = fragmentNormal.z;			
-			//float hsb = height * scale + bias;    
-			//vec2 normalLookUp = newPos + (hsb * eyeDir_ts.xy);
-			//
-			//fragmentNormal = texture2D( normalMap, normalLookUp );
-			lookUpPos = newPos;
-			
+	if (branchFlag>0.5){
+		// trunk / branch 
+		leaf = 0.0;
+		fragmentNormal = fragmentNormalBranch;
+		fragmentNormal.xyz = fragmentNormal.xyz*2.0 - vec3(1.0);
+		/* pseudo-parallax mapping */
+		//float height = fragmentNormal.z;			
+		//float hsb = height * scale + bias;    
+		//vec2 normalLookUp = newPos + (hsb * eyeDir_ts.xy);
+		//
+		//fragmentNormal = texture2D( normalMap, normalLookUp );
+		lookUpPos = newPos;
+		
 
-		} else {
-			// foliage
-			fragmentNormal = fragmentNormalLeaf;
-			fragmentNormal.xyz = fragmentNormal.xyz*2.0 - vec3(1.0);
-			lookUpPos = texCoord;
-			// if normal runs to the negative half-space
-			if (fragmentNormal.z<0.0){
-				fragmentNormal = -fragmentNormal;
-			}
-
+	} else {
+		// foliage
+		fragmentNormal = fragmentNormalLeaf;
+		fragmentNormal.xyz = fragmentNormal.xyz*2.0 - vec3(1.0);
+		lookUpPos = texCoord;
+		// if normal runs to the negative half-space
+		if (fragmentNormal.z<0.0){
+			fragmentNormal = -fragmentNormal;
 		}
-		if (gl_FrontFacing){
-			fragmentNormal.z = -fragmentNormal.z;
-		}
-		// float h = gl_FrontMaterial.shininess;
-		// vec3 E = -eyeDir_ts2;
-		// vec3 Refl = reflect(-lightDir_ts, normalize ( fragmentNormal.xyz ));
-		// float RdotE = max(dot(Refl, E),0.0);
-		float NdotL = clamp ( dot ( normalize ( fragmentNormal.xyz ) , normalize ( lightDir_ts ) ) , 0.0, 1.0);
-		// float NodotE = clamp ( abs(dot ( vec3(0.0, 0.0, 1.0), eyeDir_ts2 )) , 0.0, 1.0);
-		
 
-		//float spec = pow( RdotE, h );
-		//vec4 ambient = gl_LightSource[0].ambient;
-		//vec4 diffuse = gl_FrontLightProduct[0].diffuse * NdotL * NodotE;
-		//vec4 specular = gl_FrontLightProduct[0].specular * spec;
-
-		vec4 decal_color = pow(texture2D(colorMap, lookUpPos), vec4(1.5));
-
-		//vec3 translucency_in_light = translucency * other_cpvcolor.rgb * gl_LightSource[0].diffuse.rgb ;
-		vec3 final_translucency;// * (shadow_intensity * ReduceTranslucencyInShadow)* MultiplyTranslucency;
-		vec4 final_ambient = vec4(0.0);
-		vec4 final_diffuse = vec4(0.0);
-		if (leaf>0.0){
-			// leaf
-			float mNdotL = max ( -dot ( normalize ( fragmentNormal.xyz ) , normalize ( lightDir_ts ) ) , 0.0);
-			vec4 noise = texture2D(leaf_noise_tex, 0.5*fragmentNormal.xz*t);
-			float noise1f = noise.x*2.0-1.0;
-			//mNdotL += noise1f;
-			NdotL += noise1f;
-			final_translucency = decal_color.rgb * mNdotL * MultiplyTranslucency;
-			final_ambient = decal_color * gl_LightSource[0].ambient * MultiplyAmbient;
-			final_diffuse = decal_color * NdotL * gl_FrontLightProduct[0].diffuse * MultiplyDiffuse;
-		} 
-		else {
-			// branch
-			final_translucency = vec3(0.0, 0.0, 0.0);
-			final_ambient = decal_color * gl_LightSource[0].ambient * MultiplyAmbient;
-			final_diffuse = decal_color * NdotL * MultiplyDiffuse;
-		}
-		color.rgb = final_ambient.rgb + final_diffuse.rgb + final_translucency;
-		color.a = decal_color.a;
-
-		
-		
-		
+	}
+	if (gl_FrontFacing){
+		fragmentNormal.z = -fragmentNormal.z;
+	}
+	// float h = gl_FrontMaterial.shininess;
+	// vec3 E = -eyeDir_ts2;
+	// vec3 Refl = reflect(-lightDir_ts, normalize ( fragmentNormal.xyz ));
+	// float RdotE = max(dot(Refl, E),0.0);
+	float NdotL = clamp ( dot ( normalize ( fragmentNormal.xyz ) , normalize ( lightDir_ts ) ) , 0.0, 1.0);
+	// float NodotE = clamp ( abs(dot ( vec3(0.0, 0.0, 1.0), eyeDir_ts2 )) , 0.0, 1.0);
 	
-	//color.rgb = pow (color.rgb, vec3(1.5));
-	if (color.a<0.5){discard;}
+
+	//float spec = pow( RdotE, h );
+	//vec4 ambient = gl_LightSource[0].ambient;
+	//vec4 diffuse = gl_FrontLightProduct[0].diffuse * NdotL * NodotE;
+	//vec4 specular = gl_FrontLightProduct[0].specular * spec;
+
+	vec4 decal_color = pow(texture2D(colorMap, lookUpPos), vec4(1.5));
 	
+	// escape when transparent...
+	if (decal_color.a<0.5){discard;}
+
+	//vec3 translucency_in_light = translucency * other_cpvcolor.rgb * gl_LightSource[0].diffuse.rgb ;
+	vec3 final_translucency;// * (shadow_intensity * ReduceTranslucencyInShadow)* MultiplyTranslucency;
+	vec4 final_ambient = vec4(0.0);
+	vec4 final_diffuse = vec4(0.0);
+	vec3 variation = colorVar;
+	if (leaf>0.0){
+		// leaf
+		float mNdotL = max ( -dot ( normalize ( fragmentNormal.xyz ) , normalize ( lightDir_ts ) ) , 0.0);
+		vec4 noise = texture2D(leaf_noise_tex, 0.5*fragmentNormal.xz*t);
+		float noise1f = noise.x*2.0-1.0;
+		//mNdotL += noise1f;
+		NdotL += noise1f;
+		final_translucency = decal_color.rgb * mNdotL * MultiplyTranslucency;
+		final_ambient = decal_color * gl_LightSource[0].ambient * MultiplyAmbient;
+		final_diffuse = decal_color * NdotL * gl_FrontLightProduct[0].diffuse * MultiplyDiffuse;
+	} 
+	else {
+		// branch
+		final_translucency = vec3(0.0, 0.0, 0.0);
+		final_ambient = decal_color * gl_LightSource[0].ambient * MultiplyAmbient;
+		final_diffuse = decal_color * NdotL * MultiplyDiffuse;
+		variation = vec3(1.0);
+	}
+	color.rgb = variation * (final_ambient.rgb + final_diffuse.rgb + final_translucency);
 	color.a = clamp(-3.5+5.0*abs(dot(normalize(normalDir.xz), normalize(eyeDir.xz))), 0.0, 1.0);
 	color.a *= gl_Color.a;
 	//color.rgb = vec3(z*0.001);
 	gl_FragData[0] = color;
 	//gl_FragData[1] = vec4(0.0, 0.0, 0.0, 1.0);
-	gl_FragData[1] = color * vec4(0.2, 0.2, 0.2, 1.0);
-/*
-	vec4 color = vec4 (1.0, 0.0, 0.0, 1.0);
-	
-	gl_FragData[0] = color * gl_Color;
-	gl_FragData[1] = color * vec4(0.5, 0.5, 0.5, 1.0);
-*/	
+	gl_FragData[1] = color * vec4(0.2, 0.2, 0.2, 1.0);	
 }

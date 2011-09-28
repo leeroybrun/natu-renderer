@@ -24,6 +24,8 @@ uniform float ReduceTranslucencyInShadow  ;
 uniform float shadow_intensity			  ;
 uniform vec3  LightDiffuseColor			  ;
 
+uniform vec3	colorVariance;
+
 uniform vec2			window_size;
 #define SQRT6  0.40824829046386301636621401245098
 #define SQRT2  0.70710678118654752440084436210485
@@ -294,7 +296,7 @@ void colorize(out vec4 outColor, in vec3 normal, in vec3 tangent, in vec3 bitang
 	
 	vec4 final_specular = specularity * shadow_intensity * gl_FrontLightProduct[0].diffuse * MultiplySpecular;
 	//outColor = vec4(vec3(translucency),1.0);// * final_ambient.rgb + 0.0001*(final_diffuse.rgb + final_specular.rgb + final_translucency);	
-	outColor.rgb = final_ambient.rgb + final_diffuse.rgb + final_specular.rgb + final_translucency; //
+	outColor.rgb = colorVariance * (final_ambient.rgb + final_diffuse.rgb + final_specular.rgb + final_translucency); //
 	//outColor.rgb = final_specular.rgb; 
 	outColor.a = decal_color.a;
 }
