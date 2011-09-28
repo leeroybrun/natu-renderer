@@ -13,6 +13,9 @@ varying float		alpha;
 varying vec2		sliceDesc;
 uniform int			instancing;
 attribute mat4		transformMatrix;
+attribute vec3		colorVariance;
+varying vec3		colorVar;
+uniform	vec3		u_colorVariance;
 varying mat3		TBN_Matrix;
 
 void main()
@@ -24,6 +27,7 @@ void main()
 
 	if (instancing>0){
 		// drawing instances
+		colorVar	= colorVariance;
 		pos			= gl_ModelViewMatrix * transformMatrix * ( gl_Vertex * vec4(10.0, 10.0, 10.0, 1.0));	
 		mat3 T		= mat3(transformMatrix);
 		tangentDir	= (gl_NormalMatrix * T * tangent	);
@@ -32,6 +36,7 @@ void main()
 
 	} else {
 		// drawing single geometry
+		colorVar = u_colorVariance;
 		pos = gl_ModelViewMatrix * ( gl_Vertex * vec4(10.0, 10.0, 10.0, 1.0));
 		tangentDir	= (gl_NormalMatrix * tangent	);
 		normalDir	= (gl_NormalMatrix * normal		);		

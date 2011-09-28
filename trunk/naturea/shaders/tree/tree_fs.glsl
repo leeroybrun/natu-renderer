@@ -19,7 +19,7 @@ void main()
 	vec4 tex_color = texture2D(tree1_tex, gl_TexCoord[0].st);
 	//-----------------------------------------------------------
 	// 
-	if (tex_color.a<0.1){
+	if (tex_color.a<0.5){
 		discard;
 	}
 	if (fastMode>0){

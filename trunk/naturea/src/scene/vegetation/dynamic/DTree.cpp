@@ -795,7 +795,6 @@ void DTree::draw_instance_LOD0(DTreeInstanceData * instance){
 		bColorTexture->bind(GL_TEXTURE4);
 
 		// TODO: use positions
-
 		// draw branches
 		branchesEBO->draw(branchShader);
 
@@ -812,7 +811,9 @@ void DTree::draw_instance_LOD0(DTreeInstanceData * instance){
 		backTranslucencyMap	->bind(GL_TEXTURE10);
 		backHalfLife2Map	->bind(GL_TEXTURE11);
 
-		// TODO: use positions
+		// TODO: send instance attributes
+		leafShader->use(true);
+		leafShader->setUniform3f(iu0Loc1, instance->colorVariance.r,instance->colorVariance.g, instance->colorVariance.b);
 
 		// draw leaves
 		leavesVBO->draw(leafShader, GL_QUADS, 0);
@@ -865,9 +866,9 @@ void DTree::draw_instance_LOD1(DTreeInstanceData * instance){
 			lod1shader2->setTexture(l2_displ2	, displacement2Texture	->textureUnitNumber	);
 			lod1shader2->setTexture(l2_data		, jDataMap				->textureUnitNumber	);
 			lod1shader2->setTexture(l2_normal	, jNormalMap			->textureUnitNumber	);
-
+			lod1shader2->setUniform3f(iu1Loc1, instance->colorVariance.r, instance->colorVariance.g, instance->colorVariance.b);
 			lod1vbo2->bind(lod1shader2);
-
+			// set attribute
 			// draw EBO...
 			eboLOD1->bind();
 			
@@ -937,28 +938,33 @@ void DTree::draw_all_instances_LOD1(){
 			glEnableVertexAttribArray(tmLoc1);
 			glEnableVertexAttribArray(tmLoc2);
 			glEnableVertexAttribArray(tmLoc3);
-			glVertexAttribPointer(tmLoc0, 4, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 4 * 4, (void*)(0));
-			glVertexAttribPointer(tmLoc1, 4, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 4 * 4, (void*)(sizeof(float) * 4));
-			glVertexAttribPointer(tmLoc2, 4, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 4 * 4, (void*)(sizeof(float) * 8));
-			glVertexAttribPointer(tmLoc3, 4, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 4 * 4, (void*)(sizeof(float) * 12));
+			glEnableVertexAttribArray(iaLoc1);
+			glVertexAttribPointer(tmLoc0, 4, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * instanceFloatCount, (void*)(0));
+			glVertexAttribPointer(tmLoc1, 4, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * instanceFloatCount, (void*)(sizeof(float) * 4));
+			glVertexAttribPointer(tmLoc2, 4, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * instanceFloatCount, (void*)(sizeof(float) * 8));
+			glVertexAttribPointer(tmLoc3, 4, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * instanceFloatCount, (void*)(sizeof(float) * 12));
+			glVertexAttribPointer(iaLoc1, 4, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * instanceFloatCount, (void*)(sizeof(float) * 16));
 			glVertexAttribDivisor(tmLoc0, 1);
 			glVertexAttribDivisor(tmLoc1, 1);
 			glVertexAttribDivisor(tmLoc2, 1);
 			glVertexAttribDivisor(tmLoc3, 1);
+			glVertexAttribDivisor(iaLoc1, 1);
 			for (int i=0; i<instanceMatrices.size(); i++){
 				// transfer data to buffer
-				glBufferData(GL_ARRAY_BUFFER, typeIndices[i] * 16 * sizeof(float), instanceMatrices[i], GL_STREAM_DRAW);
+				glBufferData(GL_ARRAY_BUFFER, typeIndices[i] * instanceFloatCount * sizeof(float), instanceMatrices[i], GL_STREAM_DRAW);
 				int off = i*(3*3*4*sizeof(unsigned int));
 				void * offset = BUFFER_OFFSET(off);
 				// draw instanced
 				eboLOD1->drawInstanced(GL_QUADS, 3*3*4, GL_UNSIGNED_INT, offset, typeIndices[i]);  
 
 			} // for each configuration
+			glVertexAttribDivisor(iaLoc1, 0);
 			glVertexAttribDivisor(tmLoc0, 0);
 			glVertexAttribDivisor(tmLoc1, 0);
 			glVertexAttribDivisor(tmLoc2, 0);
 			glVertexAttribDivisor(tmLoc3, 0);
 			// disable all...
+			glDisableVertexAttribArray(iaLoc1);
 			glDisableVertexAttribArray(tmLoc0);
 			glDisableVertexAttribArray(tmLoc1);
 			glDisableVertexAttribArray(tmLoc2);
@@ -1839,7 +1845,17 @@ void DTree::enqueueInRenderList(DTreeInstanceData * instance){
 				instance->offset = 2;
 			} 
 			// copy matrices (and other instance attributes to array for VBO)
-			memcpy( instanceMatrices[instance->offset]+typeIndices[instance->offset]*16, instance->transformMatrix.m, 16*sizeof(float));
+				// matrices
+			memcpy( instanceMatrices[instance->offset] + typeIndices[instance->offset]*instanceFloatCount,
+					instance->transformMatrix.m,
+					16*sizeof(float)
+				  );
+				// instance attribs
+			memcpy( instanceMatrices[instance->offset] + typeIndices[instance->offset]*instanceFloatCount + 16,
+					instance->colorVariance.data,
+					3*sizeof(float)
+				  );
+
 			typeIndices[instance->offset] += 1;
 		} else
 		if (instance->distance>g_lodTresholds.x){
@@ -2078,6 +2094,8 @@ void DTree::initLOD0()
 	leafShader->registerUniform("shadow_intensity",			UniformType::F1,	& g_leaves_shadow_intensity);
 	leafShader->registerUniform("LightDiffuseColor",		UniformType::F3,	& g_leaves_LightDiffuseColor.data);
 	leafShader->registerUniform("window_size",				UniformType::F2,	& g_window_sizes.data);		
+	iu0Loc1 = leafShader->getLocation("colorVariance");
+
 
 	n_leafShader->registerUniform("branch_count",			UniformType::F1,	& this->branchCountF);
 	n_leafShader->registerUniform("time",					UniformType::F1,	& g_float_time);
@@ -2147,6 +2165,7 @@ void DTree::initLOD0()
 
 void DTree::initLOD1b()
 {
+	
 	// create slices
 
 	// create 2 sliceSets (cross, double sided)
@@ -2232,6 +2251,7 @@ void DTree::initLOD1b()
 	lod1shader2->registerUniform("shadow_intensity",			UniformType::F1,	& g_leaves_shadow_intensity);
 	lod1shader2->registerUniform("LightDiffuseColor",			UniformType::F3,	& g_leaves_LightDiffuseColor.data);
 
+	iu1Loc1 = lod1shader2->getLocation("u_colorVariance");
 
 	int i;
 	// int i = lod1shader2->registerUniform("time_offset"	, UniformType::F1, & tree_time_offset);
@@ -2613,7 +2633,8 @@ void DTree::initLOD2()
 }
 
 void DTree::init2(v4 ** positions_rotations, int count){
-	swapCnt= 0;
+	swapCnt = 0;
+	instanceFloatCount = 19;
 	/*****
 	* LOD is made of 3 slice sets... due to blending problems we need to 
 	* switch the rendering order of the sliceSets -> there are 3 types of
@@ -2647,15 +2668,18 @@ void DTree::init2(v4 ** positions_rotations, int count){
 		instance->dirA = v3( -1.0, 0.0, 0.0).getRotated( instance->rotation_y*DEG_TO_RAD, v3(0.0, 1.0, 0.0));	// A									// A
 		instance->dirB = instance->dirA.getRotated( 60 * DEG_TO_RAD, v3(0.0, 1.0, 0.0));				// B
 
-		
+		// add some instance attributes
+		instance->colorVariance = v3( randomf(.8f, 1.f), randomf(.8f, 1.f), randomf(.1f, 1.f)) * randomf(.5f, 1.f);
+
+
 		instance->alpha = 1.0;
 		instance->index = i;
 		tree_instances.push_back(instance);
 	}
 	// init instance matrices
-	instanceMatrices.push_back( new float[ 16 * count]);	// A
-	instanceMatrices.push_back( new float[ 16 * count]);	// B
-	instanceMatrices.push_back( new float[ 16 * count]);	// C
+	instanceMatrices.push_back( new float[ instanceFloatCount * count]);	// A
+	instanceMatrices.push_back( new float[ instanceFloatCount * count]);	// B
+	instanceMatrices.push_back( new float[ instanceFloatCount * count]);	// C
 	instancesInRenderQueues.push_back ( new DTreeInstanceData * [count] );		// LOD0
 	instancesInRenderQueues.push_back ( new DTreeInstanceData * [count] );		// LOD0-LOD1
 	instancesInRenderQueues.push_back ( new DTreeInstanceData * [count] );		// LOD1
@@ -2681,13 +2705,13 @@ void DTree::init2(v4 ** positions_rotations, int count){
 	tmLoc1 = tmLoc0 + 1;
 	tmLoc2 = tmLoc0 + 2;
 	tmLoc3 = tmLoc0 + 3;
-
+	iaLoc1 = lod1shader2->getAttributeLocation("colorVariance");
 	// init instance matrices VBO
 	i_matricesBuffID = 0;
 	glGenBuffers(1, &i_matricesBuffID);
 	glBindBuffer(GL_ARRAY_BUFFER, i_matricesBuffID);
 		// load data
-		glBufferData(GL_ARRAY_BUFFER, count * 16* sizeof(float), NULL, GL_STREAM_DRAW);  
+		glBufferData(GL_ARRAY_BUFFER, count * instanceFloatCount* sizeof(float), NULL, GL_STREAM_DRAW);  
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 

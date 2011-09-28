@@ -232,12 +232,13 @@ void World::drawWithAlpha(){
 	}
 	/***/
 	//p_test_model->draw();
-	p_dtree->draw2();
+	
 	if (g_draw_low_vegetation){
 		p_grass_growth->draw();
 		p_tree1_growth->draw();
 		p_tree2_growth->draw();
 	}
+	p_dtree->draw2();
 }
 
 void World::drawUnderWater(){

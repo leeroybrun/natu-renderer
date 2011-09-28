@@ -103,8 +103,8 @@ int Planter::plantVegetationCount(int _count)
 		
 		v3 candidate = realPositions[i];
 		m4 transform;
-		//transform.scale(v3(randomf(0.3f, 1.1f)));
-		//transform.rotate(v3(0.f, 1.f, 0.f), randomf(0.f, PI/4.f));
+		transform.scale(v3(randomf(0.6f, 1.0f)));
+		transform.rotate(v3(0.f, 1.f, 0.f), randomf(0.f, PI/4.f));
 		transform.translate(candidate);
 		prototype->fixTexType();
 		// transform all vertices of vegetation
