@@ -42,7 +42,7 @@
 
 
 
-#define GRASS_COUNT				50000
+#define GRASS_COUNT				500
 //#define GRASS_TEX_NAME			"textures/grass/grass_01.png"
 #define GRASS_TEX_NAME			"textures/grass/grass_multitextureVert.png"
 #define GRASS_WAVE_TEX_NAME		"textures/grass/dudv03.png"
@@ -300,6 +300,8 @@ namespace ATTRIB_NAMES
 	const static string BRANCH_ID	= "branch_index";
 	const static string WEIGHT		= "x_vals";
 }
+
+
 
 using namespace std;
 

@@ -1759,25 +1759,154 @@ void DTree::render(){
 	for (i=0; i<countRenderQueues[1]; i++){
 		instance = instancesInRenderQueues[1][i];
 		float alpha = instance->alpha;
+		float shift;
+		float c;
+		float a1;
+		float a2;
+		switch (g_lodTransition){
+			case LODTransitionMethod::HARD_SWITCH:
+				instance->alpha = 1.0;
+				if (alpha<0.5){
+					draw_instance_LOD0(instance);
+				} else {
+					draw_instance_LOD1(instance);
+				}
+				break;
+			case LODTransitionMethod::CROSS_FADE:
+				if (alpha<0.5){
+					// show LOD 1 
+					glDepthMask(GL_FALSE);
+					instance->alpha = alpha;
+					draw_instance_LOD1(instance);
+					glDepthMask(GL_TRUE);
+
+					// show LOD 0
+					instance->alpha = 1.0-alpha;
+					draw_instance_LOD0(instance);			
+				} else {			
+					// show LOD 0
+					glDepthMask(GL_FALSE);
+					instance->alpha = 1.0-alpha;
+					draw_instance_LOD0(instance);
+					glDepthMask(GL_TRUE);
+
+					// show LOD 1 
+					instance->alpha = alpha;
+					draw_instance_LOD1(instance);			
+				}
+				break;
+			case LODTransitionMethod::FADE_IN_BACKGROUND:
+				if (alpha<0.5){
+					// show LOD 1 
+					glDepthMask(GL_FALSE);
+					instance->alpha = 2*alpha;
+					draw_instance_LOD1(instance);
+					glDepthMask(GL_TRUE);
+
+					// show LOD 0
+					instance->alpha = 1.0;
+					draw_instance_LOD0(instance);			
+				} else {			
+					// show LOD 0
+					glDepthMask(GL_FALSE);
+					instance->alpha = 2.0*(1.0-alpha);
+					draw_instance_LOD0(instance);
+					glDepthMask(GL_TRUE);
+
+					// show LOD 1 
+					instance->alpha = 1.0;
+					draw_instance_LOD1(instance);			
+				}
+				break;
+			case LODTransitionMethod::SHIFTED_CROSS_FADE:
+				shift = g_transitionShift;
+				c = 1.0f/(1.f - shift);
+				a1 = min(1.f, max(0.f , alpha*c));
+				a2 = min(1.f, max(0.f, 1.f-(alpha-shift)*c));
+				if (alpha<0.5){
+					// show LOD 0
+					instance->alpha = a2;
+					draw_instance_LOD0(instance);	
+
+					// show LOD 1 
+					glDepthMask(GL_FALSE);
+					instance->alpha = a1;
+					draw_instance_LOD1(instance);
+					glDepthMask(GL_TRUE);
+
+				} else {			
+					// show LOD 1 
+					instance->alpha = a1;
+					draw_instance_LOD1(instance);	
+
+					// show LOD 0
+					//glDepthMask(GL_FALSE);
+					instance->alpha = a2;
+					draw_instance_LOD0(instance);
+					//glDepthMask(GL_TRUE);
+					
+				}
+				break;
+			case LODTransitionMethod::SHIFTED_SOFT_FADE:
+				shift = g_transitionShift;
+				c = 1.0f/(1.f - shift);
+				a1 = 1.f - (smoothTransitionCos(c*(alpha)*PI)*0.5f + 0.5f);
+				a2 = smoothTransitionCos(c*(alpha-shift)*PI)*0.5f + 0.5f;
+				if (alpha<0.5){
+					// show LOD 0
+					instance->alpha = a2;
+					draw_instance_LOD0(instance);	
+
+					// show LOD 1 
+					glDepthMask(GL_FALSE);
+					instance->alpha = a1;
+					draw_instance_LOD1(instance);
+					glDepthMask(GL_TRUE);
+
+				} else {			
+					// show LOD 1 
+					instance->alpha = a1;
+					draw_instance_LOD1(instance);	
+
+					// show LOD 0
+					glDepthMask(GL_FALSE);
+					instance->alpha = a2;
+					draw_instance_LOD0(instance);
+					glDepthMask(GL_TRUE);
+					
+				}
+				break;
+		}
+		/*
 		if (alpha<0.5){
-			// show LOD 0
-			instance->alpha = 1.0;
-			draw_instance_LOD0(instance);
-			glDepthMask(GL_FALSE);
+
 			// show LOD 1 
-			instance->alpha = 2*alpha;
+			glDepthMask(GL_FALSE);
+			instance->alpha = max(0.0f,min(1.0f,  c + alpha/c));
 			draw_instance_LOD1(instance);
 			glDepthMask(GL_TRUE);
+
+			// show LOD 0
+			instance->alpha = 1.0-alpha;
+			draw_instance_LOD0(instance);
+			
+			
 		} else {
+			
+			alpha =  max(0.0f,min(1.0f,  -c + alpha/c));
+			
 			// show LOD 0
 			glDepthMask(GL_FALSE);
-			instance->alpha = 2*(1-alpha);
+			instance->alpha = 1.0-alpha;
 			draw_instance_LOD0(instance);
 			glDepthMask(GL_TRUE);
+
 			// show LOD 1 
-			instance->alpha = 1.0;
-			draw_instance_LOD1(instance);			
+			instance->alpha = alpha;
+			draw_instance_LOD1(instance);	
+			
 		}
+		*/
 	}
 	// render LOD0 instances
 	isInstancingEnabled = false;
@@ -2669,7 +2798,7 @@ void DTree::init2(v4 ** positions_rotations, int count){
 		instance->dirB = instance->dirA.getRotated( 60 * DEG_TO_RAD, v3(0.0, 1.0, 0.0));				// B
 
 		// add some instance attributes
-		instance->colorVariance = v3( randomf(.8f, 1.f), randomf(.8f, 1.f), randomf(.1f, 1.f)) * randomf(.5f, 1.f);
+		instance->colorVariance = v3( randomf(.8f, 1.f), randomf(.8f, 1.f), randomf(.1f, 1.f)) *  randomf(.5f, 1.f);
 
 
 		instance->alpha = 1.0;
