@@ -1,18 +1,18 @@
 //-----------------------------------------------------------------------------
-//  [PGR2] PGR2-Model Viewer
-//  14/02/2011
+//  NATUR(E)AL
+//  28/09/2011
 //-----------------------------------------------------------------------------
 //  Controls: 
-//    [mouse-left]   ... scene rotation
-//    [l]            ... (re)load model
-//    [v]            ... toggle vertex TNB vectors
-//    [f]            ... toggle face normal vectors
-//    [t]            ... toggle transparency (draw transparent model parts)
-//    [w]            ... toggle wire mode
-//    [c]            ... toggle face culling
-//    [a], [A]       ... increase/decrease alpha transparency threshold
-//    [z], [Z]       ... increase/decrease scene translation along z axis
-//    [s], [S]       ... increase/decrease scene scale
+//    [mouse]		 ... look direction / select&adjust controls
+//    [w]            ... move forward
+//    [s]            ... move backward
+//    [a]            ... move left
+//    [d]            ... move right
+//    [q]            ... move up
+//    [e]            ... move down
+//    [x], [X]       ... decrease/increase the speed of movement
+//    [spacebar]     ... switch between look-by-mouse / select&control-by-mouse 
+//  
 //-----------------------------------------------------------------------------
 #define USE_ANTTWEAKBAR
 #define TEST 0
@@ -48,7 +48,7 @@ float grassmax = GRASS_MAX_HEIGHT;
 #include "World.h"
 #include "globals.h"
 
-CameraMode g_cameraMode = FREE;
+CameraMode g_cameraMode		= TERRAIN_RESTRICTED;
 int g_WinWidth				= 1280;//800	;   // Window width
 int g_WinHeight				= 720;//600;   // Window height
 v3  g_window_sizes			= v3(g_WinWidth, g_WinHeight, 0.0);
@@ -68,6 +68,7 @@ GLuint pqid					= 0;
 
 GLint result_available		= 0;
 
+float	g_bloomDivide		= 0.8;
 float	g_god_expo			= 0.1;
 float	g_god_decay			= 1.0;
 float	g_god_density		= 0.8;
@@ -122,13 +123,15 @@ GLfloat  g_AlphaThreshold       = 0.01f; // Alpha test threshold
 bool	 g_MouseModeANT			= true;
 
 bool	g_draw_dtree_lod		= true;
-bool	g_draw_lod0		= true;
-bool	g_draw_lod1		= true;
-bool	g_draw_lod2		= true;
-v4		g_lodTresholds	= v4(15, 20, 50, 60);
+bool	g_draw_lod0				= true;
+bool	g_draw_lod1				= true;
+bool	g_draw_lod2				= true;
+v4		g_lodTresholds			= v4(15, 20, 50, 60);
 bool	g_draw_low_vegetation	= true;
 bool	g_draw_dtree			= true;
 bool	g_draw_light_direction	= false;
+
+float   g_transitionShift		= 0.1;
 
 /**************************
 * DYNAMIC TREE
@@ -149,9 +152,9 @@ float	g_tree_wave_increase_factor = 1.0;
 float	g_tree_time_offset_1	= 0.0;
 float	g_tree_time_offset_2	= 0.5;		
 
-const int	g_tree_gridSize		= 33;
-float	g_tree_mean_distance	= 8.0;
-float	g_tree_dither			= 3.0;
+const int	g_tree_gridSize			= 1;			// = SQRT(count of the trees)
+float		g_tree_mean_distance	= 8.0;			// = how dense is the grid
+float		g_tree_dither			= 0.0;			// = how far can be the tree placed from its' position in grid
 
 float	g_leaves_MultiplyAmbient			= 1.0;
 float	g_leaves_MultiplyDiffuse			= 0.7;
@@ -187,7 +190,7 @@ bool	g_debug = false;
 float g_CPU_fps;
 float CPU_render_time;
 
-
+LODTransitionMethod g_lodTransition = LODTransitionMethod::FADE_IN_BACKGROUND;
 
 
 World* p_world;
@@ -507,6 +510,19 @@ void initGUI()
 	//TwAddVarRW(controlBar, "fogStart"	, TW_TYPE_FLOAT, & g_fog_start,		" label='fog start'	  min=-1000 max=1000 step=0.1");
 	//TwAddVarRW(controlBar, "fogEnd"		, TW_TYPE_FLOAT, & g_fog_end,		" label='fog end'	  min=-1000 max=1000 step=0.1");
 
+	// camera mode
+	TwEnumVal trans_mode[] = 
+	{ 
+		{ LODTransitionMethod::HARD_SWITCH				, "Hard switch"					},
+		{ LODTransitionMethod::CROSS_FADE				, "Cross fade"					},
+		{ LODTransitionMethod::FADE_IN_BACKGROUND		, "Fade in background"			},
+		{ LODTransitionMethod::SHIFTED_CROSS_FADE		, "Shifted cross fade"			},
+		{ LODTransitionMethod::SHIFTED_SOFT_FADE		, "shifted soft fade"			}
+	};
+	TwType transition_method = TwDefineEnum("LOD transition method", trans_mode, 
+		5);
+	TwAddVarRW(controlBar, "transition method", transition_method, &g_lodTransition, " group='Visibility' ");
+	TwAddVarRW(controlBar, "shift", TW_TYPE_FLOAT, & g_transitionShift, " group='Visibility' min=0 max=0.5 step=0.01");
 
 	TwAddVarRW(controlBar, "sw_tree", TW_TYPE_BOOLCPP, & g_draw_dtree, " group='Visibility' ");
 	TwAddVarRW(controlBar, "sw_lod",  TW_TYPE_BOOLCPP, & g_draw_dtree_lod, " group='Visibility'  ");
@@ -640,6 +656,9 @@ void initGUI()
 	TwAddVarRW(controlBar, "z_translate", TW_TYPE_FLOAT, &(g_light_position.z), 
 	" label='z' group=Light help='z translation' ");   
 	*/
+	TwAddVarRW(controlBar, "g_bloomDivide	"	, TW_TYPE_FLOAT, &(g_bloomDivide	), " label='g_bloomDivide'	group=Light min=-1 max=100 step=0.01"); 
+
+
 	TwAddVarRW(controlBar, "g_god_expo			", TW_TYPE_FLOAT, &(g_god_expo			), " label='g_god_expo'				group=Light min=0 max=5 step=0.01");  
 	TwAddVarRW(controlBar, "g_god_decay			", TW_TYPE_FLOAT, &(g_god_decay			), " label='g_god_decay'			group=Light min=0 max=5 step=0.01");  
 	TwAddVarRW(controlBar, "g_god_density		", TW_TYPE_FLOAT, &(g_god_density		), " label='g_god_density'			group=Light min=0 max=5 step=0.01");  

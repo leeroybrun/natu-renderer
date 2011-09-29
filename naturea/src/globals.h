@@ -16,6 +16,14 @@ enum CameraMode{
 	WALK
 };
 
+enum LODTransitionMethod{
+	HARD_SWITCH,
+	CROSS_FADE,
+	FADE_IN_BACKGROUND,  // paper by Markus Giegl & Michael Wimmer
+	SHIFTED_CROSS_FADE,	 // new ?
+	SHIFTED_SOFT_FADE	 // new ?
+};
+
 struct Statistics{
 	float	fps;
 	int		primitives;
@@ -67,6 +75,7 @@ extern	float					g_god_decay			  ;
 extern	float					g_god_density		  ;
 extern	float					g_god_weight		  ;
 extern	float					g_illuminationDecay	  ;
+extern  float					g_bloomDivide;
 
 
 extern	bool					g_draw_lod0				;
@@ -166,4 +175,7 @@ extern v3		g_tintColor ;
 extern float	g_tintFactor;
 
 extern float	g_varA;
+extern float	g_transitionShift;
+
+extern LODTransitionMethod g_lodTransition;
 #endif

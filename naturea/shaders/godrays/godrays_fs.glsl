@@ -16,9 +16,9 @@ uniform	float density;
 uniform	float weight;
 uniform	float illuminationDecay;
 
+uniform float bloomDivide;
 
-
-const int			NUM_SAMPLES = 30;
+const int			NUM_SAMPLES = 32;
 const int			BLOOM_SAMPLES = 4;
 const float			bloomDistance = 0.05/BLOOM_SAMPLES;
 uniform vec2		lightPositionOnScreen;
@@ -38,7 +38,7 @@ void main(void)
 	
 	vec4 bloom = vec4(0.0);
 	float xd,yd,l;
-	float divideFactor = 0.8 * BLOOM_SAMPLES*BLOOM_SAMPLES;
+	float divideFactor = bloomDivide * BLOOM_SAMPLES*BLOOM_SAMPLES;
 	//if (length(raysColor.xyz)<0.4){
 		for (int x=-BLOOM_SAMPLES; x<BLOOM_SAMPLES; x++){
 			for (int y=-BLOOM_SAMPLES; y<BLOOM_SAMPLES; y++){

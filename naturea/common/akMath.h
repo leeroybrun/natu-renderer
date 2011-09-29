@@ -26,5 +26,14 @@ inline float min2f(float a, float b){
 inline float max2f(float a, float b){
 	return std::max(a,b);
 }
-
+inline float smoothTransitionCos(float x){
+	if (x<0.0){
+		return 1;
+	} else {
+		if (x>PI){
+			return -1;
+		}
+		return cos(x);
+	}
+}
 #endif
