@@ -1869,10 +1869,10 @@ void DTree::render(){
 					draw_instance_LOD1(instance);	
 
 					// show LOD 0
-					glDepthMask(GL_FALSE);
+					//glDepthMask(GL_FALSE);
 					instance->alpha = a2;
 					draw_instance_LOD0(instance);
-					glDepthMask(GL_TRUE);
+					//glDepthMask(GL_TRUE);
 					
 				}
 				break;
