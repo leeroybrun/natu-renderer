@@ -9,6 +9,8 @@ uniform sampler2D backDecalMap;
 uniform sampler2D backNormalMap;
 uniform sampler2D backTranslucencyMap;
 uniform sampler2D backHalfLife2Map;
+uniform sampler2D seasonMap;
+uniform	float season;
 
 //uniform float MultiplyAmbient;
 //uniform float MultiplyDiffuse;
@@ -39,6 +41,8 @@ varying vec3			o_normal;
 varying vec3			ts_viewDir_v;
 varying vec3			ts_lightDir_v;
 
+varying float			time_offset_v;
+varying float			leafSpecificNumber;
 								  
 vec3			ts_viewDir		= normalize(ts_viewDir_v);
 vec3			ts_lightDir		= normalize(ts_lightDir_v);
@@ -206,6 +210,23 @@ void colorize(out vec4 outColor, in vec3 normal, in vec3 tangent, in vec3 bitang
 		//cpvcolor = IN.color2;
 		//other_cpvcolor = IN.color1;
 	}
+	
+	// --- Season color ---
+	vec2 seasonCoord = vec2(0.5, season + 0.1*leafSpecificNumber - 0.0001*time_offset_v);
+	
+	vec4 seasonColor =  texture2D(seasonMap, seasonCoord);
+	
+		
+	if (seasonColor.a<0.5){
+		discard;
+	}
+	decal_color.rgb += seasonColor.rgb;
+	decal_color.rgb *= colorVariance.rgb;
+	decal_color.a *= seasonColor.a;
+	translucency_color.rgb += seasonColor.rgb;
+	translucency_color.rgb *= colorVariance.rgb;
+	// --- END season color ---
+
 
 	
 	// --- Alpha Testing ---
@@ -214,7 +235,7 @@ void colorize(out vec4 outColor, in vec3 normal, in vec3 tangent, in vec3 bitang
 	{
 		discard;
 	}
-    
+    //return;
 	// --- End Alpha Testing ---
 
 
@@ -296,7 +317,7 @@ void colorize(out vec4 outColor, in vec3 normal, in vec3 tangent, in vec3 bitang
 	
 	vec4 final_specular = specularity * shadow_intensity * gl_FrontLightProduct[0].diffuse * MultiplySpecular;
 	//outColor = vec4(vec3(translucency),1.0);// * final_ambient.rgb + 0.0001*(final_diffuse.rgb + final_specular.rgb + final_translucency);	
-	outColor.rgb = colorVariance * (final_ambient.rgb + final_diffuse.rgb + final_specular.rgb + final_translucency); //
+	outColor.rgb = (final_ambient.rgb + final_diffuse.rgb + final_specular.rgb + final_translucency); //
 	//outColor.rgb = final_specular.rgb; 
 	outColor.a = decal_color.a;
 }

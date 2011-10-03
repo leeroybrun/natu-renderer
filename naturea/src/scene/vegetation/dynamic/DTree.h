@@ -91,6 +91,7 @@ struct DTreeInstanceData
 	int		index;
 	float	alpha;
 	int		offset;
+	float   time_offset;
 	v3		colorVariance;
 };
 struct DTreeInstanceDrawData
@@ -186,6 +187,7 @@ private:
 	Shader*				bLODShader;
 	Shader*				lLODShader;
 
+	Texture*			seasonMap;
 
 	Texture*			dataTexture;
 	Texture*			lColorTexture;
@@ -231,6 +233,7 @@ private:
 	int						l_displ2  ;
 	int						l_data	  ;
 	int						l_normal  ;
+	
 	v2						win_resolution;
 
 	Texture*				colorMap;
@@ -257,6 +260,7 @@ private:
 	GLuint					i_paramBuffID;
 	GLuint					v_ordAttribsBuffID;
 	GLuint					v_indicesBuffID;
+	float					time_offset;
 
 	GLint					tmLoc0;
 	GLint					tmLoc1;
@@ -271,6 +275,7 @@ private:
 	int						l2_displ2	;
 	int						l2_data		;
 	int						l2_normal	;
+	int						l2_season  ;
 	vector<DTreeSliceSet*>	sliceSets2	;
 	Shader	*				lod1shader2	;
 	int						isInstancingEnabled;

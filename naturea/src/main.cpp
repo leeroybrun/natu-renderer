@@ -131,7 +131,7 @@ bool	g_draw_low_vegetation	= true;
 bool	g_draw_dtree			= true;
 bool	g_draw_light_direction	= false;
 
-float   g_transitionShift		= 0.1;
+
 
 /**************************
 * DYNAMIC TREE
@@ -152,9 +152,9 @@ float	g_tree_wave_increase_factor = 1.0;
 float	g_tree_time_offset_1	= 0.0;
 float	g_tree_time_offset_2	= 0.5;		
 
-const int	g_tree_gridSize			= 1;			// = SQRT(count of the trees)
+const int	g_tree_gridSize			= 10;			// = SQRT(count of the trees)
 float		g_tree_mean_distance	= 8.0;			// = how dense is the grid
-float		g_tree_dither			= 0.0;			// = how far can be the tree placed from its' position in grid
+float		g_tree_dither			= 3.0;			// = how far can be the tree placed from its' position in grid
 
 float	g_leaves_MultiplyAmbient			= 1.0;
 float	g_leaves_MultiplyDiffuse			= 0.7;
@@ -186,12 +186,14 @@ v3		g_tintColor = v3(1.0, 1.0, 1.0);
 float	g_tintFactor= 1.0;
 float	g_varA = 1.0;
 
+float	g_season = 0.1;
+
 bool	g_debug = false;
 float g_CPU_fps;
 float CPU_render_time;
 
-LODTransitionMethod g_lodTransition = LODTransitionMethod::FADE_IN_BACKGROUND;
-
+LODTransitionMethod g_lodTransition = LODTransitionMethod::SHIFTED_SOFT_FADE;
+float   g_transitionShift		= 0.35;
 
 World* p_world;
 
@@ -539,6 +541,8 @@ void initGUI()
 	TwAddVarRW(controlBar, "sw_veg", TW_TYPE_BOOLCPP, & g_draw_low_vegetation, " group='Visibility'  ");
 	TwAddVarRW(controlBar, "sw_light", TW_TYPE_BOOLCPP, & g_draw_light_direction, " group='Visibility'  ");
 
+	// GENERAL
+	TwAddVarRW(controlBar, "season", TW_TYPE_FLOAT, & g_season, " group='General' min=-1 max=2 step=0.01 label='season'");
 	TwAddVarRW(controlBar, "sw_orbit", TW_TYPE_BOOLCPP, & g_orbit, " group='General' label='Orbit(ON/OFF)'");
 	TwAddVarRW(controlBar, "sw_orbit_speed", TW_TYPE_FLOAT, & g_orbit_speed, " group='General' min=-100 max=100 step=0.01 label='orbit speed'");
 	TwAddVarRW(controlBar, "sw_orbit_radius", TW_TYPE_FLOAT, & g_orbit_radius, " group='General' min=-100 max=100 step=0.1 label='orbit radius'");

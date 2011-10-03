@@ -90,7 +90,7 @@
 #define HUMAN_SPEED				0.3f
 #define HUMAN_HEIGHT			1.8f
 #define HUMAN_BREATH_FREQ		0.6f
-#define HUMAN_BREATH_AMPL		0.08f
+#define HUMAN_BREATH_AMPL		0.5f
 #define HUMAN_ACTIVITY_DECAY    0.995f
 #define HUMAN_ACTIVITY_INCR	    0.5f
 #define HUMAN_MIN_ACTIVITY	    0.5f
@@ -261,18 +261,19 @@ namespace DYN_TREE
 
 	//const static char	*TEX_FDM				= "textures/dynamic_tree/leaf2.png";
 	//const static char	*TEX_FNM				= "textures/dynamic_tree/leaf2normal.png";
-	const static char	*TEX_FDM				= "textures/dynamic_tree/habel/leaf3_decal_front.png";
-	const static char	*TEX_FNM				= "textures/dynamic_tree/habel/leaf3_normal_front.png";
-	const static char	*TEX_FTM				= "textures/dynamic_tree/habel/leaf3_translucency_front.png";
-	const static char	*TEX_FHM				= "textures/dynamic_tree/habel/leaf3_halflife2_front.png";
-	const static char	*TEX_BDM				= "textures/dynamic_tree/habel/leaf3_decal_back.png";
-	const static char	*TEX_BNM				= "textures/dynamic_tree/habel/leaf3_normal_back.png";
-	const static char	*TEX_BTM				= "textures/dynamic_tree/habel/leaf3_translucency_back.png";
-	const static char	*TEX_BHM				= "textures/dynamic_tree/habel/leaf3_halflife2_back.png";
+	const static char	*TEX_FDM				=  "textures/dynamic_tree/leaf3_decal_front.png";			//"textures/dynamic_tree/habel/leaf3_decal_front.png";
+	const static char	*TEX_FNM				=  "textures/dynamic_tree/leaf3_normal_front.png";		//"textures/dynamic_tree/habel/leaf3_normal_front.png";
+	const static char	*TEX_FTM				=  "textures/dynamic_tree/leaf3_translucency_front.png";	//"textures/dynamic_tree/habel/leaf3_translucency_front.png";
+	const static char	*TEX_FHM				=  "textures/dynamic_tree/leaf3_halflife2_front.png";		//"textures/dynamic_tree/habel/leaf3_halflife2_front.png";
+	const static char	*TEX_BDM				=  "textures/dynamic_tree/leaf3_decal_back.png";			//"textures/dynamic_tree/habel/leaf3_decal_back.png";
+	const static char	*TEX_BNM				=  "textures/dynamic_tree/leaf3_normal_back.png";			//"textures/dynamic_tree/habel/leaf3_normal_back.png";
+	const static char	*TEX_BTM				=  "textures/dynamic_tree/leaf3_translucency_back.png";	//"textures/dynamic_tree/habel/leaf3_translucency_back.png";
+	const static char	*TEX_BHM				=  "textures/dynamic_tree/leaf3_halflife2_back.png";		//"textures/dynamic_tree/habel/leaf3_halflife2_back.png";
 
 	const static int	SLICE_RESOLUTION_X		= 1024;
 	const static int	SLICE_RESOLUTION_Y		= 1024;
 
+	const static char	*SEASON_MAP				= "textures/dynamic_tree/seasonMap2.png";
 
 	const static char*  DATA_TEXTURE_NAME		= "data_tex";
 	const static string OBJT_FILENAME			= "models/OBJT/JavorListy.objt";

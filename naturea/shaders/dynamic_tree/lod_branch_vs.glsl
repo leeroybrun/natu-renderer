@@ -15,6 +15,7 @@
 //uniform sampler2D		branch_turbulence_tex;
 uniform float			branch_count;
 uniform float			time;
+uniform float			time_offset;
 uniform sampler2D		data_tex;
 uniform sampler2D		branch_noise_tex;
 uniform sampler2D		leaf_noise_tex;
@@ -28,7 +29,7 @@ attribute vec3			tangent;
 attribute vec4			x_vals;
 attribute float			branch_index;
 attribute vec2			texCoords0;
-
+varying vec2			mv_v;
 
 float				time_faster;
 varying vec3		normal_vs  ;
@@ -63,7 +64,7 @@ void animateBranchVertex(inout vec3 position)
     //vec3 animated_vertex = position;
 	
     float ttime = time;
-    float mv_time = time * 0.01;
+    float mv_time = (time+time_offset) * 0.01;
    
     //function for alpha = 0.1
 	//vec4 xvals_f = 0.3326*pow4(xvals,2.0) + 0.398924*pow4(xvals,4.0);
@@ -90,6 +91,7 @@ void animateBranchVertex(inout vec3 position)
     vec4 mv23 = texture2D(data_tex, vec2(1.5/texCols, branch_index/branch_count));
     vec2 mv0 = mv01.xy;
     vec2 mv1 = mv01.zw;
+	mv_v = mv1;
     vec2 mv2 = mv23.xy;
     vec2 mv3 = mv23.zw;
     // branch lengths
@@ -204,8 +206,6 @@ void main()
 	//normal_vs = normalize(vertex);
 	normal_vs = gl_NormalMatrix * normal_vs;
 	tangent_vs = gl_NormalMatrix * tangent_vs;
-
-
 	vPos = gl_ModelViewMatrix * vec4(vertex,1.0);
     gl_Position = gl_ModelViewProjectionMatrix * vec4(vertex,1.0);
 }

@@ -39,6 +39,9 @@ varying vec2			b0_origin;
 varying vec2			b1_origin;
 varying vec2			b2_origin;
 varying vec3			b_lengths;
+varying vec2			mv_v;
+
+varying float			leafSpecificNumber;
 
 uniform vec3			cam_dir;
 uniform vec3			cam_right;
@@ -274,7 +277,8 @@ void main()
 	//colorize(color, normal_v, tangent_v, bitangent);
 	gl_FragData[0] = color;
 	//vec3 normal;
-	gl_FragData[1] = vec4(normal_v*0.5 + vec3(0.5) , 0.0);
-	gl_FragData[2] = vec4(b0_origin*0.5+vec2(0.5),b1_origin*0.5+vec2(0.5));
+	gl_FragData[1] = vec4(normal_v*0.5 + vec3(0.5) , 0.1+leafSpecificNumber);
+	//gl_FragData[2] = vec4(b0_origin*0.5+vec2(0.5),b1_origin*0.5+vec2(0.5));
+	gl_FragData[2] = vec4(normalize(mv_v)*0.5+0.5,b1_origin*0.5+vec2(0.5));
 	
 }

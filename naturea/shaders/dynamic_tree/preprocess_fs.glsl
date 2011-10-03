@@ -7,10 +7,10 @@ uniform vec2 window_size;
 //--------------------------------------------------------------------------------------
 // Defines
 //--------------------------------------------------------------------------------------
-#define EPSILON1		100	
-#define EPSILON2		60
-#define MEPSILON		-10
-#define STEP			2.0
+#define EPSILON1		200	
+#define EPSILON2		120
+#define MEPSILON		-20
+#define STEP			3.0
 //--------------------------------------------------------------------------------------
 // Fragment Shader
 // PREPROCESS
@@ -38,8 +38,6 @@ void main()
 			dataLength = length(data);
 			// if some valid data
 			if (dataLength>0.0){
-				
-
 				// calc distance
 				dist = length(gl_TexCoord[0].xy-lookUpPos);
 				// if better than found so far... 

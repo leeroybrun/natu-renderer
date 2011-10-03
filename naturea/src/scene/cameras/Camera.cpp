@@ -61,8 +61,8 @@ void Camera::setPosition(v3 _v) {
 				position.y = terrain->getHeightAt(x, z)+HUMAN_HEIGHT;
 				break;
 			case WALK:
-				activityFactor += HUMAN_ACTIVITY_INCR;
-				activityFactor = min(activityFactor, HUMAN_MAX_ACTIVITY);
+				//activityFactor += HUMAN_ACTIVITY_INCR;
+				//activityFactor = min(activityFactor, HUMAN_MAX_ACTIVITY);
 				position.y = terrain->getHeightAt(x,z)+HUMAN_HEIGHT;
 
 		}
@@ -276,6 +276,7 @@ float Camera::getFrustumTreshold(){
 
 void Camera::move(v3 & dist)
 {
+	isWalking = true;
 		g_center = g_center + dist;
 		position = position + dist;
 		setPosition(position);
@@ -320,10 +321,21 @@ void Camera::update(double _time){
 	switch (g_cameraMode){
 		case WALK:
 		// human is calming down...
-		activityFactor *= HUMAN_ACTIVITY_DECAY;
-		activityFactor = max(activityFactor, HUMAN_MIN_ACTIVITY);
-		// calc human movement
-		human_movement.y = HUMAN_BREATH_AMPL*sin(time*activityFactor*HUMAN_BREATH_FREQ);
+			float ampl = HUMAN_BREATH_AMPL;
+			float freq = HUMAN_BREATH_FREQ;
+			if (isWalking){
+				freq = 10.0;
+				ampl = 0.2;
+				activityFactor = 1.0;
+				//activityFactor = max(activityFactor, HUMAN_MIN_ACTIVITY);
+				// calc human movement
+			}
+			//} else {
+			//	activityFactor *= HUMAN_ACTIVITY_DECAY;
+			//}
+
+		
+		isWalking = false;
 		//printf("act: %f \n", activityFactor);
 		break;
 	}

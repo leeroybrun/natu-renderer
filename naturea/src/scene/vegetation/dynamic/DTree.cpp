@@ -777,6 +777,7 @@ Vegetation* DTree::getCopy(){
 void DTree::draw_instance_LOD0(DTreeInstanceData * instance){
 	//drawNormals(instance);
 	if (g_draw_lod0){
+		time_offset = instance->time_offset;
 		glColor4f(1.0,1.0,1.0, instance->alpha);
 		
 		glDisable(GL_CULL_FACE);
@@ -810,7 +811,7 @@ void DTree::draw_instance_LOD0(DTreeInstanceData * instance){
 		backNormalMap		->bind(GL_TEXTURE9);
 		backTranslucencyMap	->bind(GL_TEXTURE10);
 		backHalfLife2Map	->bind(GL_TEXTURE11);
-
+		seasonMap			->bind(GL_TEXTURE12);
 		// TODO: send instance attributes
 		leafShader->use(true);
 		leafShader->setUniform3f(iu0Loc1, instance->colorVariance.r,instance->colorVariance.g, instance->colorVariance.b);
@@ -829,7 +830,8 @@ void DTree::draw_instance_LOD0(DTreeInstanceData * instance){
 		backTranslucencyMap	->unbind();
 		backHalfLife2Map	->unbind();
 		branchNoiseTexture->unbind();
-		dataTexture->unbind();
+		dataTexture	->unbind();
+		seasonMap	->unbind();
 		glPopMatrix();
 		glEnable(GL_CULL_FACE);
 	}
@@ -837,6 +839,7 @@ void DTree::draw_instance_LOD0(DTreeInstanceData * instance){
 
 void DTree::draw_instance_LOD1(DTreeInstanceData * instance){
 	if (g_draw_lod1){
+		time_offset = instance->time_offset;
 		//printf("draw LOD1 instance\n");
 		glColor4f(1.0,1.0,1.0, instance->alpha);
 		glPushMatrix();
@@ -860,7 +863,10 @@ void DTree::draw_instance_LOD1(DTreeInstanceData * instance){
 			displacement2Texture->bind(GL_TEXTURE3);
 			jDataMap			->bind(GL_TEXTURE4);
 			jNormalMap			->bind(GL_TEXTURE5);
+			seasonMap			->bind(GL_TEXTURE6);
 
+			lod1shader2->setTexture(l2_season	, seasonMap				->textureUnitNumber	);
+			
 			lod1shader2->setTexture(l2_color	, jColorMap				->textureUnitNumber	);
 			lod1shader2->setTexture(l2_displ	, displacementTexture	->textureUnitNumber	);			
 			lod1shader2->setTexture(l2_displ2	, displacement2Texture	->textureUnitNumber	);
@@ -918,12 +924,13 @@ void DTree::draw_all_instances_LOD1(){
 			displacement2Texture->bind(GL_TEXTURE3);
 			jDataMap			->bind(GL_TEXTURE4);
 			jNormalMap			->bind(GL_TEXTURE5);
-
+			seasonMap			->bind(GL_TEXTURE6);
 			lod1shader2->setTexture(l2_color	, jColorMap				->textureUnitNumber	);
 			lod1shader2->setTexture(l2_displ	, displacementTexture	->textureUnitNumber	);			
 			lod1shader2->setTexture(l2_displ2	, displacement2Texture	->textureUnitNumber	);
-			lod1shader2->setTexture(l2_data	, jDataMap				->textureUnitNumber	);
+			lod1shader2->setTexture(l2_data		, jDataMap				->textureUnitNumber	);
 			lod1shader2->setTexture(l2_normal	, jNormalMap			->textureUnitNumber	);
+			lod1shader2->setTexture(l2_season	, seasonMap				->textureUnitNumber	);
 			// bind element buffer
 			eboLOD1->bind();
 			// bind vertex attribute buffer
@@ -943,7 +950,9 @@ void DTree::draw_all_instances_LOD1(){
 			glVertexAttribPointer(tmLoc1, 4, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * instanceFloatCount, (void*)(sizeof(float) * 4));
 			glVertexAttribPointer(tmLoc2, 4, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * instanceFloatCount, (void*)(sizeof(float) * 8));
 			glVertexAttribPointer(tmLoc3, 4, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * instanceFloatCount, (void*)(sizeof(float) * 12));
+			// color variations, time_offset
 			glVertexAttribPointer(iaLoc1, 4, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * instanceFloatCount, (void*)(sizeof(float) * 16));
+
 			glVertexAttribDivisor(tmLoc0, 1);
 			glVertexAttribDivisor(tmLoc1, 1);
 			glVertexAttribDivisor(tmLoc2, 1);
@@ -973,11 +982,12 @@ void DTree::draw_all_instances_LOD1(){
 			eboLOD1->unbind();
 			lod1vbo2->unbind(lod1shader2);
 			
-			colorTexture		->unbind();
+			jColorMap			->unbind();
 			displacementTexture	->unbind();
 			displacement2Texture->unbind();
-			dataTexture			->unbind();
-			normalTexture		->unbind();
+			jDataMap			->unbind();
+			jNormalMap			->unbind();
+			seasonMap			->unbind();
 			// turn shader off
 		lod1shader2->use(false);
 		glEnable(GL_CULL_FACE);
@@ -1984,6 +1994,7 @@ void DTree::enqueueInRenderList(DTreeInstanceData * instance){
 					instance->colorVariance.data,
 					3*sizeof(float)
 				  );
+			instanceMatrices[instance->offset][typeIndices[instance->offset]*instanceFloatCount + 19] = instance->time_offset;
 
 			typeIndices[instance->offset] += 1;
 		} else
@@ -2076,6 +2087,11 @@ void DTree::initLOD0()
 {
 	printf("DYN_TREE init\n");
 	// load textures
+	// SEASON MAP
+	seasonMap = new Texture("seasonMap");
+	seasonMap->load(DYN_TREE::SEASON_MAP, false, false, GL_CLAMP, GL_LINEAR, GL_LINEAR);
+	seasonMap->textureUnitNumber = 6;
+	seasonMap->textureUnit = GL_TEXTURE0 + 6;
 
 	// NOISE
 	branchNoiseTexture = new Texture("branch_noise_tex"); 
@@ -2147,6 +2163,7 @@ void DTree::initLOD0()
 	leafShader->linkTexture(backNormalMap		);
 	leafShader->linkTexture(backTranslucencyMap	);
 	leafShader->linkTexture(backHalfLife2Map	);
+	leafShader->linkTexture(seasonMap			);
 
 	n_leafShader->linkTexture(branchNoiseTexture);
 	n_leafShader->linkTexture(leafNoiseTexture);
@@ -2173,13 +2190,14 @@ void DTree::initLOD0()
 	lLODShader->linkTexture(backNormalMap		);
 	lLODShader->linkTexture(backTranslucencyMap	);
 	lLODShader->linkTexture(backHalfLife2Map	);
-
+	lLODShader->linkTexture(seasonMap			);
 
 
 	// register uniforms
 	this->branchCountF = 0;
 	branchShader->registerUniform("branch_count",			UniformType::F1,	& this->branchCountF);
 	branchShader->registerUniform("time",					UniformType::F1,	& g_float_time);
+	branchShader->registerUniform("time_offset",			UniformType::F1,	& time_offset);	
 	branchShader->registerUniform("wind_direction",			UniformType::F3,	& g_tree_wind_direction.data);
 	branchShader->registerUniform("wind_strength",			UniformType::F1,	& g_tree_wind_strength);
 	branchShader->registerUniform("wood_amplitudes",		UniformType::F4,	& g_tree_wood_amplitudes.data);
@@ -2188,6 +2206,7 @@ void DTree::initLOD0()
 
 	n_branchShader->registerUniform("branch_count",			UniformType::F1,	& this->branchCountF);
 	n_branchShader->registerUniform("time",					UniformType::F1,	& g_float_time);
+	n_branchShader->registerUniform("time_offset",			UniformType::F1,	& time_offset);	
 	n_branchShader->registerUniform("wind_direction",		UniformType::F3,	& g_tree_wind_direction.data);
 	n_branchShader->registerUniform("wind_strength",		UniformType::F1,	& g_tree_wind_strength);
 	n_branchShader->registerUniform("wood_amplitudes",		UniformType::F4,	& g_tree_wood_amplitudes.data);
@@ -2198,6 +2217,7 @@ void DTree::initLOD0()
 
 	bLODShader->registerUniform("branch_count",				UniformType::F1,	& this->branchCountF);
 	bLODShader->registerUniform("time",						UniformType::F1,	& g_float_time);
+	bLODShader->registerUniform("time_offset",				UniformType::F1,	& time_offset);
 	bLODShader->registerUniform("wind_direction",			UniformType::F3,	& g_tree_wind_direction.data);
 	bLODShader->registerUniform("wind_strength",			UniformType::F1,	& g_tree_wind_strength);
 	bLODShader->registerUniform("wood_amplitudes",			UniformType::F4,	& g_tree_wood_amplitudes.data);
@@ -2209,6 +2229,7 @@ void DTree::initLOD0()
 
 	leafShader->registerUniform("branch_count",				UniformType::F1,	& this->branchCountF);
 	leafShader->registerUniform("time",						UniformType::F1,	& g_float_time);
+	leafShader->registerUniform("time_offset",				UniformType::F1,	& time_offset);
 	leafShader->registerUniform("wind_direction",			UniformType::F3,	& g_tree_wind_direction.data);
 	leafShader->registerUniform("wind_strength",			UniformType::F1,	& g_tree_wind_strength);
 	leafShader->registerUniform("wood_amplitudes",			UniformType::F4,	& g_tree_wood_amplitudes.data);
@@ -2223,11 +2244,14 @@ void DTree::initLOD0()
 	leafShader->registerUniform("shadow_intensity",			UniformType::F1,	& g_leaves_shadow_intensity);
 	leafShader->registerUniform("LightDiffuseColor",		UniformType::F3,	& g_leaves_LightDiffuseColor.data);
 	leafShader->registerUniform("window_size",				UniformType::F2,	& g_window_sizes.data);		
+	leafShader->registerUniform("season",					UniformType::F1,	& g_season);		
+	
 	iu0Loc1 = leafShader->getLocation("colorVariance");
 
 
 	n_leafShader->registerUniform("branch_count",			UniformType::F1,	& this->branchCountF);
 	n_leafShader->registerUniform("time",					UniformType::F1,	& g_float_time);
+	n_leafShader->registerUniform("time_offset",			UniformType::F1,	& time_offset);	
 	n_leafShader->registerUniform("wind_direction",			UniformType::F3,	& g_tree_wind_direction.data);
 	n_leafShader->registerUniform("wind_strength",			UniformType::F1,	& g_tree_wind_strength);
 	n_leafShader->registerUniform("wood_amplitudes",		UniformType::F4,	& g_tree_wood_amplitudes.data);
@@ -2246,6 +2270,7 @@ void DTree::initLOD0()
 
 	lLODShader->registerUniform("branch_count",				UniformType::F1,	& this->branchCountF);
 	lLODShader->registerUniform("time",						UniformType::F1,	& g_float_time);
+	lLODShader->registerUniform("time_offset",				UniformType::F1,	& time_offset);	
 	lLODShader->registerUniform("wind_direction",			UniformType::F3,	& g_tree_wind_direction.data);
 	lLODShader->registerUniform("wind_strength",			UniformType::F1,	& g_tree_wind_strength);
 	lLODShader->registerUniform("wood_amplitudes",			UniformType::F4,	& g_tree_wood_amplitudes.data);
@@ -2354,8 +2379,12 @@ void DTree::initLOD1b()
 	l2_displ2	= lod1shader2->getGLLocation("branch_noise_tex"	);
 	l2_data		= lod1shader2->getGLLocation("dataMap"			);
 	l2_normal	= lod1shader2->getGLLocation("normalMap"		);
+	l2_season	= lod1shader2->getGLLocation("seasonMap"		);
 
-	lod1shader2->registerUniform("time", UniformType::F1, & g_float_time);
+	lod1shader2->registerUniform("time"					, UniformType::F1, & g_float_time	);
+	lod1shader2->registerUniform("time_offset"			, UniformType::F1, & time_offset	);
+	lod1shader2->registerUniform("season"				, UniformType::F1, & g_season		);
+	
 	lod1shader2->registerUniform("instancing", UniformType::I1, & isInstancingEnabled);
 
 	lod1shader2->registerUniform("movementVectorA"		, UniformType::F2, & g_tree_movementVectorA			);
@@ -2379,7 +2408,6 @@ void DTree::initLOD1b()
 	lod1shader2->registerUniform("ReduceTranslucencyInShadow",	UniformType::F1,	& g_leaves_ReduceTranslucencyInShadow);
 	lod1shader2->registerUniform("shadow_intensity",			UniformType::F1,	& g_leaves_shadow_intensity);
 	lod1shader2->registerUniform("LightDiffuseColor",			UniformType::F3,	& g_leaves_LightDiffuseColor.data);
-
 	iu1Loc1 = lod1shader2->getLocation("u_colorVariance");
 
 	int i;
@@ -2673,24 +2701,24 @@ void DTree::initLOD1()
 	l_data		 = lod1shader->getGLLocation("dataMap"			);
 	l_normal	 = lod1shader->getGLLocation("normalMap"		);
 
-	lod1shader->registerUniform("time", UniformType::F1, & g_float_time);
-
-	lod1shader->registerUniform("wave_amplitude"		, UniformType::F1, & g_tree_wave_amplitude		);
-	lod1shader->registerUniform("wave_frequency"		, UniformType::F1, & g_tree_wave_frequency		);
-	lod1shader->registerUniform("movementVectorA"		, UniformType::F2, & g_tree_movementVectorA		);
-	lod1shader->registerUniform("movementVectorB"		, UniformType::F2, & g_tree_movementVectorB		);
+	lod1shader->registerUniform("time"					, UniformType::F1, & g_float_time					);
+	
+	lod1shader->registerUniform("wave_amplitude"		, UniformType::F1, & g_tree_wave_amplitude			);
+	lod1shader->registerUniform("wave_frequency"		, UniformType::F1, & g_tree_wave_frequency			);
+	lod1shader->registerUniform("movementVectorA"		, UniformType::F2, & g_tree_movementVectorA			);
+	lod1shader->registerUniform("movementVectorB"		, UniformType::F2, & g_tree_movementVectorB			);
 	lod1shader->registerUniform("wave_y_offset"			, UniformType::F1, & g_tree_wave_y_offset			);
 	lod1shader->registerUniform("wave_increase_factor"	, UniformType::F1, & g_tree_wave_increase_factor	);
-	lod1shader->registerUniform("window_size"			, UniformType::F2, & win_resolution				);
+	lod1shader->registerUniform("window_size"			, UniformType::F2, & win_resolution					);
 
 
 	lod1shader->registerUniform("wood_amplitudes"		, UniformType::F4, & g_tree_wood_amplitudes.data	);
 	lod1shader->registerUniform("wood_frequencies"		, UniformType::F4, & g_tree_wood_frequencies.data	);
-	lod1shader->registerUniform("leaf_amplitude"		, UniformType::F1, & g_tree_leaf_amplitude	);
-	lod1shader->registerUniform("leaf_frequency"		, UniformType::F1, & g_tree_leaf_frequency	);
+	lod1shader->registerUniform("leaf_amplitude"		, UniformType::F1, & g_tree_leaf_amplitude			);
+	lod1shader->registerUniform("leaf_frequency"		, UniformType::F1, & g_tree_leaf_frequency			);
 
-	int i = lod1shader->registerUniform("time_offset"	, UniformType::F1, & tree_time_offset);
-	u_time_offset = lod1shader->getUniform(i);
+	//int i = lod1shader->registerUniform("time_offset"	, UniformType::F1, & tree_time_offset);
+	//u_time_offset = lod1shader->getUniform(i);
 	
 	/*
 	shader = new Shader("test");
@@ -2763,7 +2791,7 @@ void DTree::initLOD2()
 
 void DTree::init2(v4 ** positions_rotations, int count){
 	swapCnt = 0;
-	instanceFloatCount = 19;
+	instanceFloatCount = 20;
 	/*****
 	* LOD is made of 3 slice sets... due to blending problems we need to 
 	* switch the rendering order of the sliceSets -> there are 3 types of
@@ -2798,8 +2826,8 @@ void DTree::init2(v4 ** positions_rotations, int count){
 		instance->dirB = instance->dirA.getRotated( 60 * DEG_TO_RAD, v3(0.0, 1.0, 0.0));				// B
 
 		// add some instance attributes
-		instance->colorVariance = v3( randomf(.8f, 1.f), randomf(.8f, 1.f), randomf(.1f, 1.f)) *  randomf(.5f, 1.f);
-
+		instance->colorVariance = v3( randomf(.8f, 1.f), randomf(.8f, 1.f), randomf(.9f, 1.f)) *  randomf(.8f, 1.f);
+		instance->time_offset = randomf(0.f, 1000.f); 
 
 		instance->alpha = 1.0;
 		instance->index = i;
@@ -2877,6 +2905,7 @@ BBox * DTree::getBBox()
 
 void DTree::createSlices(v3 & direction, v3 & rightVector, bool half){
 	// init data pre-processing shader
+	time_offset = 0.0;
 	Shader * dataProcessShader = new Shader("data_pre-processor");
 	dataProcessShader->loadShader(DYN_TREE::SHADER_PREPROCESS_V, DYN_TREE::SHADER_PREPROCESS_F);
 	GLint	gl_location		= dataProcessShader->getGLLocation("branchMap");
