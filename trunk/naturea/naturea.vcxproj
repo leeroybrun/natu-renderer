@@ -519,6 +519,20 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </None>
+    <None Include="textures\dynamic_tree\leaf3_decal_back.png" />
+    <None Include="textures\dynamic_tree\leaf3_decal_back.psd" />
+    <None Include="textures\dynamic_tree\leaf3_decal_front.png" />
+    <None Include="textures\dynamic_tree\leaf3_decal_front.psd" />
+    <None Include="textures\dynamic_tree\leaf3_halflife2_back.png" />
+    <None Include="textures\dynamic_tree\leaf3_halflife2_front.png" />
+    <None Include="textures\dynamic_tree\leaf3_normal_back.png" />
+    <None Include="textures\dynamic_tree\leaf3_normal_front.png" />
+    <None Include="textures\dynamic_tree\leaf3_translucency_back.png" />
+    <None Include="textures\dynamic_tree\leaf3_translucency_back.psd" />
+    <None Include="textures\dynamic_tree\leaf3_translucency_front.png" />
+    <None Include="textures\dynamic_tree\leaf3_translucency_front.psd" />
+    <None Include="textures\dynamic_tree\seasonMap.png" />
+    <None Include="textures\dynamic_tree\seasonMap2.png" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

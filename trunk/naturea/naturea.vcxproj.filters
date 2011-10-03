@@ -699,5 +699,47 @@
     <None Include="shaders\dynamic_tree\n_leaf_vs.glsl">
       <Filter>Shaders\dynaTree\debug</Filter>
     </None>
+    <None Include="textures\dynamic_tree\leaf3_decal_back.png">
+      <Filter>DATA\textures</Filter>
+    </None>
+    <None Include="textures\dynamic_tree\leaf3_decal_back.psd">
+      <Filter>DATA\textures</Filter>
+    </None>
+    <None Include="textures\dynamic_tree\leaf3_decal_front.png">
+      <Filter>DATA\textures</Filter>
+    </None>
+    <None Include="textures\dynamic_tree\leaf3_decal_front.psd">
+      <Filter>DATA\textures</Filter>
+    </None>
+    <None Include="textures\dynamic_tree\leaf3_halflife2_back.png">
+      <Filter>DATA\textures</Filter>
+    </None>
+    <None Include="textures\dynamic_tree\leaf3_halflife2_front.png">
+      <Filter>DATA\textures</Filter>
+    </None>
+    <None Include="textures\dynamic_tree\leaf3_normal_back.png">
+      <Filter>DATA\textures</Filter>
+    </None>
+    <None Include="textures\dynamic_tree\leaf3_normal_front.png">
+      <Filter>DATA\textures</Filter>
+    </None>
+    <None Include="textures\dynamic_tree\leaf3_translucency_back.png">
+      <Filter>DATA\textures</Filter>
+    </None>
+    <None Include="textures\dynamic_tree\leaf3_translucency_back.psd">
+      <Filter>DATA\textures</Filter>
+    </None>
+    <None Include="textures\dynamic_tree\leaf3_translucency_front.png">
+      <Filter>DATA\textures</Filter>
+    </None>
+    <None Include="textures\dynamic_tree\leaf3_translucency_front.psd">
+      <Filter>DATA\textures</Filter>
+    </None>
+    <None Include="textures\dynamic_tree\seasonMap.png">
+      <Filter>DATA\textures</Filter>
+    </None>
+    <None Include="textures\dynamic_tree\seasonMap2.png">
+      <Filter>DATA\textures</Filter>
+    </None>
   </ItemGroup>
 </Project>
