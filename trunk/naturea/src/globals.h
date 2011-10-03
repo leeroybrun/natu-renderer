@@ -177,5 +177,6 @@ extern float	g_tintFactor;
 extern float	g_varA;
 extern float	g_transitionShift;
 
+extern float	g_season;
 extern LODTransitionMethod g_lodTransition;
 #endif

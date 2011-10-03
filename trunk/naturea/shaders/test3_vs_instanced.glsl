@@ -32,8 +32,8 @@ void main()
 
 	lightDir_ts = normalize( (gl_LightSource[0].position).xyz * TBN_Matrix );
 
-	sliceDesc = sliceDescription;
-	gl_TexCoord[0] = vec4(texCoords0, 0.0, 0.0);
+	//sliceDesc = sliceDescription;
+	//gl_TexCoord[0] = vec4(texCoords0, 0.0, 0.0);
 
 	//alpha =clamp(-0.5 + 2.0*abs(dot(normalize(normalDir), normalize(eyeDir))), 0.0, gl_Color.a);
 	//alpha = clamp(abs(dot(normalize(normalDir), normalize(eyeDir))), gl_Color.a, 1.0);

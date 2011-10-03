@@ -416,6 +416,10 @@ void	Shader::setTexture(int location, int texUnitNumber)
 void	Shader::setUniform(Uniform * uni){
 	switch (uni->type){
 		case UniformType::F1:
+			//if (uni->name.compare( "time_offset" ) ==0){
+			//	printf("SHADER [%s], time offset: %f\n", this->name.c_str(),*((float*)uni->data));
+			//}
+
 			glUniform1f(uni->location, (*(GLfloat*)(uni->data)));
 		break;
 		case UniformType::F2:

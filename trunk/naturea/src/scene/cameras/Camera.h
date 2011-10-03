@@ -65,7 +65,7 @@ private:
 	float points[24];
 	GLuint vbo;
 	GLuint index_vbo;
-	
+	bool isWalking;
 	GLsizei* width, *height;
 	GLfloat fov, near, far;
 

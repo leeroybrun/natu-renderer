@@ -15,7 +15,7 @@
 #define EPSILON 0.0001
 uniform float			branch_count;
 uniform float			time;
-
+uniform float			time_offset;
 uniform float			time_offset_leaves;
 
 uniform sampler2D		data_tex;
@@ -37,6 +37,8 @@ attribute vec4			x_vals;
 attribute float			branch_index;
 attribute vec2			texCoords0;
 
+varying float			time_offset_v;
+
 varying vec3			normal_vs_v;
 varying vec3			tangent_vs_v;
 varying vec3			ts_viewDir_v;
@@ -53,6 +55,7 @@ varying vec3			normal_vs;
 varying vec3			tangent_vs;
 vec4					color;	
 vec3					oVec=vec3(1.0, 1.0, 1.0);
+varying float			leafSpecificNumber;			// as noise but constant for whole leaf
 
 vec4 OS2ND(in vec4 position){
 	vec4 clipSpacePosition = gl_ModelViewProjectionMatrix * position;
@@ -72,7 +75,7 @@ void animateBranchVertex(inout vec3 position)
     //vec3 animated_vertex = position;
 	
     float ttime = time;
-    float mv_time = time* 0.01;
+    float mv_time = (time+time_offset) * 0.01;
    
     //function for alpha = 0.1
 	//vec4 xvals_f = 0.3326*pow4(xvals,2.0) + 0.398924*pow4(xvals,4.0);
@@ -97,10 +100,13 @@ void animateBranchVertex(inout vec3 position)
     // motion vectors
 	vec4 mv01 = texture2D(data_tex, vec2(0.5/texCols, branch_index/branch_count));
     vec4 mv23 = texture2D(data_tex, vec2(1.5/texCols, branch_index/branch_count));
-    vec2 mv0 = mv01.xy;
-    vec2 mv1 = mv01.zw;
-    vec2 mv2 = mv23.xy;
-    vec2 mv3 = mv23.zw;
+    vec2 mv0 = normalize(mv01.xy);
+    vec2 mv1 = normalize(mv01.zw);
+    vec2 mv2 = normalize(mv23.xy);
+    vec2 mv3 = normalize(mv23.zw);
+	leafSpecificNumber = x_vals.x + x_vals.y + x_vals.z + x_vals.w + mv3.x + mv3.y;
+	leafSpecificNumber /= 6.0;
+	leafSpecificNumber = abs(leafSpecificNumber);
     // branch lengths
 	float length0 = sv0_l.w;
     float length1 = sv1_l.w;
@@ -395,7 +401,7 @@ void main()
     //vec3 tang	= tangent;
     //float bi	= branch_index;
     //vec4 x		= x_vals;
-	
+	time_offset_v = time_offset;
 	vec3 leafOrigin = vec3(0.0, 0.0, 0.0);
 	
 	animateBranchVertex(leafOrigin);

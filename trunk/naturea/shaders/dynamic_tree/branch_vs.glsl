@@ -16,6 +16,7 @@
 //uniform sampler2D		branch_turbulence_tex;
 uniform float			branch_count;
 uniform float			time;
+uniform float			time_offset;
 uniform sampler2D		data_tex;
 uniform sampler2D		branch_noise_tex;
 uniform sampler2D		leaf_noise_tex;
@@ -61,8 +62,8 @@ void animateBranchVertex(inout vec3 position)
 	vec3 br, bs, bt;
     //vec3 animated_vertex = position;
 	
-    float ttime = time;
-    float mv_time = time * 0.01;
+    //float ttime = time;
+    float mv_time = (time+time_offset) * 0.01;
    
     //function for alpha = 0.1
 	//vec4 xvals_f = 0.3326*pow4(xvals,2.0) + 0.398924*pow4(xvals,4.0);
@@ -72,9 +73,6 @@ void animateBranchVertex(inout vec3 position)
 	vec4 xvals_f = 0.374570*x_vals*x_vals + 0.129428*x_vals*x_vals*x_vals*x_vals;
     vec4 xvals_deriv = 0.749141*x_vals + 0.517713*x_vals*x_vals*x_vals;
 
-
-	
-	
 	// get coord systems from branch data texture
 	vec4 sv0_l	= texture2D(data_tex, vec2(2.5/texCols, branch_index/branch_count));
     vec4 sv1_l	= texture2D(data_tex, vec2(3.5/texCols, branch_index/branch_count));
@@ -87,10 +85,10 @@ void animateBranchVertex(inout vec3 position)
     // motion vectors
 	vec4 mv01 = texture2D(data_tex, vec2(0.5/texCols, branch_index/branch_count));
     vec4 mv23 = texture2D(data_tex, vec2(1.5/texCols, branch_index/branch_count));
-    vec2 mv0 = mv01.xy;
-    vec2 mv1 = mv01.zw;
-    vec2 mv2 = mv23.xy;
-    vec2 mv3 = mv23.zw;
+    vec2 mv0 = normalize(mv01.xy);
+    vec2 mv1 = normalize(mv01.zw);
+    vec2 mv2 = normalize(mv23.xy);
+    vec2 mv3 = normalize(mv23.zw);
     // branch lengths
 	float length0 = sv0_l.w;
     float length1 = sv1_l.w;
@@ -106,6 +104,9 @@ void animateBranchVertex(inout vec3 position)
     vec2 amp1 = wood_amplitudes.y * ( texture2D(branch_noise_tex, mv1 * mv_time * wood_frequencies.y).rg  * 2.0 - ONE2);
     vec2 amp2 = wood_amplitudes.z * ( texture2D(branch_noise_tex, mv2 * mv_time * wood_frequencies.z).rg  * 2.0 - ONE2);
     vec2 amp3 = wood_amplitudes.w * ( texture2D(branch_noise_tex, mv3 * mv_time * wood_frequencies.w).rg  * 2.0 - ONE2);
+	
+
+   
     // apply animation to the vertex.
 	//--------------------------------------------------------------------------------------
 	
@@ -127,7 +128,7 @@ void animateBranchVertex(inout vec3 position)
 		// calc wind prebend offset
 		amp0.x += dot(rv0, wind_direction) * wind_strength;
 		amp0.y += dot(sv0, wind_direction) * wind_strength;
-
+		
 		// find branch origin
 		center = centerB + x_vals.x * length0 * tv;
 		// bend function
@@ -256,6 +257,9 @@ void main()
 {
 	color		= WHITE;
     vec3 vertex = gl_Vertex.xyz;
+
+	gl_FrontColor = gl_Color;
+
     animateBranchVertex(vertex);
 
 	gl_TexCoord[0] = vec4(texCoords0, 0.0, 0.0);
@@ -268,7 +272,7 @@ void main()
 	vPos = gl_ModelViewMatrix * vec4(vertex,1.0);
 	//gl_FrontColor = vec4(gl_NormalMatrix * oVec, 1.0);
 
-	gl_FrontColor = gl_Color;
+	
     gl_Position = gl_ModelViewProjectionMatrix * vec4(vertex,1.0);
 }
 
