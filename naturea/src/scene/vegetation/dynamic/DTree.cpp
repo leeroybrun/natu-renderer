@@ -2014,7 +2014,8 @@ void DTree::makeTransition(float control, bool maskOld, DTreeInstanceData* insta
 				a1 = 1.f - (smoothTransitionCos(c*(control)*PI)*0.5f + 0.5f);
 				a2 = smoothTransitionCos(c*(control-shift)*PI)*0.5f + 0.5f;
 				if (maskOld){
-					if (control<0.5){
+					if (maskOld){
+						// show LOD 0
 						glDepthMask(GL_FALSE);
 						instance->alpha = a2;
 						(this->*drawLODA)(instance);	
@@ -2024,16 +2025,15 @@ void DTree::makeTransition(float control, bool maskOld, DTreeInstanceData* insta
 						instance->alpha = a1;
 						(this->*drawLODB)(instance);
 					} else {
-						// show LOD 0
-						glDepthMask(GL_FALSE);
+						// show LOD 0						
 						instance->alpha = a2;
-						(this->*drawLODA)(instance);
-						glDepthMask(GL_TRUE);
-
+						(this->*drawLODA)(instance);	
+						
 						// show LOD 1 
-						//
+						glDepthMask(GL_FALSE);
 						instance->alpha = a1;
-						(this->*drawLODB)(instance);	
+						(this->*drawLODB)(instance);
+						glDepthMask(GL_TRUE);
 					}
 				} else {
 					if (control<0.5){

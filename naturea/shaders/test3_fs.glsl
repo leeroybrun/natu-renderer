@@ -190,10 +190,10 @@ void	main()
 	if (leaf>0.0){
 		// leaf
 		float mNdotL = max ( -dot ( normalize ( fragmentNormal.xyz ) , normalize ( lightDir_ts ) ) , 0.0);
-		vec4 noise = texture2D(leaf_noise_tex, 0.5*vec2(1.0, leaf)*t);
+		vec4 noise = texture2D(leaf_noise_tex, vec2(1.0, leaf)*t);
 		noise1f = noise.x*2.0-1.0;
 		//mNdotL += noise1f;
-		NdotL += noise1f;
+		NdotL += 0.5*noise1f;
 		//leaf-=0.1;
 		vec2 seasonCoord = vec2(0.5, season + 0.2*leaf - 0.0001*time_offset_v);
 		vec4 seasonColor =  texture2D(seasonMap, seasonCoord);
@@ -227,7 +227,8 @@ void	main()
 	gl_FragData[0] = color;
 
 	if (leaf>0.0){
-		
+		//float k = 1.0-0.5*texture2D(leaf_noise_tex, 0.5*vec2(1.0, leaf)*t).x;
+		//gl_FragData[0] = vec4(vec3(k), 1.0);
 		gl_FragData[1] = color * vec4(0.1, 0.1, 0.1, 1.0);
 		//if (leaf<0.2){
 		//	gl_FragData[1] = vec4(1.0, 0.0, 0.0, 1.0);
