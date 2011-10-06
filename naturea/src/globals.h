@@ -49,6 +49,7 @@ struct Statistics{
 
 };
 static int g_nula = 0;
+extern	int						g_samples;
 extern	int						g_offset;
 extern	float					g_cosA	;
 extern	float					g_cosB	;

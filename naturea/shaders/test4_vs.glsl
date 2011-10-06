@@ -31,16 +31,16 @@ void main()
 	vec3 tangentDir;
 	vec3 bitangent;
 	bitangent		= cross(normal, tangent);
-	float mv_time;
+	//float mv_time;
 	
 	// = wood_amplitudes.y * ( texture2D(branch_noise_tex, mv1 * mv_time * wood_frequencies.y).rg  * 2.0 - vec2(1.0));
-	vec2 mv1 = normalize(vec2(0.33, 0.47));
-	float amplitude = 3.0;
+	//vec2 mv1 = normalize(vec2(0.33, 0.47));
+	//float amplitude = 3.0;
 	if (instancing>0){
 		// drawing instances
-		colorVar		= colorVariance.rgb;
-		time_offset_v	= colorVariance.a;
-		mv_time = 0.01 * (time+time_offset_v);
+		colorVar	= colorVariance.rgb;
+		time_offset_v = colorVariance.a;
+		//mv_time = 0.01 * (time+time_offset_v);
 		
 		pos			=  ( gl_Vertex * vec4(10.0, 10.0, 10.0, 1.0));	
 		//pos.xz		+= texCoords0.y * amplitude * wood_amplitudes.x * (texture2D(branch_noise_tex, 0.01 * pos.xz + mv1 * mv_time * wood_frequencies.x).xy*2.0-vec2(1.0));
@@ -54,7 +54,7 @@ void main()
 		// drawing single geometry
 		colorVar	= u_colorVariance;
 		time_offset_v = time_offset;
-		mv_time		= 0.01 * (time+time_offset);
+		//mv_time		= 0.01 * (time+time_offset);
 		pos			=  gl_Vertex * vec4(10.0, 10.0, 10.0, 1.0);
 		//pos.xz		+= texCoords0.y * amplitude * wood_amplitudes.x * (texture2D(branch_noise_tex, 0.01 * pos.xz + mv1 * mv_time * wood_frequencies.x).xy*2.0-vec2(1.0));
 		pos			= gl_ModelViewMatrix * pos;
@@ -71,15 +71,18 @@ void main()
     TBN_Matrix[2]	=  normalDir; 
 
 	vec3 lpos		= (gl_LightSource[0].position).xyz;
-	lightDir_ts		= normalize( lpos )		* TBN_Matrix ;
-	eyeDir_ts		= normalize( pos.xyz )	* TBN_Matrix;
+	lightDir_ts		= normalize( lpos ) * TBN_Matrix ;
+	eyeDir_ts		= normalize( pos.xyz ) * TBN_Matrix;
 
 	gl_Position		= gl_ProjectionMatrix * pos;
 	eyeDir			= pos.xyz;
 	sliceDesc		= sliceDescription;
 	gl_TexCoord[0]	= vec4(texCoords0, 0.0, 0.0);
 
-	alpha = clamp(-3.0+5.0*abs(dot(normalize(normalDir.xz), normalize(eyeDir.xz))), 0.0, 1.0);	
+
+
+	//alpha = 0.5;
+	alpha = clamp(-2.0+5.0*abs(dot(normalize(normalDir.xz), normalize(eyeDir.xz))), 0.0, 1.0);	
 	//alpha =clamp(-0.5 + 2.0*abs(dot(normalize(normalDir), normalize(eyeDir))), 0.0, gl_Color.a);
 	//alpha = clamp(abs(dot(normalize(normalDir), normalize(eyeDir))), gl_Color.a, 1.0);
 	//alpha = gl_Color.a;

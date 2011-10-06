@@ -54,7 +54,9 @@ void	main()
 	vec3 eyeDir_ts2 = normalize(eyeDir_ts);
 	float sizeFactor = 1.5/max(window_size.x, window_size.y);
 
-	float t			= (time+time_offset_v)*20.0*leaf_frequency*sizeFactor;
+	float dist = gl_FragCoord.z;
+	float inv_dist = 1.0/dist;
+	float t			= inv_dist*10.0*(time+time_offset_v)*leaf_frequency*sizeFactor;
 	vec2 movVectorA = movementVectorA;
 	vec2 movVectorB = movementVectorB;
 
@@ -72,10 +74,10 @@ void	main()
 	vec2 texCoordB	= fpos+t*movVectorB; // gl_TexCoord[0].st+t*movVectorB;
 	
 	vec2 oneV2 = vec2(1.0);
-	//vec2 b0 = texture2D(dataMap, fpos).xy;
+	vec2 b0 = vec2(0.5,0.0);
 	vec2 b1 = texture2D(dataMap, fpos).zw;
 
-	//float dist0 = min (1.0, 2.0 * length(texC - b0)) ; // / branchProjectedLength
+	float dist0 = min (1.0, 2.0 * length(texC - b0)) ; // / branchProjectedLength
 	float dist1 = min (1.0, 5.0 * length(texC - b1)); // / branchProjectedLength
 
 	vec4 color;
@@ -86,13 +88,13 @@ void	main()
 	mat2 R;
 	vec2 rotatedDifVec;
 	vec2 newPos = texC;
-	float ti = time*sizeFactor*5.0;
-	//vec2 si = sizeFactor* 100.0 * wood_amplitudes.xy;
+	float ti = (time+time_offset_v)*sizeFactor*10.0;
+	vec2 si = sizeFactor* 100.0 * wood_amplitudes.xy;
 	float d = length(b1-vec2(0.5));
 
 	if ((d>0.01)){
-		angle = dist1 * (amp1.x+amp1.y) * sizeFactor * 200;
-		//angle = dist1*(texture2D(branch_noise_tex, (ti * b1 * wood_frequencies.y)).s*2.0 - 1.0)  * si.y * 2.0;
+		//angle = dist1 * (amp1.x+amp1.y) * sizeFactor * 200;
+		angle = dist1*(texture2D(branch_noise_tex, (ti * b1 * wood_frequencies.y)).s*2.0 - 1.0)  * si.y * 2.0;
 		//angle = (texture2D(branch_noise_tex, (ti * b1 * wood_frequencies.y)).s*2.0 - 1.0) * si.y;
 		
 		cosA = cos (angle); 
@@ -104,14 +106,14 @@ void	main()
 		newPos = b1 + rotatedDifVec;
 	}
 	
-	//angle = dist0 * (texture2D(branch_noise_tex, (ti * b0 * wood_frequencies.x)).s*2.0-1.0) * si.x * 0.5;
-	//cosA = cos (angle); 
-	//sinA = sin (angle);
-	//difVec = (newPos - b0);
-	//R = mat2(	 cosA	, sinA,
- 	//			-sinA	, cosA );
-	//rotatedDifVec = R*difVec;
-	//newPos = b0 + rotatedDifVec;
+	angle = dist0 * (texture2D(branch_noise_tex, (ti * b0 * wood_frequencies.x)).s*2.0-1.0) * si.x * 0.5;
+	cosA = cos (angle); 
+	sinA = sin (angle);
+	difVec = (newPos - b0);
+	R = mat2(	 cosA	, sinA,
+ 				-sinA	, cosA );
+	rotatedDifVec = R*difVec;
+	newPos = b0 + rotatedDifVec;
 	
 	newPos = clamp ( newPos  , vec2(0.0, 0.0), vec2(1.0, 1.0) );// + sliceDesc ) / vec2(sliceCnt,sliceSetsCnt);
 	newPos = (newPos + sliceDesc) / vec2(sliceCnt,sliceSetsCnt);
@@ -187,7 +189,7 @@ void	main()
 		//mNdotL += noise1f;
 		NdotL += noise1f;
 		//leaf-=0.1;
-		vec2 seasonCoord = vec2(0.5, season + 0.1*leaf - 0.0001*time_offset_v);
+		vec2 seasonCoord = vec2(0.5, season + 0.2*leaf - 0.0001*time_offset_v);
 		
 		vec4 seasonColor =  texture2D(seasonMap, seasonCoord);
 		if (seasonColor.a<0.5){
@@ -196,7 +198,7 @@ void	main()
 		decal_color.rgb += seasonColor.rgb;
 		decal_color.rgb *= colorVar;
 		decal_color.a *= seasonColor.a;
-		final_translucency = decal_color.rgb * mNdotL * MultiplyTranslucency;
+		final_translucency = decal_color.rgb * mNdotL * 0.6 * MultiplyTranslucency;
 		final_ambient = decal_color * gl_LightSource[0].ambient * MultiplyAmbient;
 		final_diffuse = decal_color * NdotL * gl_FrontLightProduct[0].diffuse * MultiplyDiffuse;
 	} 
@@ -219,12 +221,15 @@ void	main()
 	// fade LOD
 	color.a *= gl_Color.a;
 
+	//if (length(color.rgb)<0.1){
+	//	color.rgb = vec3(1.0, 0.0, 0.0);
+	//}
 	
 	//color.rgb = vec3(z*0.001);
 	gl_FragData[0] = color;
 	//gl_FragData[1] = vec4(0.0, 0.0, 0.0, 1.0);
 	if (leaf>0.0){
-		gl_FragData[1] = color * vec4(0.2, 0.2, 0.2, 1.0);
+		gl_FragData[1] = color * vec4(0.1, 0.1, 0.1, 1.0);
 	} else {
 		gl_FragData[1] = vec4(0.0, 0.0, 0.0, 1.0);	
 	}	
