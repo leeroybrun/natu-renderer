@@ -776,6 +776,7 @@ Vegetation* DTree::getCopy(){
 
 void DTree::draw_instance_LOD0(DTreeInstanceData * instance){
 	//drawNormals(instance);
+	
 	if (g_draw_lod0){
 		time_offset = instance->time_offset;
 		glColor4f(1.0,1.0,1.0, instance->alpha);
@@ -903,7 +904,7 @@ void DTree::draw_instance_LOD1(DTreeInstanceData * instance){
 }
 
 void DTree::draw_all_instances_LOD1(){
-	
+	g_transitionControl = 1.0;
 	if (g_draw_lod1){
 		glColor4f(1.0, 1.0, 1.0, 1.0);	
 		int i, j, sliceCount, setCount=sliceSets2.size();
@@ -1064,7 +1065,7 @@ void DTree::draw_instance_LOD2(DTreeInstanceData * instance){
 }
 
 void DTree::draw_all_instances_LOD2(){
-	if (g_draw_lod1){
+	if (g_draw_lod2){
 		glColor4f(1.0, 1.0, 1.0, 1.0);	
 		
 		glDisable(GL_CULL_FACE);
@@ -1896,6 +1897,7 @@ void DTree::makeTransition(float control, bool maskOld, DTreeInstanceData* insta
 	float c;
 	float a1;
 	float a2;
+	g_transitionControl = control;
 	switch (g_lodTransition){
 			case LODTransitionMethod::HARD_SWITCH:
 				instance->alpha = 1.0;
@@ -2011,9 +2013,8 @@ void DTree::makeTransition(float control, bool maskOld, DTreeInstanceData* insta
 				c = 1.0f/(1.f - shift);
 				a1 = 1.f - (smoothTransitionCos(c*(control)*PI)*0.5f + 0.5f);
 				a2 = smoothTransitionCos(c*(control-shift)*PI)*0.5f + 0.5f;
-				if (control<0.5){
-					if (maskOld){
-						// show LOD 0
+				if (maskOld){
+					if (control<0.5){
 						glDepthMask(GL_FALSE);
 						instance->alpha = a2;
 						(this->*drawLODA)(instance);	
@@ -2023,21 +2024,6 @@ void DTree::makeTransition(float control, bool maskOld, DTreeInstanceData* insta
 						instance->alpha = a1;
 						(this->*drawLODB)(instance);
 					} else {
-						// show LOD 0						
-						instance->alpha = a2;
-						(this->*drawLODA)(instance);	
-						
-						// show LOD 1 
-						glDepthMask(GL_FALSE);
-						instance->alpha = a1;
-						(this->*drawLODB)(instance);
-						glDepthMask(GL_TRUE);
-					}
-
-				} else {			
-					if (maskOld){
-						
-
 						// show LOD 0
 						glDepthMask(GL_FALSE);
 						instance->alpha = a2;
@@ -2048,21 +2034,29 @@ void DTree::makeTransition(float control, bool maskOld, DTreeInstanceData* insta
 						//
 						instance->alpha = a1;
 						(this->*drawLODB)(instance);	
-						//
-					} else {
-						// show LOD 1 
-						
-						instance->alpha = a1;
-						(this->*drawLODB)(instance);	
-						
-
-						// show LOD 0
-						glDepthMask(GL_FALSE);
-						instance->alpha = a2;
-						(this->*drawLODA)(instance);
-						glDepthMask(GL_TRUE);
 					}
-					
+				} else {
+					if (control<0.5){
+						glDepthMask(GL_FALSE);
+						// show LOD 1 
+						instance->alpha = a1;						
+						(this->*drawLODB)(instance);
+						glDepthMask(GL_TRUE);
+						// show LOD 0	
+						instance->alpha = a2;
+						(this->*drawLODA)(instance);	
+					} else {
+						glDepthMask(GL_FALSE);
+						// show LOD 1 
+						instance->alpha = a1;						
+						(this->*drawLODB)(instance);
+						glDepthMask(GL_TRUE);
+						// show LOD 0	
+						instance->alpha = a2;
+						(this->*drawLODA)(instance);	
+						
+						
+					}
 				}
 				break;
 		}
@@ -2098,6 +2092,7 @@ void DTree::render(){
 		instance = instancesInRenderQueues[0][i];
 		// show LOD 0
 		instance->alpha = 1.0;
+		g_transitionControl = 0.0;
 		draw_instance_LOD0(instance);	
 	}
 
@@ -2452,6 +2447,7 @@ void DTree::initLOD0()
 	leafShader->registerUniform("LightDiffuseColor",		UniformType::F3,	& g_leaves_LightDiffuseColor.data);
 	leafShader->registerUniform("window_size",				UniformType::F2,	& g_window_sizes.data);		
 	leafShader->registerUniform("season",					UniformType::F1,	& g_season);		
+	leafShader->registerUniform("transition_control",		UniformType::F1,	& g_transitionControl);		
 	
 	iu0Loc1 = leafShader->getLocation("colorVariance");
 
@@ -2572,7 +2568,7 @@ void DTree::initLOD1b()
 	// create mipmaps
 	jColorMap->generateMipmaps();
 	jNormalMap->generateMipmaps();
-	//jColorMap->setParameterI(GL_TEXTURE_SAMPLES, GL_LINEAR_MIPMAP_LINEAR);
+	jNormalMap->setParameterI(GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
 	
 	// init shaders
 	lod1shader2 = new Shader("test");
@@ -2593,7 +2589,10 @@ void DTree::initLOD1b()
 	lod1shader2->registerUniform("time_offset"			, UniformType::F1, & time_offset	);
 	lod1shader2->registerUniform("season"				, UniformType::F1, & g_season		);
 	
-	lod1shader2->registerUniform("instancing", UniformType::I1, & isInstancingEnabled);
+	lod1shader2->registerUniform("instancing"			, UniformType::I1, & isInstancingEnabled);
+
+	lod1shader2->registerUniform("shift"				, UniformType::F1, & g_transitionShift);
+	lod1shader2->registerUniform("transition_control"	, UniformType::F1, & g_transitionControl);
 
 	lod1shader2->registerUniform("movementVectorA"		, UniformType::F2, & g_tree_movementVectorA			);
 	lod1shader2->registerUniform("movementVectorB"		, UniformType::F2, & g_tree_movementVectorB			);
@@ -3034,7 +3033,9 @@ void DTree::initLOD2()
 	lod2branch2->generateMipmaps();
 	lod2normal1->generateMipmaps();
 	lod2normal2->generateMipmaps();
-
+	lod2normal1->setParameterI(GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
+	lod2normal2->setParameterI(GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
+	
 
 
 	//jColorMap->setParameterI(GL_TEXTURE_SAMPLES, GL_LINEAR_MIPMAP_LINEAR);

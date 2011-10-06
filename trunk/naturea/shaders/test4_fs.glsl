@@ -57,7 +57,7 @@ void	main()
 	vec2 fpos	= gl_TexCoord[0].st;
 	vec4 color;
 	float sizeFactor = 1.5/max(window_size.x, window_size.y)*0.5;
-	float t	= inv_dist*(time+time_offset_v)*leaf_frequency*sizeFactor;
+	float t	= 5.0*(time+time_offset_v)*leaf_frequency*sizeFactor;
 	vec2 texCoordA	= fpos+t*movementVectorA;
 	vec2 texCoordB	= fpos+t*movementVectorB;
 	texCoordA = (texture2D(leaf_noise_tex, texCoordA).st*2.0 - vec2(1.0));
@@ -106,12 +106,6 @@ void	main()
  				-sinA	, cosA );
 	rotatedDifVec = R*difVec;
 	newPos = b0 + rotatedDifVec;
-
-
-
-
-
-
 	vec2 texCoord = newPos + noiseOffset ;
 	vec4 fragmentNormalLeaf  ;
 	vec4 fragmentNormalBranch;
@@ -173,7 +167,7 @@ void	main()
 	
 		// leaf
 		float mNdotL = max ( -dot ( normalize ( fragmentNormal.xyz ) , normalize ( lightDir_ts ) ) , 0.0);
-		vec4 noise = texture2D(leaf_noise_tex, 0.5*fragmentNormal.xz*t);
+		vec4 noise = texture2D(leaf_noise_tex, 0.5*vec2(1.0, leaf)*t);
 		float noise1f = noise.x*2.0-1.0;
 		//mNdotL += noise1f;
 		NdotL += noise1f;

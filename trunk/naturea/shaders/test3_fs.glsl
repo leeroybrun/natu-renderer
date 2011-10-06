@@ -21,6 +21,8 @@ uniform vec4		wood_amplitudes;
 uniform vec4		wood_frequencies;
 uniform float		leaf_amplitude;
 uniform float		leaf_frequency;
+uniform float		shift;
+uniform float		transition_control;
 
 varying vec3		eyeDir;
 varying vec3		normalDir;
@@ -56,7 +58,7 @@ void	main()
 
 	float dist = gl_FragCoord.z;
 	float inv_dist = 1.0/dist;
-	float t			= inv_dist*10.0*(time+time_offset_v)*leaf_frequency*sizeFactor;
+	float t			= 10.0*(time+time_offset_v)*leaf_frequency*sizeFactor;
 	vec2 movVectorA = movementVectorA;
 	vec2 movVectorB = movementVectorB;
 
@@ -123,12 +125,12 @@ void	main()
 	//newPos = fpos;
 	vec4 fragmentNormal;
 	vec2 noiseOffset = (texCoordA+texCoordB)*sizeFactor*leaf_amplitude*0.5 / sliceCnt;
-
+	
 	vec2 texCoord = newPos + noiseOffset ;
 	vec4 fragmentNormalLeaf = texture2D(normalMap, texCoord);
 	vec4 fragmentNormalBranch = texture2D(normalMap, newPos);
 	float branchFlag = fragmentNormalBranch.w + fragmentNormalLeaf.w;
-	vec2 lookUpPos;
+	vec2 lookUpPos = newPos;
 	float leaf = 1.0;
 	if (branchFlag<0.1){
 		// trunk / branch 
@@ -141,14 +143,16 @@ void	main()
 		//vec2 normalLookUp = newPos + (hsb * eyeDir_ts.xy);
 		//
 		//fragmentNormal = texture2D( normalMap, normalLookUp );
-		lookUpPos = newPos;
+		//lookUpPos = newPos;
 		
 
 	} else {
 		// foliage
 		fragmentNormal = fragmentNormalLeaf;
 		fragmentNormal.xyz = fragmentNormal.xyz*2.0 - vec3(1.0);
+		
 		lookUpPos = texCoord;
+		
 		leaf = (1.0/0.9)*(fragmentNormal.w-0.1);
 		// if normal runs to the negative half-space
 		if (fragmentNormal.z<0.0){
@@ -156,6 +160,7 @@ void	main()
 		}
 		
 	}
+	//fragmentNormal = fragmentNormalBranch;
 	if (gl_FrontFacing){
 		fragmentNormal.z = -fragmentNormal.z;
 	}
@@ -174,23 +179,23 @@ void	main()
 	vec4 decal_color = texture2D(colorMap, lookUpPos);
 	
 	// escape when transparent...
-	if (decal_color.a<0.5){discard;}
+	if (decal_color.a<0.75){discard;}
 
 	//vec3 translucency_in_light = translucency * other_cpvcolor.rgb * gl_LightSource[0].diffuse.rgb ;
 	vec3 final_translucency;// * (shadow_intensity * ReduceTranslucencyInShadow)* MultiplyTranslucency;
 	vec4 final_ambient = vec4(0.0);
 	vec4 final_diffuse = vec4(0.0);
 	//vec3 variation = colorVar;
+	float noise1f = 0.0;
 	if (leaf>0.0){
 		// leaf
 		float mNdotL = max ( -dot ( normalize ( fragmentNormal.xyz ) , normalize ( lightDir_ts ) ) , 0.0);
-		vec4 noise = texture2D(leaf_noise_tex, 0.5*fragmentNormal.xz*t);
-		float noise1f = noise.x*2.0-1.0;
+		vec4 noise = texture2D(leaf_noise_tex, 0.5*vec2(1.0, leaf)*t);
+		noise1f = noise.x*2.0-1.0;
 		//mNdotL += noise1f;
 		NdotL += noise1f;
 		//leaf-=0.1;
 		vec2 seasonCoord = vec2(0.5, season + 0.2*leaf - 0.0001*time_offset_v);
-		
 		vec4 seasonColor =  texture2D(seasonMap, seasonCoord);
 		if (seasonColor.a<0.5){
 			discard;
@@ -204,33 +209,30 @@ void	main()
 	} 
 	else {
 		// branch
+		//NdotL = clamp(NdotL, 0.2, 1.0);
 		//decal_color = vec4(1.0, 0.0, .0, 1.0); // debug
 		final_translucency = vec3(0.0, 0.0, 0.0);
 		final_ambient = decal_color * gl_LightSource[0].ambient * MultiplyAmbient;
 		final_diffuse = decal_color * NdotL * MultiplyDiffuse;
-		//variation = vec3(1.0);
-		gl_FragData[1] = vec4(0.0, 0.0, 0.0, 1.0);	
 	}
 	color.rgb = final_ambient.rgb + final_diffuse.rgb + final_translucency;
 	//color.rgb = (final_ambient.rgb + final_diffuse.rgb + final_translucency);
 	
 	color.a = alpha;
-	// see thru... :D
-	//if (color.a<0.5){discard;}
 
 	// fade LOD
 	color.a *= gl_Color.a;
 
-	//if (length(color.rgb)<0.1){
-	//	color.rgb = vec3(1.0, 0.0, 0.0);
-	//}
 	
-	//color.rgb = vec3(z*0.001);
 	gl_FragData[0] = color;
-	//gl_FragData[1] = vec4(0.0, 0.0, 0.0, 1.0);
+
 	if (leaf>0.0){
+		
 		gl_FragData[1] = color * vec4(0.1, 0.1, 0.1, 1.0);
-	} else {
+		//if (leaf<0.2){
+		//	gl_FragData[1] = vec4(1.0, 0.0, 0.0, 1.0);
+		//}
+	} else {		
 		gl_FragData[1] = vec4(0.0, 0.0, 0.0, 1.0);	
 	}	
 }

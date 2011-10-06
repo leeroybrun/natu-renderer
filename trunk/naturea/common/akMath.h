@@ -19,6 +19,10 @@ inline float randomf(float minf, float maxf){
 inline int randomi(int mini, int maxi){
 	return int((double(rand())/RAND_MAX)*(maxi-mini)) + mini; 
 }
+inline unsigned int randomui(unsigned int mini, unsigned int maxi){
+	srand ( time(NULL) );
+	return unsigned int((double(rand())/RAND_MAX)*(maxi-mini)) + mini; 
+}
 
 inline float min2f(float a, float b){
 	return std::min(a,b);

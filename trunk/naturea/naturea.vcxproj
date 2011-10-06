@@ -64,9 +64,9 @@
       <AdditionalIncludeDirectories>..\common;..\src\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>opengl32.lib;glu32.lib;glfw.lib;glew32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opengl32.lib;glu32.lib;glfw.lib;glew32.lib;fmodex_vc.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(SolutionDir)\bin\$(Configuration)\$(ProjectName).exe</OutputFile>
-      <AdditionalLibraryDirectories>./common/GLFW/msvc10;./common/AntTweakBar;./common/GLEW;./common/GL;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>./common/GLFW/msvc10;./common/AntTweakBar;./common/GLEW;./common/GL;./common/FMOD/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
       <TargetMachine>MachineX86</TargetMachine>
@@ -83,9 +83,9 @@
       <AdditionalIncludeDirectories>.\common;.\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>opengl32.lib;glu32.lib;glfw.lib;glew32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opengl32.lib;glu32.lib;glfw.lib;glew32.lib;fmodex_vc.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(SolutionDir)\bin\$(Configuration)\$(ProjectName).exe</OutputFile>
-      <AdditionalLibraryDirectories>./common/GLFW/msvc10;./common/AntTweakBar;./common/GLEW;./common/GL;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>./common/GLFW/msvc10;./common/AntTweakBar;./common/GLEW;./common/GL;./common/FMOD/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>
@@ -161,6 +161,7 @@
     <ClInclude Include="src\utility\Ray.h" />
     <ClInclude Include="src\utility\Shader.h" />
     <ClInclude Include="src\utility\ShaderManager.h" />
+    <ClInclude Include="src\utility\Sound.h" />
     <ClInclude Include="src\utility\Texture.h" />
     <ClInclude Include="src\utility\TextureManager.h" />
     <ClInclude Include="src\utility\utils.h" />
@@ -220,6 +221,7 @@
     <ClCompile Include="src\utility\Ray.cpp" />
     <ClCompile Include="src\utility\Shader.cpp" />
     <ClCompile Include="src\utility\ShaderManager.cpp" />
+    <ClCompile Include="src\utility\Sound.cpp" />
     <ClCompile Include="src\utility\Texture.cpp" />
     <ClCompile Include="src\utility\TextureManager.cpp" />
     <ClCompile Include="src\utility\VBO.cpp" />

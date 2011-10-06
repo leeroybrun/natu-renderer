@@ -16,6 +16,8 @@ World::World(void)
 	p_dtree				= NULL;
 	p_godRays			= NULL;
 
+	p_backgroundSound	= NULL;
+
 	p_test_model		= NULL;
 	p_test_model2		= NULL;
 
@@ -41,7 +43,7 @@ World::~World(void)
 
 	SAFE_DELETE_PTR( p_test_model	);
 	SAFE_DELETE_PTR( p_test_model2	);
-
+	SAFE_DELETE_PTR( p_backgroundSound);
 	SAFE_DELETE_PTR ( p_fog );
 	/*
 	for (int i=0; i<100; i++){
@@ -470,6 +472,13 @@ void World::init()
 	p_test_model->init();
 	
 	*/
+
+	// SOUNDs
+	printf("Starting sound... \n");
+	p_backgroundSound = new Sound();
+	p_backgroundSound->play();
+	printf("Sound is playing... \n");
+
 	printf("WORLD CREATED:\n");
 
 }
@@ -646,6 +655,7 @@ void World::update(double i_time)
 {
 	p_activeCamera->setMode(g_cameraMode);
 	p_activeCamera->update(i_time);
+	p_backgroundSound->update();
 	//g_time = i_time;
 	/*int modelCnt = v_models.size();
 	for (int i=0; i<modelCnt; i++){

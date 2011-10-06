@@ -11,7 +11,7 @@ uniform sampler2D backTranslucencyMap;
 uniform sampler2D backHalfLife2Map;
 uniform sampler2D seasonMap;
 uniform	float season;
-
+uniform float transition_control;
 //uniform float MultiplyAmbient;
 //uniform float MultiplyDiffuse;
 //uniform float MultiplySpecular;
@@ -336,6 +336,12 @@ void main()
 	//color = 0.5*texture2D(frontDecalMap, gl_TexCoord[0].yx) + 0.2*texture2D(frontTranslucencyMap, gl_TexCoord[0].yx + ts_lightDir.xy );
 	color.a = gl_Color.a;
 	//if (texture2D(frontDecalMap, gl_TexCoord[0].yx).a<0.9) discard;
+	//float control = clamp (1.0 - 2.0*abs(0.5 - transition_control), 0.0,1.0);
+	//
+	//color.rgb = pow(color.rgb, vec3(1.0 + 0.2*control));
+
+	
+	
 	gl_FragData[0] = color;
 	gl_FragData[1] = color * vec4(0.1, 0.1, 0.1, 1.0);
 	//gl_FragData[1] =vec4(0.0, 0.0, 0.0, 1.0);
