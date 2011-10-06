@@ -212,7 +212,7 @@ void colorize(out vec4 outColor, in vec3 normal, in vec3 tangent, in vec3 bitang
 	}
 	
 	// --- Season color ---
-	vec2 seasonCoord = vec2(0.5, season + 0.1*leafSpecificNumber - 0.0001*time_offset_v);
+	vec2 seasonCoord = vec2(0.5, season + 0.2*leafSpecificNumber - 0.0001*time_offset_v);
 	
 	vec4 seasonColor =  texture2D(seasonMap, seasonCoord);
 	
@@ -337,7 +337,7 @@ void main()
 	color.a = gl_Color.a;
 	//if (texture2D(frontDecalMap, gl_TexCoord[0].yx).a<0.9) discard;
 	gl_FragData[0] = color;
-	gl_FragData[1] = color * vec4(0.2, 0.2, 0.2, 1.0);
+	gl_FragData[1] = color * vec4(0.1, 0.1, 0.1, 1.0);
 	//gl_FragData[1] =vec4(0.0, 0.0, 0.0, 1.0);
 	
 }

@@ -19,6 +19,8 @@
 #include "../common/Vector4.h"
 #include "settings.h"
 
+
+int		g_samples = 8;
 bool	g_compressToOneTexture = true;
 
 bool	g_ParallaxMappingEnabled = true;
@@ -69,11 +71,11 @@ GLuint pqid					= 0;
 GLint result_available		= 0;
 
 float	g_bloomDivide		= 0.8;
-float	g_god_expo			= 0.1;
+float	g_god_expo			= 0.06;
 float	g_god_decay			= 1.0;
-float	g_god_density		= 0.8;
+float	g_god_density		= 0.33;
 float	g_god_weight		= 6.0;
-float	g_illuminationDecay	= 1.1;
+float	g_illuminationDecay	= 3.27;
 
 
 v4 g_light_position			= LIGHT_POSITION;
@@ -152,7 +154,7 @@ float	g_tree_wave_increase_factor = 1.0;
 float	g_tree_time_offset_1	= 0.0;
 float	g_tree_time_offset_2	= 0.5;		
 
-const int	g_tree_gridSize			= 10;			// = SQRT(count of the trees)
+const int	g_tree_gridSize			= 50;			// = SQRT(count of the trees)
 float		g_tree_mean_distance	= 8.0;			// = how dense is the grid
 float		g_tree_dither			= 3.0;			// = how far can be the tree placed from its' position in grid
 
@@ -258,9 +260,13 @@ void cbDisplay()
 		//glGetQueryObjectiv(tqid, GL_QUERY_RESULT_AVAILABLE, &result_available);
 		//printf("avail: %s\n",result_available?"yes":"no");
 	} 
+	glEnable(GL_MULTISAMPLE);
+	//glEnable(GL_SAMPLE_ALPHA_TO_COVERAGE);
 	p_world->draw();
+	//glDisable(GL_SAMPLE_ALPHA_TO_COVERAGE);
+	glDisable(GL_MULTISAMPLE);
 	// block CPU to measure time here
-	glFinish();
+	//glFinish();
 	
 
 	if (tqAvailable){
@@ -521,8 +527,7 @@ void initGUI()
 		{ LODTransitionMethod::SHIFTED_CROSS_FADE		, "Shifted cross fade"			},
 		{ LODTransitionMethod::SHIFTED_SOFT_FADE		, "shifted soft fade"			}
 	};
-	TwType transition_method = TwDefineEnum("LOD transition method", trans_mode, 
-		5);
+	TwType transition_method = TwDefineEnum("LOD transition method", trans_mode, 5);
 	TwAddVarRW(controlBar, "transition method", transition_method, &g_lodTransition, " group='Visibility' ");
 	TwAddVarRW(controlBar, "shift", TW_TYPE_FLOAT, & g_transitionShift, " group='Visibility' min=0 max=0.5 step=0.01");
 

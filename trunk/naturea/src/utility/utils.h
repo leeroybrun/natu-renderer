@@ -74,6 +74,7 @@ static v4 glCoordToScreenSpace(const v4 &v){
 
    // Homogeneous divide
    const double rhw = 1 / result.w;
+  // printf("result.w=%f\n", result.w);
 
    return Vector4(
    (1 + result.x * rhw)/ 2,

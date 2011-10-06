@@ -741,5 +741,11 @@
     <None Include="textures\dynamic_tree\seasonMap2.png">
       <Filter>DATA\textures</Filter>
     </None>
+    <None Include="shaders\test4_fs.glsl">
+      <Filter>Shaders\testing</Filter>
+    </None>
+    <None Include="shaders\test4_vs.glsl">
+      <Filter>Shaders\testing</Filter>
+    </None>
   </ItemGroup>
 </Project>

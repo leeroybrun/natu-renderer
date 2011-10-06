@@ -234,7 +234,8 @@ private:
 	int						l_data	  ;
 	int						l_normal  ;
 	
-	v2						win_resolution;
+	v2						lod1_win_resolution;
+	v2						lod2_win_resolution;
 
 	Texture*				colorMap;
 	Texture*				colorMap2;
@@ -251,8 +252,8 @@ private:
 	/***************************************
 	* LOD 1 data
 	*/
-	vector<float *>			instanceMatrices;
-	vector<int>				typeIndices;
+	vector<float *>			lod1_instanceMatrices;
+	vector<int>				lod1_typeIndices;
 	vector<DTreeInstanceData**> instancesInRenderQueues;
 	vector<int>				countRenderQueues;
 
@@ -294,5 +295,48 @@ private:
 	Shader *			n_leafShader;
 	//void				initNormals();
 	void				drawNormals(DTreeInstanceData * instance);
+
+	/****************************************************
+	* LOD 2 data
+	*/
+
+	vector<DTreeSliceSet*> lod2slices;
+	Shader	*			lod2shader;
+	VBO		*			lod2vbo;
+	EBO		*			lod2ebo;
+	Texture	*			lod2color1;
+	Texture *			lod2color2;
+	Texture	*			lod2normal1;
+	Texture *			lod2normal2;
+	Texture	*			lod2branch1;
+	Texture *			lod2branch2;
+	int					lod2loc_season_tex;
+	int					lod2loc_colorVariance;
+	int					lod2loc_leaf_tex;
+	int					lod2loc_branch_tex;
+
+	
+	GLint				tm2Loc0;
+	GLint				tm2Loc1;
+	GLint				tm2Loc2;
+	GLint				tm2Loc3;
+	GLint				ia2Loc1;
+	GLint				iu1_2Loc1;
+	GLint				iu0_2Loc1;
+
+	GLint				lod2loc_color_tex_1;
+	GLint				lod2loc_color_tex_2;
+	GLint				lod2loc_normal_tex_1;
+	GLint				lod2loc_normal_tex_2;
+	GLint				lod2loc_branch_tex_1;
+	GLint				lod2loc_branch_tex_2;
+
+
+
+	vector<float *>		lod2_instanceMatrices;
+	vector<int>			lod2_typeIndices;
+	
+	void makeTransition(float control, bool maskOld, DTreeInstanceData* instance, void (DTree::*drawLODA)(DTreeInstanceData*),  void (DTree::*drawLODB)(DTreeInstanceData*));
+
 };
 
