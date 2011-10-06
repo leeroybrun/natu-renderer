@@ -20,7 +20,7 @@
 #include "settings.h"
 
 
-int		g_samples = 8;
+int		g_samples = 4;
 bool	g_compressToOneTexture = true;
 
 bool	g_ParallaxMappingEnabled = true;
@@ -141,7 +141,7 @@ bool	g_draw_light_direction	= false;
 v3		g_tree_wind_direction	= v3(1.0, 0.0, 0.0);
 float	g_tree_wind_strength	= 0.0;
 v4		g_tree_wood_amplitudes	= v4(1.0, 0.8, 0.2, 0.1);
-v4		g_tree_wood_frequencies	= v4(0.4, 1.2, 0.0, 0.0);
+v4		g_tree_wood_frequencies	= v4(0.0, 0.0, 0.0, 0.0);//v4(0.4, 1.2, 0.0, 0.0);
 float	g_tree_leaf_amplitude	= 2.4;
 float	g_tree_leaf_frequency	= 5.0;
 int		g_tree_slice_count		= 3;
@@ -196,7 +196,7 @@ float CPU_render_time;
 
 LODTransitionMethod g_lodTransition = LODTransitionMethod::SHIFTED_SOFT_FADE;
 float   g_transitionShift		= 0.35;
-
+float   g_transitionControl		= 0.0;
 World* p_world;
 
 #include "../common/common.h"

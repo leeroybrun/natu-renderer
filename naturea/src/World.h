@@ -11,6 +11,7 @@
 #include "scene\terrain\Terrain.h"
 #include "scene\cameras\Camera.h"
 
+#include "utility\Sound.h"
 
 #include "scene\Atmosphere\SkyBox.h"
 #include "scene\Atmosphere\Light.h"
@@ -80,6 +81,7 @@ public:
 	Tree2				*p_tree2_prototype;
 	Vegetation			*p_tree2_growth;
 	DTree				*p_dtree;
+	Sound				*p_backgroundSound;
 
 	TestModel			*p_test_model;
 	TestModel			*p_test_model2;
