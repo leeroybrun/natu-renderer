@@ -181,9 +181,9 @@ void	main()
 		decal_color.rgb += seasonColor.rgb;
 		decal_color.rgb *= colorVar;
 		decal_color.a	*= seasonColor.a;
-		final_translucency = decal_color.rgb * mNdotL * 0.6 * MultiplyTranslucency;
+		final_translucency = decal_color.rgb * 0.7 * mNdotL * 0.6 * MultiplyTranslucency;
 		final_ambient = decal_color * gl_LightSource[0].ambient * MultiplyAmbient;
-		final_diffuse = decal_color * NdotL * gl_FrontLightProduct[0].diffuse * MultiplyDiffuse;
+		final_diffuse = decal_color * NdotL * 0.7 * gl_FrontLightProduct[0].diffuse * MultiplyDiffuse;
 	} 
 	else {
 		
