@@ -240,6 +240,9 @@
     <Filter Include="Shaders\dynaTree\debug">
       <UniqueIdentifier>{d7865f9b-a469-4f44-becc-aaaf15af78d2}</UniqueIdentifier>
     </Filter>
+    <Filter Include="DATA\sounds">
+      <UniqueIdentifier>{e9aa435e-10b6-4193-bd30-6389cb4671b7}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp" />
@@ -752,6 +755,9 @@
     </None>
     <None Include="shaders\test4_vs.glsl">
       <Filter>Shaders\testing</Filter>
+    </None>
+    <None Include="media\background.mp3">
+      <Filter>DATA\sounds</Filter>
     </None>
   </ItemGroup>
 </Project>
