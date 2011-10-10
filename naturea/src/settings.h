@@ -210,7 +210,7 @@ static enum Attribs{
 
 #define LIGHT_POSITION			v4(-0.91f, -0.41f, 0.06f, 0.0f) //v4(0.f, 0.f, 1.f, 0.0f) // specific for sahara skybox... // direction
 //#define LIGHT_POSITION			v3(10.f, 300.f, 0.f) 
-#define LIGHT_DIRECTION			v4(-0.91f, -0.41f, 0.06f, 1.0)
+#define LIGHT_DIRECTION			v4(-0.91f, -0.41f, 0.06f, 0.0)
 #define SHADOWMAP_RESOLUTION_X  2048
 #define SHADOWMAP_RESOLUTION_Y  2048
 
@@ -230,11 +230,19 @@ namespace DYN_TREE
 {
 	const static char * SHADER_BRANCH_V			= "shaders/dynamic_tree/branch_vs.glsl";
 	const static char * SHADER_BRANCH_F			= "shaders/dynamic_tree/branch_fs.glsl";
+	const static char * SHADER_BRANCH_SH_V		= "shaders/dynamic_tree/shadow/branch_shadow_vs.glsl";
+	const static char * SHADER_BRANCH_SH_F		= "shaders/dynamic_tree/shadow/branch_shadow_fs.glsl";
+	
+	
 	const static char * SHADER_BRANCH_VN		= "shaders/dynamic_tree/n_branch_vs.glsl";
 	const static char * SHADER_BRANCH_FN		= "shaders/dynamic_tree/n_branch_fs.glsl";
 	const static char * SHADER_BRANCH_GN		= "shaders/dynamic_tree/n_branch_gs.glsl";
 	const static char * SHADER_LEAF_V			= "shaders/dynamic_tree/leaf_vs.glsl";
 	const static char * SHADER_LEAF_F			= "shaders/dynamic_tree/leaf_fs.glsl";
+	const static char * SHADER_LEAF_SH_V		= "shaders/dynamic_tree/shadow/leaf_shadow_vs.glsl";
+	const static char * SHADER_LEAF_SH_F		= "shaders/dynamic_tree/shadow/leaf_shadow_fs.glsl";
+	
+	
 	const static char * SHADER_LEAF_VN			= "shaders/dynamic_tree/n_leaf_vs.glsl";
 	const static char * SHADER_LEAF_FN			= "shaders/dynamic_tree/n_leaf_fs.glsl";
 	const static char * SHADER_LEAF_GN			= "shaders/dynamic_tree/n_leaf_gs.glsl";

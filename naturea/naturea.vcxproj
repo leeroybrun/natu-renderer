@@ -275,6 +275,10 @@
     <None Include="shaders\dynamic_tree\n_leaf_vs.glsl" />
     <None Include="shaders\dynamic_tree\preprocess_fs.glsl" />
     <None Include="shaders\dynamic_tree\preprocess_vs.glsl" />
+    <None Include="shaders\dynamic_tree\shadow\branch_shadow_fs.glsl" />
+    <None Include="shaders\dynamic_tree\shadow\branch_shadow_vs.glsl" />
+    <None Include="shaders\dynamic_tree\shadow\leaf_shadow_fs.glsl" />
+    <None Include="shaders\dynamic_tree\shadow\leaf_shadow_vs.glsl" />
     <None Include="shaders\godrays\godrays_fs.glsl" />
     <None Include="shaders\godrays\godrays_vs.glsl" />
     <None Include="shaders\grass\grass_fs.glsl" />
@@ -296,6 +300,8 @@
     <None Include="shaders\test3_vs_instanced.glsl" />
     <None Include="shaders\test4_fs.glsl" />
     <None Include="shaders\test4_vs.glsl" />
+    <None Include="shaders\test5_shadow_fs.glsl" />
+    <None Include="shaders\test5_shadow_vs.glsl" />
     <None Include="shaders\test_fs.glsl" />
     <None Include="shaders\test_instancing_fs.glsl" />
     <None Include="shaders\test_instancing_vs.glsl" />

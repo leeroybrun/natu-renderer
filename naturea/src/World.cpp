@@ -106,12 +106,10 @@ void World::draw()
 	*/
 
 	// 1st pass (light shadows - create shadow map...)
-	/*
 	p_activeLight->beginShadowMap();
 		// render whole shadow casting&recieving scene
 		drawForShadowmapping();
 	p_activeLight->endShadowMap();
-	*/
 	// 2nd pass (water)
 	//p_activeCamera->shoot();
 	p_activeLight->turnOn();
@@ -184,8 +182,8 @@ void World::draw()
 	}
 
 	if (g_godraysEnabled){
-		v3 lightDir = (p_activeLight->position.xyz()).getNormalized();
-		p_godRays->lightDirDOTviewDirValue = lightDir.dot(p_activeCamera->getDirection());
+		v3 lightDir = (p_activeLight->direction->xyz()).getNormalized();
+		p_godRays->lightDirDOTviewDirValue = -lightDir.dot(p_activeCamera->getDirection());
 		p_godRays->end();
 	}
 	
@@ -234,13 +232,13 @@ void World::drawWithAlpha(){
 	}
 	/***/
 	//p_test_model->draw();
-	
+	p_dtree->draw2();
 	if (g_draw_low_vegetation){
 		p_grass_growth->draw();
 		p_tree1_growth->draw();
 		p_tree2_growth->draw();
 	}
-	p_dtree->draw2();
+	
 }
 
 void World::drawUnderWater(){
@@ -287,12 +285,21 @@ void World::windowSizeChanged(int width, int height)
 
 void World::drawForShadowmapping()
 {
+	g_Draw2Shadowmap = true;
 	p_terrain->cut = false;
-	p_terrain->draw();
+	p_terrain->drawForLOD();
 	glEnable(GL_BLEND);
 	// alpha test...
 	glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	drawWithAlpha();
+	
+	// draw models with alpha
+
+	p_dtree->draw2();
+
+
+
+
+
 	glDisable(GL_BLEND);
 
 	// draw other models...
@@ -302,6 +309,7 @@ void World::drawForShadowmapping()
 		((LODmodel*)(v_models[i]))->drawForShadowMapping();
 	}
 	*/
+	g_Draw2Shadowmap = false;
 }
 
 void World::drawForLOD(){
@@ -361,7 +369,7 @@ void World::init()
 	// sun
 	p_activeLight = new Light(&textureManager);
 	p_activeLight->init(); // setup framebuffers for shadow mapping
-	p_activeLight->setup(GL_LIGHT0, g_light_position, &g_light_direction, sunAmb, sunDif, sunSpe, 180, 0.0);
+	p_activeLight->setup(GL_LIGHT0, &g_light_position, &g_light_direction, sunAmb, sunDif, sunSpe, 180, 0.0);
 	p_activeLight->turnOn();
 	p_activeLight->initShadowMapping(p_activeCamera, SHADOWMAP_RESOLUTION_X);
 
@@ -656,6 +664,10 @@ void World::update(double i_time)
 	p_activeCamera->setMode(g_cameraMode);
 	p_activeCamera->update(i_time);
 	p_backgroundSound->update();
+	p_dtree->update(i_time);
+	p_activeLight->update(i_time);
+	//g_light_direction = g_light_position; 
+
 	//g_time = i_time;
 	/*int modelCnt = v_models.size();
 	for (int i=0; i<modelCnt; i++){
