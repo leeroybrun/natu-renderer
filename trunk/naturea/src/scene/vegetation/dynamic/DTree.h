@@ -27,8 +27,6 @@ public:
 		printf("deleted slice\n");
 	}
 
-
-
 	Texture *	colormap;
 	Texture *	normalmap;
 	Texture *	depthmap;
@@ -50,7 +48,11 @@ private:
 class DTreeSliceSet{
 public :
 	DTreeSliceSet(){}
-	~DTreeSliceSet(){}
+	~DTreeSliceSet(){
+		for (int i=0; i<slices.size(); i++){
+			SAFE_DELETE_PTR( slices[i]	);
+		}
+	}
 	v3			getNormal(){
 					v3 n = v3(0.0, 0.0, -1.0);
 					n.rotateY((90+rotation_y)*DEG_TO_RAD);
@@ -124,10 +126,10 @@ public:
 	Vegetation* getCopy();
 
 	void draw2();
-	void draw_instance_LOD0(DTreeInstanceData * instance);
-	void draw_instance_LOD1(DTreeInstanceData * instance);
+	void draw_instance_LOD0(DTreeInstanceData * instance, float alpha);
+	void draw_instance_LOD1(DTreeInstanceData * instance, float alpha);
 	void draw_all_instances_LOD1();
-	void draw_instance_LOD2(DTreeInstanceData * instance);
+	void draw_instance_LOD2(DTreeInstanceData * instance, float alpha);
 	void draw_all_instances_LOD2();
 
 	void draw();
@@ -136,6 +138,7 @@ public:
 	void drawLOD1();
 	void drawLOD1b();
 	void drawLOD2();
+	void draw2Shadowmap();
 
 	void init();
 	void init2(v4 ** positions_rotations, int count);
@@ -183,6 +186,10 @@ private:
 
 	Shader *			branchShader;
 	Shader *			leafShader;
+
+	Shader *			branchShader_sh;
+	Shader *			leafShader_sh;
+
 
 	Shader*				bLODShader;
 	Shader*				lLODShader;
@@ -276,6 +283,7 @@ private:
 	int						l2_displ2	;
 	int						l2_data		;
 	int						l2_normal	;
+	int						l2_depth	;
 	int						l2_season  ;
 	vector<DTreeSliceSet*>	sliceSets2	;
 	Shader	*				lod1shader2	;
@@ -336,7 +344,6 @@ private:
 	vector<float *>		lod2_instanceMatrices;
 	vector<int>			lod2_typeIndices;
 	
-	void makeTransition(float control, bool maskOld, DTreeInstanceData* instance, void (DTree::*drawLODA)(DTreeInstanceData*),  void (DTree::*drawLODB)(DTreeInstanceData*));
-
+	void makeTransition(float control, bool maskOld, DTreeInstanceData* instance, void (DTree::*drawLODA)(DTreeInstanceData*, float),  void (DTree::*drawLODB)(DTreeInstanceData*, float));
 };
 

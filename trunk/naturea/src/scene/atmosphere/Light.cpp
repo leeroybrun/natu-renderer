@@ -5,6 +5,7 @@ Light::Light(TextureManager * tm)
 {
 	positionFixedToSkybox = v3(0.0,0.0,0.0);
 	textureManager = tm;
+	init();
 }
 
 
@@ -14,17 +15,19 @@ Light::~Light(void)
 }
 void Light::init()
 {
-
+	upVector =v3(0.0, 1.0, 0.0);
 }
 
 void Light::update(double time)
 {
-
+	v3 dir= direction->xyz();
+	right = dir.cross(upVector).getNormalized();
+	upVector = right.cross(dir);
 }
 
 void Light::translate(v3 &movVector)
 {
-	position += v4(movVector, 0.0);
+	*position += v4(movVector, 0.0);
 }
 
 void Light::rotate(v3 &axis, float angleRad)
@@ -78,28 +81,23 @@ void Light::initShadowMapping(Camera *_cam, int resolution)
 
 
 void Light::beginShadowMap(){
-	g_ShadowMappingEnabled = false;
-	g_fastMode = true;
+	
 	// set camera to light position and set its params...
-	float fov = 100.f;
-	float near = 100.f;
-	float far = 1000.f;
 	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fb_shad_ID);
-    // prenastavit viewport
+    // setup viewport
 		glViewport(0,0,resolution_x, resolution_y);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
 		glLoadIdentity();
-		glOrtho(-TERRAIN_SIZE_X*0.5, TERRAIN_SIZE_X*0.5, -TERRAIN_SIZE_Y*0.5, TERRAIN_SIZE_Y*0.5, near ,far);
-		//gluPerspective(fov, (GLfloat)resolution_x/(GLfloat)resolution_y, near, far);  
+		glOrtho(-width*0.5, width*0.5, -height*0.5, height*0.5, near ,far);
+		
 		glGetFloatv(GL_MODELVIEW_MATRIX, &Pmatrix.m[0]);
 		glLoadIdentity();
-		v3 p(LIGHT_POSITION);
-		gluLookAt(	p.x	, p.y , p.z	,
-					0.0	, 0.0 , 0.0	,
-					0.0	, 1.0 , 0.0	);	
+		gluLookAt(	position->x	, position->y , position->z	,
+					position->x + direction->x	, position->y + direction->y, position->z + direction->z	,
+					upVector.x	,upVector.y , upVector.z	);	
 		glGetFloatv(GL_MODELVIEW_MATRIX, &MVmatrix.m[0]);
 	glPopMatrix();
 
@@ -117,17 +115,13 @@ void Light::beginShadowMap(){
 	// set viewport
 	//glViewport(0, 0, SHADOWMAP_RESOLUTION_X, SHADOWMAP_RESOLUTION_Y);
 	// ... render scene at fastest settings
-	glPushAttrib(GL_LIGHTING_BIT);
+	//glPushAttrib(GL_LIGHTING_BIT);
 	glDisable(GL_LIGHTING);
-	glEnable(GL_CULL_FACE);
-	glCullFace(GL_BACK);
+	//glEnable(GL_CULL_FACE);
+	//glCullFace(GL_BACK);
 
 }
 void Light::endShadowMap(){
-	g_ShadowMappingEnabled = true;
-	g_fastMode = false;
-	// restore rendering settings
-	glPopAttrib();
 
 	// redirect rendering back to back screen buffer
 	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
@@ -151,6 +145,89 @@ void Light::drawForLOD()
 
 void Light::draw()
 {
+	glDisable(GL_LIGHTING);
+	v3 dir = direction->xyz();
+
+
+	v3 tl =		upVector*0.5*height - right*0.5*width		+ dir * near;
+	v3 tr =		upVector*0.5*height + right*0.5*width		+ dir * near;
+	v3 bl = -	upVector*0.5*height - right*0.5*width		+ dir * near;
+	v3 br = -	upVector*0.5*height + right*0.5*width		+ dir * near;
+
+
+
+
+	glPushMatrix();
+	glTranslatef(position->x, position->y, position->z);
+	glColor3f(1.0, 0.0, 0.0);
+	glBegin(GL_LINE_STRIP);
+		glVertex3f( 0.0, 0.0, 0.0);
+		glVertex3f( upVector.x, upVector.y, upVector.z);
+	glEnd();
+	glColor3f(0.0, 1.0, 0.0);
+	glBegin(GL_LINE_STRIP);
+		glVertex3f( 0.0, 0.0, 0.0);
+		glVertex3f( right.x, right.y, right.z);
+	glEnd();
+	glColor3f(0.0, 0.0, 1.0);
+	glBegin(GL_LINE_STRIP);
+		glVertex3f( 0.0, 0.0, 0.0);
+		glVertex3f( dir.x, dir.y, dir.z);
+	glEnd();
+
+
+
+	glColor3f(0.0, 0.0, 0.0);
+	glutSolidSphere(0.2, 5, 5);
+	
+	glBegin(GL_LINE_STRIP);		
+		glVertex3f(tl.x, tl.y, tl.z);
+		glVertex3f(tr.x, tr.y, tr.z);
+		glVertex3f(br.x, br.y, br.z);
+		glVertex3f(bl.x, bl.y, bl.z);
+		glVertex3f(tl.x, tl.y, tl.z);
+	glEnd();
+
+	v3 tlf =  tl + dir * far;
+	v3 trf =  tr + dir * far;
+	v3 blf =  bl + dir * far;
+	v3 brf =  br + dir * far;
+
+	glBegin(GL_LINE_STRIP);		
+		glVertex3f(tlf.x, tlf.y, tlf.z);
+		glVertex3f(trf.x, trf.y, trf.z);
+		glVertex3f(brf.x, brf.y, brf.z);
+		glVertex3f(blf.x, blf.y, blf.z);
+		glVertex3f(tlf.x, tlf.y, tlf.z);
+	glEnd();
+
+	glBegin(GL_LINES);		
+		glVertex3f(tl.x, tl.y, tl.z);
+		glVertex3f(tlf.x, tlf.y, tlf.z);
+		glVertex3f(tr.x, tr.y, tr.z);
+		glVertex3f(trf.x, trf.y, trf.z);
+		glVertex3f(br.x, br.y, br.z);
+		glVertex3f(brf.x, brf.y, brf.z);
+		glVertex3f(bl.x, bl.y, bl.z);
+		glVertex3f(blf.x, blf.y, blf.z);
+	glEnd();
+
+	glEnable(GL_TEXTURE_2D);
+	glActiveTexture(GL_TEXTURE0);	
+	glBindTexture(GL_TEXTURE_2D, db_shad_ID); 
+	glColor4f(1.f,1.f,1.f,0.5f);
+
+	glBegin(GL_QUADS);
+		glMultiTexCoord2f(GL_TEXTURE0, 0.f, 0.f); glVertex3f(blf.x, blf.y, blf.z);
+		glMultiTexCoord2f(GL_TEXTURE0, 1.f, 0.f); glVertex3f(brf.x, brf.y, brf.z);
+		glMultiTexCoord2f(GL_TEXTURE0, 1.f, 1.f); glVertex3f(trf.x, trf.y, trf.z);
+		glMultiTexCoord2f(GL_TEXTURE0, 0.f, 1.f); glVertex3f(tlf.x, tlf.y, tlf.z);		
+	glEnd();
+	glBindTexture(GL_TEXTURE_2D, 0); 
+	glDisable(GL_TEXTURE_2D);
+	
+	glPopMatrix();
+	/*
 	float lightLineSize = 50.f;
 	// draw a line from origin to the direction
 	glPushAttrib(GL_LIGHTING_BIT);
@@ -164,13 +241,13 @@ void Light::draw()
 			glVertex3f(0.0, 0.0, 0.0);
 			glVertex3f(lightLineSize*position.x, lightLineSize*position.y, lightLineSize*position.z);
 		glEnd();
+	*/
 
 
 
-
-	glPopMatrix();
+	//glPopMatrix();
 	glEnable(GL_LIGHTING);
-	glPopAttrib();
+	//glPopAttrib();
 
 
 
@@ -195,8 +272,8 @@ void Light::turnOn()
 	glEnable(GL_LIGHTING);
 	glEnable(lightId);
 	//position.printOut();
-	position = -g_light_position;
-	glLightfv(lightId, GL_POSITION      , position.data);
+	//position = -g_light_direction;
+	glLightfv(lightId, GL_POSITION      , direction->data);
 	//glLightfv(lightId, GL_SPOT_DIRECTION, (*direction).data);
 	//direction->printOut();
 	
@@ -207,12 +284,17 @@ void Light::turnOff()
 	glDisable(lightId);
 }
 
-void Light::setup(GLuint lid, v4 &pos, v4 *dir, v4 &ambi, v4 &diff, v4 &spec, float cutOff, float exp)
+void Light::setup(GLuint lid, v4 *pos, v4 *dir, v4 &ambi, v4 &diff, v4 &spec, float cutOff, float exp)
 {
 	lightId = lid;
 	position = pos;
 	direction = dir;
-	glLightfv(lightId, GL_POSITION      , v4(position).data);
+	width = 100.0;
+	height = 100.0;
+	near = 10.0;
+	far = 110.0;
+
+	glLightfv(lightId, GL_POSITION      , position->data);
 	glLightfv(lightId, GL_SPOT_DIRECTION, direction->data);
 	glLightfv(lightId, GL_AMBIENT       , ambi.data);
 	glLightfv(lightId, GL_DIFFUSE       , diff.data);

@@ -28,6 +28,10 @@ uniform vec3  LightDiffuseColor			  ;
 
 uniform vec3	colorVariance;
 
+uniform float	gauss_shift;
+uniform float	gauss_steep;
+uniform float	gauss_weight;
+
 uniform vec2			window_size;
 #define SQRT6  0.40824829046386301636621401245098
 #define SQRT2  0.70710678118654752440084436210485
@@ -336,9 +340,18 @@ void main()
 	//color = 0.5*texture2D(frontDecalMap, gl_TexCoord[0].yx) + 0.2*texture2D(frontTranslucencyMap, gl_TexCoord[0].yx + ts_lightDir.xy );
 	color.a = gl_Color.a;
 	//if (texture2D(frontDecalMap, gl_TexCoord[0].yx).a<0.9) discard;
-	//float control = clamp (1.0 - 2.0*abs(0.5 - transition_control), 0.0,1.0);
-	//
-	//color.rgb = pow(color.rgb, vec3(1.0 + 0.2*control));
+	//float control = clamp (1.0 - 2.0*abs(0.25 - transition_control), 0.0,1.0);
+	
+	// TODO: move into vertex shader (no need to compute per pixel...)
+	
+	float s = gauss_steep; // steepness
+	float m = gauss_shift; // shift
+	float a = 1.0/(s*sqrt(2.0*3.14159265));
+	float b = m;
+	float c = s;
+	float gaussianCurve = a*exp(-(transition_control-b)*(transition_control-b)/(2*c*c));
+
+	color.rgb = pow(color.rgb, vec3(1.0 + gauss_weight*gaussianCurve));
 
 	
 	

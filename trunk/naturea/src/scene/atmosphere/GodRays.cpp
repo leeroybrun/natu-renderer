@@ -26,18 +26,18 @@ GodRays::GodRays(ShaderManager *shManager, Light *_light)
 	
 	glGenTextures(1, &originalColor);
 		glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, originalColor);
-		glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_WRAP_S, GL_REPEAT);
-		glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_WRAP_T, GL_REPEAT);
-		glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-		glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		//glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		//glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		//glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		//glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 		glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, g_samples, GL_RGBA, g_WinWidth, g_WinHeight, false);
    
 	glGenTextures(1, &forRaysColor);
 		glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, forRaysColor);
-		glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_WRAP_S, GL_CLAMP);
-		glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_WRAP_T, GL_CLAMP);
-		glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		//glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_WRAP_S, GL_CLAMP);
+		//glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_WRAP_T, GL_CLAMP);
+		//glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		//glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 		glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, g_samples, GL_RGBA, g_WinWidth, g_WinHeight, false);
    
 	//glGenTextures(1, &forBloomColor);
@@ -51,10 +51,10 @@ GodRays::GodRays(ShaderManager *shManager, Light *_light)
 	   
 	glGenTextures(1, &originalDepth );
 		glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, originalDepth );
-		glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_WRAP_S, GL_REPEAT);
-		glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_WRAP_T, GL_REPEAT);
-		glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		//glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		//glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		//glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		//glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 		glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, g_samples, GL_DEPTH_COMPONENT32, g_WinWidth, g_WinHeight, false);
    	 glGenFramebuffersEXT(1, &fboId);
 		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fboId);
@@ -155,7 +155,7 @@ void GodRays::end()
 										);
 	*/
 	v4 lposScreen = glCoordToScreenSpace(
-		light->position * FLT_MAX);
+		*(light->direction) * -FLT_MAX);
 	
 	//printf("x=%f, y=%f \n", lposScreen.x, lposScreen.y);
 	

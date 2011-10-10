@@ -243,6 +243,9 @@
     <Filter Include="DATA\sounds">
       <UniqueIdentifier>{e9aa435e-10b6-4193-bd30-6389cb4671b7}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Shaders\dynaTree\forShadow">
+      <UniqueIdentifier>{0f04a265-b092-4de8-829c-68e9e360e17e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp" />
@@ -758,6 +761,24 @@
     </None>
     <None Include="media\background.mp3">
       <Filter>DATA\sounds</Filter>
+    </None>
+    <None Include="shaders\test5_shadow_fs.glsl">
+      <Filter>Shaders\testing</Filter>
+    </None>
+    <None Include="shaders\test5_shadow_vs.glsl">
+      <Filter>Shaders\testing</Filter>
+    </None>
+    <None Include="shaders\dynamic_tree\shadow\branch_shadow_fs.glsl">
+      <Filter>Shaders\dynaTree\forShadow</Filter>
+    </None>
+    <None Include="shaders\dynamic_tree\shadow\branch_shadow_vs.glsl">
+      <Filter>Shaders\dynaTree\forShadow</Filter>
+    </None>
+    <None Include="shaders\dynamic_tree\shadow\leaf_shadow_fs.glsl">
+      <Filter>Shaders\dynaTree\forShadow</Filter>
+    </None>
+    <None Include="shaders\dynamic_tree\shadow\leaf_shadow_vs.glsl">
+      <Filter>Shaders\dynaTree\forShadow</Filter>
     </None>
   </ItemGroup>
 </Project>

@@ -26,7 +26,6 @@ bool	g_compressToOneTexture = true;
 bool	g_ParallaxMappingEnabled = true;
 float	g_ParallaxScale =   0.04;
 float	g_ParallaxBias  =  -0.02;
-
 int		g_offset = 0;
 float	g_cosA	 = 0.0;
 float	g_cosB	 = 0.0;
@@ -85,7 +84,8 @@ bool g_godraysEnabled		= true;
 bool g_fastMode				= false;
 bool g_drawingReflection	= false;
 bool g_showTextures			= false;
-bool g_ShadowMappingEnabled	= false;
+bool g_ShadowMappingEnabled	= true;
+bool g_Draw2Shadowmap		= false;
 m4 g_LightMVPCameraVInverseMatrix;
 m4 g_LightMVCameraVInverseMatrix;
 m4 g_LightPMatrix;
@@ -154,9 +154,10 @@ float	g_tree_wave_increase_factor = 1.0;
 float	g_tree_time_offset_1	= 0.0;
 float	g_tree_time_offset_2	= 0.5;		
 
-const int	g_tree_gridSize			= 50;			// = SQRT(count of the trees)
+const int	g_tree_gridSize			= 1;			// = SQRT(count of the trees)
 float		g_tree_mean_distance	= 8.0;			// = how dense is the grid
 float		g_tree_dither			= 3.0;			// = how far can be the tree placed from its' position in grid
+
 
 float	g_leaves_MultiplyAmbient			= 1.0;
 float	g_leaves_MultiplyDiffuse			= 0.7;
@@ -166,11 +167,13 @@ float	g_leaves_ReduceTranslucencyInShadow	= 0.9;
 float	g_leaves_shadow_intensity			= 1.0;
 v3		g_leaves_LightDiffuseColor			= v3(0.2, 0.2, 0.2);
 
+
 int		g_tree_lod0_count					 = 0;
 int		g_tree_lod1_count					 = 0;
 int		g_tree_lod2_count					 = 0;
 int		g_tree_lod01_count					 = 0;
 int		g_tree_lod12_count					 = 0;
+
 
 bool	g_draw_lod1_method		= true;
 bool	g_orbit					= true;
@@ -178,6 +181,7 @@ float	g_orbit_speed			= 0.1;
 float	g_orbit_radius			= 10.0;
 v3		g_center				= v3(0.0, 5.0, 0.0);
 float	g_timeDiff				= 0;
+
 
 v3*		g_viewer_position;
 v3*		g_viewer_direction;
@@ -188,15 +192,21 @@ v3		g_tintColor = v3(1.0, 1.0, 1.0);
 float	g_tintFactor= 1.0;
 float	g_varA = 1.0;
 
-float	g_season = 0.1;
+float	g_season = 0.58;
 
 bool	g_debug = false;
-float g_CPU_fps;
-float CPU_render_time;
+float	g_CPU_fps;
+float	CPU_render_time;
 
 LODTransitionMethod g_lodTransition = LODTransitionMethod::SHIFTED_SOFT_FADE;
 float   g_transitionShift		= 0.35;
 float   g_transitionControl		= 0.0;
+
+float	g_gauss_shift			= 0.5;
+float	g_gauss_steep			= 0.1;
+float	g_gauss_weight			= 1.0;
+
+
 World* p_world;
 
 #include "../common/common.h"
@@ -505,8 +515,8 @@ void initGUI()
 	TwBar *controlBar = TwNewBar("Controls");
 	TwDefine(" Controls position='0 0' size='250 550' refresh=0.3 \
 			 valueswidth=80 ");
-	TwAddVarRW(controlBar, "tintColor",	 TW_TYPE_COLOR3F, & g_tintColor.data, " label='tintColor' ");
-	TwAddVarRW(controlBar, "tintFactor", TW_TYPE_FLOAT, & g_tintFactor, " label='tintFactor' min=0 max=2 step=0.01 ");
+	//TwAddVarRW(controlBar, "tintColor",	 TW_TYPE_COLOR3F, & g_tintColor.data, " label='tintColor' ");
+	//TwAddVarRW(controlBar, "tintFactor", TW_TYPE_FLOAT, & g_tintFactor, " label='tintFactor' min=0 max=2 step=0.01 ");
 
 
 	//TwAddVarRW(controlBar, "offset", TW_TYPE_INT32, & g_offset, " label='offset' min=0 max=2 step=1 ");
@@ -530,6 +540,11 @@ void initGUI()
 	TwType transition_method = TwDefineEnum("LOD transition method", trans_mode, 5);
 	TwAddVarRW(controlBar, "transition method", transition_method, &g_lodTransition, " group='Visibility' ");
 	TwAddVarRW(controlBar, "shift", TW_TYPE_FLOAT, & g_transitionShift, " group='Visibility' min=0 max=0.5 step=0.01");
+	TwAddVarRW(controlBar, "gauss_shift",  TW_TYPE_FLOAT, & g_gauss_shift	, " group='Visibility' min=0 max=1.0 step=0.01");
+	TwAddVarRW(controlBar, "gauss_steep",  TW_TYPE_FLOAT, & g_gauss_steep	, " group='Visibility' min=0 max=1.5 step=0.01");
+	TwAddVarRW(controlBar, "gauss_weight", TW_TYPE_FLOAT, & g_gauss_weight, " group='Visibility' min=0 max=1.0 step=0.01");
+
+
 
 	TwAddVarRW(controlBar, "sw_tree", TW_TYPE_BOOLCPP, & g_draw_dtree, " group='Visibility' ");
 	TwAddVarRW(controlBar, "sw_lod",  TW_TYPE_BOOLCPP, & g_draw_dtree_lod, " group='Visibility'  ");
@@ -537,10 +552,10 @@ void initGUI()
 	TwAddVarRW(controlBar, "sw_lod1", TW_TYPE_BOOLCPP, & g_draw_lod1, " group='Visibility'  ");
 	TwAddVarRW(controlBar, "sw_lod2", TW_TYPE_BOOLCPP, & g_draw_lod2, " group='Visibility'  ");
 	//g_lodTresholds
-	TwAddVarRW(controlBar, "sw_lod_tresh0", TW_TYPE_FLOAT, & g_lodTresholds.x, " group='Visibility' label='LODtreshold0'  min=0 max=100 step=0.1");
-	TwAddVarRW(controlBar, "sw_lod_tresh1", TW_TYPE_FLOAT, & g_lodTresholds.y, " group='Visibility' label='LODtreshold1'  min=0 max=100 step=0.1");
-	TwAddVarRW(controlBar, "sw_lod_tresh2", TW_TYPE_FLOAT, & g_lodTresholds.z, " group='Visibility' label='LODtreshold2'  min=0 max=100 step=0.1");
-	TwAddVarRW(controlBar, "sw_lod_tresh3", TW_TYPE_FLOAT, & g_lodTresholds.w, " group='Visibility' label='LODtreshold3'  min=0 max=100 step=0.1");
+	TwAddVarRW(controlBar, "sw_lod_tresh0", TW_TYPE_FLOAT, & g_lodTresholds.x, " group='Visibility' label='LODtreshold0'  min=0 max=10000 step=0.1");
+	TwAddVarRW(controlBar, "sw_lod_tresh1", TW_TYPE_FLOAT, & g_lodTresholds.y, " group='Visibility' label='LODtreshold1'  min=0 max=10000 step=0.1");
+	TwAddVarRW(controlBar, "sw_lod_tresh2", TW_TYPE_FLOAT, & g_lodTresholds.z, " group='Visibility' label='LODtreshold2'  min=0 max=10000 step=0.1");
+	TwAddVarRW(controlBar, "sw_lod_tresh3", TW_TYPE_FLOAT, & g_lodTresholds.w, " group='Visibility' label='LODtreshold3'  min=0 max=10000 step=0.1");
 
 
 	TwAddVarRW(controlBar, "sw_veg", TW_TYPE_BOOLCPP, & g_draw_low_vegetation, " group='Visibility'  ");
@@ -676,8 +691,11 @@ void initGUI()
 
 	TwAddVarRW(controlBar, "godrays", TW_TYPE_BOOLCPP, &(g_godraysEnabled), 
 		" label='God rays enabled' group=Light help='enable/disable god rays' ");  
-	TwAddVarRW(controlBar, "light_direction", TW_TYPE_DIR3F, &(g_light_position), 
+	TwAddVarRW(controlBar, "light_direction", TW_TYPE_DIR3F, &(g_light_direction), 
 		" label='light direction' group=Light help='adjust direction of light' ");  
+	TwAddVarRW(controlBar, "light_position", TW_TYPE_DIR3F, &(g_light_position), 
+		" label='light position' group=Light help='adjust position of light' ");  
+	
 	TwAddVarRW(controlBar, "light_dir", TW_TYPE_BOOLCPP, &(g_light_showDir), 
 		" label='Show direction' group=Light help='enable/disable showing lightdir' ");  
 
@@ -685,16 +703,16 @@ void initGUI()
 		" label='Show FBOs' group=Debug help='enable/disable FBO display' "); 
 
 
-	TwAddVarRW(controlBar, "wind_direction", TW_TYPE_DIR3F, & g_tree_wind_direction.data, "group='Tree'");
-	TwAddVarRW(controlBar, "wind_strength", TW_TYPE_FLOAT, & g_tree_wind_strength, " group='Tree' min=0 max=5 step=0.01 ");
+	TwAddVarRW(controlBar, "wind_direction",  TW_TYPE_DIR3F, & g_tree_wind_direction.data, "group='Tree'");
+	TwAddVarRW(controlBar, "wind_strength",   TW_TYPE_FLOAT, & g_tree_wind_strength, " group='Tree' min=0 max=5 step=0.01 ");
 	TwAddVarRW(controlBar, "wood0_frequency", TW_TYPE_FLOAT, & g_tree_wood_frequencies.x, " group='Tree' min=0 max=100 step=0.05 ");
-	TwAddVarRW(controlBar, "wood0_amplitude", TW_TYPE_FLOAT, &  g_tree_wood_amplitudes.x, " group='Tree' min=0 max=10 step=0.01 ");
+	TwAddVarRW(controlBar, "wood0_amplitude", TW_TYPE_FLOAT, & g_tree_wood_amplitudes.x, " group='Tree' min=0 max=10 step=0.01 ");
 	TwAddVarRW(controlBar, "wood1_frequency", TW_TYPE_FLOAT, & g_tree_wood_frequencies.y, " group='Tree' min=0 max=100 step=0.05 ");
-	TwAddVarRW(controlBar, "wood1_amplitude", TW_TYPE_FLOAT, &  g_tree_wood_amplitudes.y, " group='Tree' min=0 max=10 step=0.01 ");
+	TwAddVarRW(controlBar, "wood1_amplitude", TW_TYPE_FLOAT, & g_tree_wood_amplitudes.y, " group='Tree' min=0 max=10 step=0.01 ");
 	TwAddVarRW(controlBar, "wood2_frequency", TW_TYPE_FLOAT, & g_tree_wood_frequencies.z, " group='Tree' min=0 max=100 step=0.05 ");
-	TwAddVarRW(controlBar, "wood2_amplitude", TW_TYPE_FLOAT, &  g_tree_wood_amplitudes.z, " group='Tree' min=0 max=10 step=0.01 ");
+	TwAddVarRW(controlBar, "wood2_amplitude", TW_TYPE_FLOAT, & g_tree_wood_amplitudes.z, " group='Tree' min=0 max=10 step=0.01 ");
 	TwAddVarRW(controlBar, "wood3_frequency", TW_TYPE_FLOAT, & g_tree_wood_frequencies.w, " group='Tree' min=0 max=100 step=0.05 ");
-	TwAddVarRW(controlBar, "wood3_amplitude", TW_TYPE_FLOAT, &  g_tree_wood_amplitudes.w, " group='Tree' min=0 max=10 step=0.01 ");
+	TwAddVarRW(controlBar, "wood3_amplitude", TW_TYPE_FLOAT, & g_tree_wood_amplitudes.w, " group='Tree' min=0 max=10 step=0.01 ");
 
 
 

@@ -25,7 +25,7 @@ public:
 
 	void turnOn();
 	void turnOff();
-	void setup(GLuint lid, v4 &pos, v4 *dir, v4 &ambi, v4 &diff, v4 &spec, float cutOff, float exp);
+	void setup(GLuint lid, v4 *pos, v4 *dir, v4 &ambi, v4 &diff, v4 &spec, float cutOff, float exp);
 
 	void showTextures();
 	void initShadowMapping(Camera *_cam, int resolution);
@@ -37,9 +37,11 @@ public:
 	GLuint db_shad_ID; // depth attachment...
 	GLuint cb_shad_ID; // color attachment...
 
-	v4 position;
+	v4 *position;
 	v3 positionFixedToSkybox;
 	v4 * direction;
+	v3 upVector;
+	v3 right;
 	GLuint lightId;
 	int shadowMapTMID;
 	Camera * camera;
@@ -48,6 +50,8 @@ public:
 	m4 Pmatrix;
 	int resolution_x;
 	int resolution_y;
+
+	float width, height, near, far;
 
 };
 

@@ -89,6 +89,7 @@ extern	bool					g_draw_dtree			;
 extern	bool					g_draw_light_direction  ;
 
 extern	bool					g_ShadowMappingEnabled;
+extern	bool					g_Draw2Shadowmap;
 extern	m4						g_LightMVPCameraVInverseMatrix;
 extern	m4						g_LightMVCameraVInverseMatrix;
 extern	m4						g_LightPMatrix;
@@ -178,6 +179,11 @@ extern float	g_tintFactor;
 extern float	g_varA;
 extern float	g_transitionShift;
 extern float	g_transitionControl;
+
+extern float	g_gauss_shift;
+extern float	g_gauss_steep;
+extern float	g_gauss_weight;
+
 
 extern float	g_season;
 extern LODTransitionMethod g_lodTransition;

@@ -43,7 +43,7 @@ void SkyBox::draw()
 			glTranslate(p_activeCamera->getPosition());
 			//if (!g_drawingReflection){
 			//if (g_godraysEnabled && !g_drawingReflection){
-				p_light->positionFixedToSkybox = p_light->position.xyz() + p_activeCamera->getPosition();
+				p_light->positionFixedToSkybox = p_light->position->xyz() + p_activeCamera->getPosition();
 				//p_light->draw();
 			//}
 			glColor4f(1.0,1.0,1.0, 1.0);

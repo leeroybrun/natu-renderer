@@ -25,7 +25,7 @@ uniform float		leaf_frequency;
 uniform float		shift;
 uniform float		transition_control;
 
-varying vec3		eyeDir;
+varying vec4		eyeDir;
 varying vec3		normalDir;
 varying vec3		normal_es;
 varying vec3		tangent_es;
@@ -54,6 +54,33 @@ float		fogFactor;
 
 void	main()
 {	
+	vec2 texC		= gl_TexCoord[0].st;
+	vec2 fpos		= clamp ( texC + sliceDesc , sliceDesc, sliceDesc+vec2(1.0, 1.0) ) / vec2(sliceCnt,sliceSetsCnt);
+	
+	vec4 decal_color = texture2D(colorMap, fpos);
+	if (decal_color.a<0.5){
+		discard;
+	}
+	vec4 fragmentNormal = texture2D(normalMap, fpos);
+	vec4 depth	= texture2D(depthMap, fpos);
+	depth.rgb = vec3(1.0)-depth.rgb;
+	float NdotL = clamp ( dot ( normalize ( fragmentNormal.xyz ) , normalize ( lightDir_ts ) ) , 0.0, 1.0);
+	depth *= NdotL;
+	depth.a =1.0;
+	vec4 color = vec4(1.0);
+	color.rgb = vec3((gl_FragCoord.z+10.0*depth)/gl_FragCoord.w);
+	color.rgb *= 0.01;
+	
+	gl_FragData[0] = color;
+
+	gl_FragData[1] = color * vec4(0.1, 0.1, 0.1, 1.0);
+
+
+	/*
+
+
+
+
 	vec3 eyeDir_ts2 = normalize(eyeDir_ts);
 	float sizeFactor = 1.5/max(window_size.x, window_size.y);
 
@@ -65,8 +92,6 @@ void	main()
 
 	
 
-	vec2 texC		= gl_TexCoord[0].st;
-	vec2 fpos		= clamp ( texC + sliceDesc , sliceDesc, sliceDesc+vec2(1.0, 1.0) ) / vec2(sliceCnt,sliceSetsCnt);
 	
 	vec2 mv1 = texture2D(dataMap, fpos).xy*2.0 - vec2(1.0);
 	float mv_time = 0.01 * (time+time_offset_v);
@@ -138,7 +163,7 @@ void	main()
 		leaf = 0.0;
 		fragmentNormal = fragmentNormalBranch;
 		fragmentNormal.xyz = fragmentNormal.xyz*2.0 - vec3(1.0);
-		/* pseudo-parallax mapping */
+		// pseudo-parallax mapping
 		//float height = fragmentNormal.z;			
 		//float hsb = height * scale + bias;    
 		//vec2 normalLookUp = newPos + (hsb * eyeDir_ts.xy);
@@ -229,4 +254,5 @@ void	main()
 	} else {		
 		gl_FragData[1] = vec4(0.0, 0.0, 0.0, 1.0);	
 	}	
+	*/
 }
