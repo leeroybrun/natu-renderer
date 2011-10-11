@@ -259,6 +259,7 @@ private:
 	/***************************************
 	* LOD 1 data
 	*/
+	Shader	*				lod1shader_shadow;
 	vector<float *>			lod1_instanceMatrices;
 	vector<int>				lod1_typeIndices;
 	vector<DTreeInstanceData**> instancesInRenderQueues;
@@ -310,6 +311,8 @@ private:
 
 	vector<DTreeSliceSet*> lod2slices;
 	Shader	*			lod2shader;
+	Shader	*			lod2shader_shadow;
+
 	VBO		*			lod2vbo;
 	EBO		*			lod2ebo;
 	Texture	*			lod2color1;
@@ -318,6 +321,8 @@ private:
 	Texture *			lod2normal2;
 	Texture	*			lod2branch1;
 	Texture *			lod2branch2;
+	Texture	*			lod2depth1;
+	Texture *			lod2depth2;
 	int					lod2loc_season_tex;
 	int					lod2loc_colorVariance;
 	int					lod2loc_leaf_tex;

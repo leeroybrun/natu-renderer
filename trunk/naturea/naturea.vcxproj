@@ -304,6 +304,8 @@
     <None Include="shaders\test4_vs.glsl" />
     <None Include="shaders\test5_shadow_fs.glsl" />
     <None Include="shaders\test5_shadow_vs.glsl" />
+    <None Include="shaders\test6_shadow_fs.glsl" />
+    <None Include="shaders\test6_shadow_vs.glsl" />
     <None Include="shaders\test_fs.glsl" />
     <None Include="shaders\test_instancing_fs.glsl" />
     <None Include="shaders\test_instancing_vs.glsl" />

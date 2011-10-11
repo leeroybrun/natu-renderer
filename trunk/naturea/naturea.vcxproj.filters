@@ -786,5 +786,11 @@
     <None Include="shaders\sun_vs.glsl">
       <Filter>Shaders</Filter>
     </None>
+    <None Include="shaders\test6_shadow_fs.glsl">
+      <Filter>Shaders\testing</Filter>
+    </None>
+    <None Include="shaders\test6_shadow_vs.glsl">
+      <Filter>Shaders\testing</Filter>
+    </None>
   </ItemGroup>
 </Project>
