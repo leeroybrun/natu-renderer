@@ -189,7 +189,7 @@ float	g_fog_density = 0.006, g_fog_start = 1.0, g_fog_end=100.0;
 
 v3		g_tintColor = v3(1.0, 1.0, 1.0);
 float	g_tintFactor= 1.0;
-float	g_varA = 1.0;
+float	g_varA		= 1.0;
 
 float	g_season = 0.58;
 
