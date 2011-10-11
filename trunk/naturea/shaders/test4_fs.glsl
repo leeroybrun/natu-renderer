@@ -1,4 +1,5 @@
 #version 120
+#define SHADOW_TRESHOLD 0.0001
 
 uniform sampler2D	branch_noise_tex;
 uniform sampler2D	leaf_noise_tex;
@@ -49,6 +50,10 @@ uniform float		MultiplySpecular		;
 uniform float		MultiplyTranslucency	;
 			 
 float		fogFactor;
+uniform sampler2D shadowMap;
+varying vec4	lightSpacePosition;
+vec4 lpos;
+
 
 void	main()
 {	
@@ -185,9 +190,18 @@ void	main()
 	// compose color (phong)
 	color.rgb = ( final_ambient.rgb + final_diffuse.rgb + final_translucency);
 	color.a = alpha;
-
 	// fade LOD
 	color.a *= gl_Color.a;
+	// shadow
+	vec4 lpos = (lightSpacePosition/lightSpacePosition.w * 0.5) + vec4(0.5);
+	float depthEye   = lpos.z;
+	float depthLight = texture2D(shadowMap, lpos.xy).x;
+	
+	float shade = 1.0;
+	if ((depthEye - depthLight) > SHADOW_TRESHOLD){
+		shade = 0.5;
+	}
+	color.rgb *= shade;
 
 	gl_FragData[0] = color;
 	gl_FragData[1] = vec4(0.0, 0.0, 0.0, 1.0);

@@ -780,5 +780,11 @@
     <None Include="shaders\dynamic_tree\shadow\leaf_shadow_vs.glsl">
       <Filter>Shaders\dynaTree\forShadow</Filter>
     </None>
+    <None Include="shaders\sun_fs.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\sun_vs.glsl">
+      <Filter>Shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

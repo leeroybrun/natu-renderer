@@ -157,7 +157,7 @@ void Tree1::draw()
 	//shader->setTime(g_time);
 	shader->setBoolean(fastModeLoc, g_fastMode);
 	shader->setBoolean(shadowMappingEnabledLoc, g_ShadowMappingEnabled);
-	shader->setUniformMatrix(LCmatrixLoc, g_LightMVPCameraVInverseMatrix );
+//	shader->setUniformMatrix(LCmatrixLoc, g_LightMVPCameraVInverseMatrix );
 
 	glDisable(GL_CULL_FACE);
 	glBindBuffer(GL_ARRAY_BUFFER, vboId);

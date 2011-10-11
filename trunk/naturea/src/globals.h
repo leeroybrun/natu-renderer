@@ -8,6 +8,9 @@
 #include "Vector4.h"
 #include "Vector2.h"
 #include "Matrix4x4.h"
+#include "utility\Texture.h"
+
+class Texture;
 
 enum CameraMode{
 	FREE,
@@ -90,7 +93,7 @@ extern	bool					g_draw_light_direction  ;
 
 extern	bool					g_ShadowMappingEnabled;
 extern	bool					g_Draw2Shadowmap;
-extern	m4						g_LightMVPCameraVInverseMatrix;
+//extern	m4						g_LightMVPCameraVInverseMatrix;
 extern	m4						g_LightMVCameraVInverseMatrix;
 extern	m4						g_LightPMatrix;
 
@@ -187,4 +190,7 @@ extern float	g_gauss_weight;
 
 extern float	g_season;
 extern LODTransitionMethod g_lodTransition;
+extern Texture* g_shadowmap1;
+extern m4	  * g_LightMVPmatrix;
+extern m4	  * g_LightMVPCameraVInverseMatrix;
 #endif

@@ -5,6 +5,7 @@
 //==============================================================================
 #define SCALE 1.0
 #define DIST 0.0001
+#define SHADOW_TRESHOLD 0.0001
 
 uniform sampler2D terrain_tex_01;
 uniform sampler2D terrain_tex_02;
@@ -20,12 +21,15 @@ varying vec3	eye;
 varying vec3	normal;
 varying float	height;
 //varying float	fogFactor;
+varying vec4	position;
 
-uniform sampler2D shadowMap; // RGBA, alpha = distance to light snapped from light source
-varying	vec4	lightSpacePosition;
+uniform sampler2D shadowMap;
+varying vec4	lightSpacePosition;
+vec4 lpos;
 varying	vec4	lightProjSpacePosition;
 uniform int		shadowMappingEnabled;
 uniform mat4    LightProjectionMatrix;
+uniform mat4    LightMVPmatrix;
 uniform int		fastMode;
 
 void main()
@@ -88,14 +92,16 @@ void main()
 	}
 
 	// shadow
-	float shade = 1.0;
-	if (shadowMappingEnabled>0){
+	lpos = (lightSpacePosition/lightSpacePosition.w * 0.5) + vec4(0.5);
+	float depthEye  = lpos.z;
+	float depthLight= texture2D(shadowMap, lpos.xy).x;
 		// lightSpacePosition = LightProjectionMatrix * LightViewModelMatrix * CameraViewInvereseMatrix * gl_ModelViewMatrix * gl_Vertex
 		
 		
 		//float lightDistance = length(lightSpacePosition);
 		//float depthLight  = texture2D(shadowMap, l.xy).a;
 		//float depthDifference = lightDistance - depthLight;
+		/*
 		vec4 L = lightProjSpacePosition;
 		vec4 l = (L/L.w + vec4(1.0,1.0,1.0,0.0))*0.5;
 		float depthCamera = l.z;
@@ -129,16 +135,20 @@ void main()
 		if (depthDifference > 0.001){
 			shade =shade - 0.05;
 		}
-		
+		*/
 		
 		
 		//shade = depthDifference;
+	//}
+	float shade = 1.0;
+	if ((depthEye - depthLight) > SHADOW_TRESHOLD){
+		shade = 0.5;
 	}
-
 	vec4 color = gl_FrontLightModelProduct.sceneColor + (Ia + Id)*tex_color +Is;
+	color.rgb *= shade;
 	//vec4 color = (Ia + Id)*tex_color +Is;
 	//vec4 color = gl_FrontLightModelProduct.sceneColor;// + (Ia + Id)*tex_color +Is;
-
-	gl_FragData[0] = shade * color;// mix(gl_Fog.color, color, fogFactor );
+	gl_FragData[0] = color;
+	//gl_FragData[0] = shade * color;// mix(gl_Fog.color, color, fogFactor );
 	gl_FragData[1] = vec4(0.0, 0.0, 0.0, 1.0);
 }

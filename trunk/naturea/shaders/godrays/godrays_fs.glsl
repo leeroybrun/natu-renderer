@@ -21,11 +21,11 @@ uniform float bloomDivide;
 
 const int			NUM_SAMPLES = 32;
 const int			BLOOM_SAMPLES = 4;
-const float			bloomDistance = 0.05/BLOOM_SAMPLES;
+float				bloomDistance = 0.03/BLOOM_SAMPLES;
 uniform vec2		lightPositionOnScreen;
 uniform float		lightDirDOTviewDir;
 uniform int			sampleCount;
-ivec2		texCoord;
+ivec2				texCoord;
 
 vec4 texture2DMS(sampler2DMS sampler, ivec2 coord, int sampleCount){
 	vec4  color = vec4(0.0);
@@ -40,7 +40,7 @@ vec4 texture2DMS(sampler2DMS sampler, ivec2 coord, int sampleCount){
 void main(void)
 {
 	texCoord = ivec2(gl_TexCoord[0].st * textureSize(otex));
-	
+	ivec2 texSize = textureSize(otex).xy;
 	vec4  origColor;
 	origColor = texture2DMS(otex, texCoord, sampleCount);
 	//gl_FragColor = origColor;
@@ -48,7 +48,7 @@ void main(void)
 	//vec4  origColor = texture2D(otex, gl_TexCoord[0].st);
 	
 	
-	origColor.rgb *= (tintColor*tintFactor);
+	//origColor.rgb *= (tintColor*tintFactor);
 	origColor.rgb = pow(origColor.rgb,vec3(1.0/1.2));
 
 	
@@ -59,6 +59,7 @@ void main(void)
 	
 	vec4 bloom = vec4(0.0);
 	float xd,yd,l;
+	bloomDistance*= float (texSize.x);
 	float divideFactor = bloomDivide * BLOOM_SAMPLES*BLOOM_SAMPLES;
 	//if (length(raysColor.xyz)<0.4){
 		for (int x=-BLOOM_SAMPLES; x<BLOOM_SAMPLES; x++){
@@ -77,6 +78,7 @@ void main(void)
 		origColor += (bloom/divideFactor);
 		
 	//}
+	
 	
 	//====================================================================
 	// Sun position on screen - check algorithm
@@ -103,7 +105,7 @@ void main(void)
 		for(int i=0; i < NUM_SAMPLES ; i++)
 		{
 			textCoo -= deltaTextCoord;
-			vec4 tsample = texelFetch(rtex, ivec2(textCoo*textureSize(rtex)) , 0);
+			vec4 tsample = texelFetch(rtex, ivec2(textCoo*texSize) , 0);
 			//vec4 tsample = texture2D(rtex, textCoo );
 			//if (length(tsample.rgb)<0.5){
 				tsample *= illumDec * weight;
@@ -112,13 +114,11 @@ void main(void)
 			//}
 		}
 		raysColor *= exposure * lightDirDOTviewDir;
-		gl_FragColor = origColor + raysColor;
-	} else {
-		gl_FragColor = origColor;
+		origColor += raysColor;
 	}
 	
-	/*/
+	
 	gl_FragColor = origColor;
-	/*/
+	
 }
 

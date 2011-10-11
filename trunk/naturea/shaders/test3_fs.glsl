@@ -1,4 +1,5 @@
 #version 120
+#define SHADOW_TRESHOLD 0.0001
 
 uniform sampler2D	colorMap;
 uniform sampler2D	branch_noise_tex;
@@ -51,6 +52,11 @@ uniform float		MultiplyTranslucency	;
 #define	texCols			18.0
 			 
 float		fogFactor;
+
+
+uniform sampler2D shadowMap;
+varying vec4	lightSpacePosition;
+vec4 lpos;
 
 void	main()
 {	
@@ -162,7 +168,9 @@ void	main()
 		
 	}
 	//fragmentNormal = fragmentNormalBranch;
+	float frontFacing = 1.0;
 	if (gl_FrontFacing){
+		frontFacing = -1.0;
 		fragmentNormal.z = -fragmentNormal.z;
 	}
 	// float h = gl_FrontMaterial.shininess;
@@ -178,7 +186,8 @@ void	main()
 	//vec4 diffuse = gl_FrontLightProduct[0].diffuse * NdotL * NodotE;
 	//vec4 specular = gl_FrontLightProduct[0].specular * spec;
 	vec4 decal_color = texture2D(colorMap, lookUpPos);
-	
+	float depth_tex = texture2D(depthMap, lookUpPos).x;
+
 	// escape when transparent...
 	if (decal_color.a<0.75){discard;}
 
@@ -218,10 +227,20 @@ void	main()
 	color.rgb = final_ambient.rgb + final_diffuse.rgb + final_translucency;
 	color.a = alpha;
 
+	vec4 lpos = (lightSpacePosition/lightSpacePosition.w * 0.5) + vec4(0.5);
+	float depthEye   = lpos.z;
+	float depthLight = texture2D(shadowMap, lpos.xy).x;
+	
+	float shade = 1.0;
+	// offset camera depth
+	depthEye += -frontFacing*(depth_tex*2.0-1.0)*0.01;
+
+	if ((depthEye - depthLight) > SHADOW_TRESHOLD){
+		shade = 0.5;
+	}
 	// fade LOD
 	color.a *= gl_Color.a;
-
-	
+	color.rgb *= shade;
 	gl_FragData[0] = color;
 
 	if (leaf>0.0){

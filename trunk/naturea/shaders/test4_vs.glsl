@@ -25,6 +25,10 @@ varying float		time_offset_v;
 
 varying mat3		TBN_Matrix;
 uniform float		time;
+
+uniform mat4		LightMVPCameraVInverseMatrix;
+varying	vec4		lightSpacePosition;
+
 void main()
 {
 	vec4 pos;
@@ -79,7 +83,7 @@ void main()
 	sliceDesc		= sliceDescription;
 	gl_TexCoord[0]	= vec4(texCoords0, 0.0, 0.0);
 
-
+	lightSpacePosition = LightMVPCameraVInverseMatrix * pos;
 
 	//alpha = 0.5;
 	alpha = clamp(-2.0+5.0*abs(dot(normalize(normalDir.xz), normalize(eyeDir.xz))), 0.0, 1.0);	

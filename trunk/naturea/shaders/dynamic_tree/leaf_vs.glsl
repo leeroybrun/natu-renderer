@@ -29,6 +29,8 @@ uniform vec4			wood_frequencies;
 uniform float			leaf_amplitude;
 uniform float			leaf_frequency;
 uniform vec2			window_size;
+uniform mat4			LightMVPCameraVInverseMatrix;
+varying	vec4			lightSpacePosition;
 
 attribute vec3			normal;
 attribute vec3			tangent;
@@ -422,7 +424,7 @@ void main()
 	
 	
 	// Calculate vector to light in tangent space. (directional light)
-	ts_lightDir_v = normalize(( gl_LightSource[0].position).xyz * TBN_Matrix );
+	ts_lightDir_v = normalize(( -gl_LightSource[0].position).xyz * TBN_Matrix );
 
 
 	vertex = leafOrigin + (vertex.x*bitangent + vertex.y*tangent_vs);
@@ -430,6 +432,9 @@ void main()
 	tangent_vs = gl_NormalMatrix * tangent_vs;
 	
 	vPos = gl_ModelViewMatrix * vec4(vertex,1.0);
+	lightSpacePosition = LightMVPCameraVInverseMatrix * vPos;
+	
+
 	ts_viewDir_v = normalize( vPos.xyz * TBN_Matrix) ;
     //animateBranchVertex(vertex); // with branch motion
 	// animateLeafVertex(vertex); // own motion of leaf

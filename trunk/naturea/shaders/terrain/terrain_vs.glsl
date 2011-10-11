@@ -10,18 +10,24 @@ varying float	height;
 varying float	fogFactor;
 
 // shadow mapping
+//uniform mat4	LightMVPCameraVInverseMatrix;
+//uniform mat4	LightMViewCameraViewInverseMatrix;
+
 uniform mat4	LightMVPCameraVInverseMatrix;
-uniform mat4	LightMViewCameraViewInverseMatrix;
 
 varying	vec4	lightSpacePosition;
-varying	vec4	lightProjSpacePosition;
+
+varying vec4	position;
 
 void main()
 {
-	vec4 position = gl_ModelViewMatrix * gl_Vertex;
-	eye = position.xyz;
-	lightProjSpacePosition	= LightMVPCameraVInverseMatrix*(position);
-	lightSpacePosition		= LightMViewCameraViewInverseMatrix*(position);
+
+	vec4 pos = gl_ModelViewMatrix * gl_Vertex;
+	lightSpacePosition = LightMVPCameraVInverseMatrix * pos;
+
+	eye = pos.xyz;
+	//lightProjSpacePosition	= LightMVPCameraVInverseMatrix*(pos);
+	//lightSpacePosition		= LightMViewCameraViewInverseMatrix*(position);
 
 
 	normal = gl_NormalMatrix * gl_Normal;

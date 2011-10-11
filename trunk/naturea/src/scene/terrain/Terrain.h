@@ -41,6 +41,7 @@ public:
 	float getHeightAt(int x, int y);
 // attributes:
 
+	Texture * shadowmap;
 	float*	heightMap;
 	int		dim_x, dim_y;
 	float   red_x, red_y;

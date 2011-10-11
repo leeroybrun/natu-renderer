@@ -11,6 +11,8 @@ public:
 	~Light(void);
 	void draw();
 
+	void drawSun(v3* position);
+
 	virtual void drawForLOD();
 
 	void init();
@@ -32,11 +34,12 @@ public:
 	void beginShadowMap();
 	void endShadowMap();
 // attributes
-
+	Texture * shadowMapTexture;
 	GLuint fb_shad_ID; // framebuffer
 	GLuint db_shad_ID; // depth attachment...
 	GLuint cb_shad_ID; // color attachment...
 
+	Shader * shader;
 	v4 *position;
 	v3 positionFixedToSkybox;
 	v4 * direction;
@@ -45,7 +48,7 @@ public:
 	GLuint lightId;
 	int shadowMapTMID;
 	Camera * camera;
-	m4 MVPmatrix;
+	m4 *MVPmatrix;
 	m4 MVmatrix;
 	m4 Pmatrix;
 	int resolution_x;
