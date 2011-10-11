@@ -51,7 +51,7 @@ float grassmax = GRASS_MAX_HEIGHT;
 
 CameraMode g_cameraMode		= TERRAIN_RESTRICTED;
 int g_WinWidth				= 1280;//800	;   // Window width
-int g_WinHeight				= 720;//600;   // Window height
+int g_WinHeight				= 720; //600;   // Window height
 v3  g_window_sizes			= v3(g_WinWidth, g_WinHeight, 0.0);
 double g_time				= 0.0;
 float g_float_time			= 0.0f;
@@ -86,7 +86,6 @@ bool g_drawingReflection	= false;
 bool g_showTextures			= false;
 bool g_ShadowMappingEnabled	= true;
 bool g_Draw2Shadowmap		= false;
-m4 g_LightMVPCameraVInverseMatrix;
 m4 g_LightMVCameraVInverseMatrix;
 m4 g_LightPMatrix;
 Light* g_shadowLight;
@@ -156,7 +155,7 @@ float	g_tree_time_offset_2	= 0.5;
 
 const int	g_tree_gridSize			= 1;			// = SQRT(count of the trees)
 float		g_tree_mean_distance	= 8.0;			// = how dense is the grid
-float		g_tree_dither			= 3.0;			// = how far can be the tree placed from its' position in grid
+float		g_tree_dither			= 0;			// = how far can be the tree placed from its' position in grid
 
 
 float	g_leaves_MultiplyAmbient			= 1.0;
@@ -208,6 +207,9 @@ float	g_gauss_weight			= 1.0;
 
 
 World* p_world;
+Texture *	g_shadowmap1		= NULL;
+m4		*	g_LightMVPmatrix	= NULL;
+m4		*	g_LightMVPCameraVInverseMatrix = NULL;
 
 #include "../common/common.h"
 // Model file name

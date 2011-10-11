@@ -5,16 +5,20 @@ Light::Light(TextureManager * tm)
 {
 	positionFixedToSkybox = v3(0.0,0.0,0.0);
 	textureManager = tm;
+	shader = NULL;
 	init();
+	
 }
 
 
 Light::~Light(void)
 {
-
+	SAFE_DELETE_PTR ( shader );
 }
 void Light::init()
 {
+	shader = new Shader("sun");
+	shader->loadShader("shaders/sun_vs.glsl", "shaders/sun_fs.glsl");
 	upVector =v3(0.0, 1.0, 0.0);
 }
 
@@ -23,6 +27,21 @@ void Light::update(double time)
 	v3 dir= direction->xyz();
 	right = dir.cross(upVector).getNormalized();
 	upVector = right.cross(dir);
+}
+
+void Light::drawSun(v3* position){
+	glColor3f(1.0, 1.0, 0.98);
+	glPushMatrix();
+		glTranslatef(
+			position->x - direction->x * 250.0,
+			position->y - direction->y * 250.0,
+			position->z - direction->z * 250.0
+			);
+		shader->use(true);
+		glutSolidSphere(50.0, 6,6);
+		shader->use(false);
+	glPopMatrix();
+
 }
 
 void Light::translate(v3 &movVector)
@@ -53,8 +72,8 @@ void Light::initShadowMapping(Camera *_cam, int resolution)
 
 	glGenTextures(1, &db_shad_ID );
 		glBindTexture(GL_TEXTURE_2D, db_shad_ID );
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32F, SHADOWMAP_RESOLUTION_X, SHADOWMAP_RESOLUTION_Y, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
@@ -71,12 +90,16 @@ void Light::initShadowMapping(Camera *_cam, int resolution)
 		glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_2D, cb_shad_ID, 0);
 	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
 
-	Texture * shadowMapTexture = new Texture();
+
+	shadowMapTexture = new Texture();
 	shadowMapTexture->id = db_shad_ID;
 	shadowMapTexture->inShaderName = "shadowMap";
 	shadowMapTexture->textureUnitNumber = 7; // last texture (0-7)
 	shadowMapTMID = textureManager->addTexture(shadowMapTexture);
 	textureManager->shadowMapID = shadowMapTMID;
+	g_shadowmap1 = shadowMapTexture;
+	MVPmatrix = new m4();
+	g_LightMVPmatrix = MVPmatrix;
 }
 
 
@@ -108,7 +131,7 @@ void Light::beginShadowMap(){
 		glPushMatrix();
 		glLoadMatrixf(MVmatrix.m);
 
-	MVPmatrix = Pmatrix * MVmatrix;
+	*MVPmatrix = Pmatrix * MVmatrix;
 	
 	// redirect renderign to framebuffer
 	
@@ -291,8 +314,8 @@ void Light::setup(GLuint lid, v4 *pos, v4 *dir, v4 &ambi, v4 &diff, v4 &spec, fl
 	direction = dir;
 	width = 100.0;
 	height = 100.0;
-	near = 10.0;
-	far = 110.0;
+	near = 0.0;
+	far = 100.0;
 
 	glLightfv(lightId, GL_POSITION      , position->data);
 	glLightfv(lightId, GL_SPOT_DIRECTION, direction->data);

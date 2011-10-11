@@ -291,6 +291,8 @@
     <None Include="shaders\models\phong_vs_s.glsl" />
     <None Include="shaders\skybox\skybox_fs.glsl" />
     <None Include="shaders\skybox\skybox_vs.glsl" />
+    <None Include="shaders\sun_fs.glsl" />
+    <None Include="shaders\sun_vs.glsl" />
     <None Include="shaders\terrain\terrain_fs.glsl" />
     <None Include="shaders\terrain\terrain_vs.glsl" />
     <None Include="shaders\test2_fs.glsl" />

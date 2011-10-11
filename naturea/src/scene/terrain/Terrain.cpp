@@ -53,17 +53,19 @@ void Terrain::draw()
 {	
 	//material->use();
 	// bind textures
-	for (int i=0; i<TERRAIN_TEX_COUNT; i++){
+	int i;
+	for (i=0; i<TERRAIN_TEX_COUNT; i++){
 		textureManager->bindTexture(textureIds[i], GL_TEXTURE0+GLuint(i));
 	}
+	g_shadowmap1->bind(GL_TEXTURE0+GLuint(i+1));
 	shader->use(true);
 	shader->setUniform4v(border_values_location, g_terrain_border_values);
 	shader->setUniform4v(border_widths_location, g_terrain_border_widths);
 	shader->setBoolean(fastModeLoc, g_fastMode);
-	shader->setBoolean(shadowMappingEnabledLoc, g_ShadowMappingEnabled);
-	shader->setUniformMatrix(LCmatrixLoc, g_LightMVPCameraVInverseMatrix );
-	shader->setUniformMatrix(LMV_CVImatrixLoc, g_LightMVCameraVInverseMatrix );
-	shader->setUniformMatrix(LPmatrixLoc, g_LightPMatrix );
+	//shader->setBoolean(shadowMappingEnabledLoc, g_ShadowMappingEnabled);
+	//shader->setUniformMatrix(LCmatrixLoc, g_LightMVPCameraVInverseMatrix );
+	//shader->setUniformMatrix(LMV_CVImatrixLoc, g_LightMVCameraVInverseMatrix );
+	//shader->setUniformMatrix(LPmatrixLoc, g_LightPMatrix );
 	if (cut){
 		if (flip){
 			shader->setUniform2f(heightInterval_location, WATER_HEIGHT, 1000.f);
@@ -107,6 +109,7 @@ void Terrain::draw()
 		for (int i=0; i<TERRAIN_TEX_COUNT; i++){
 			textureManager->unbindTexture(textureIds[i]);
 		}
+		g_shadowmap1->unbind();
 	// turn off shader
 	shader->use(false);
 }
@@ -124,9 +127,9 @@ void Terrain::drawOverWater(){
 	shader->setUniform2f(heightInterval_location, WATER_HEIGHT, 1000.f);
 	shader->setBoolean(fastModeLoc, g_fastMode);
 	shader->setBoolean(shadowMappingEnabledLoc, g_ShadowMappingEnabled);
-	shader->setUniformMatrix(LCmatrixLoc, g_LightMVPCameraVInverseMatrix );
-	shader->setUniformMatrix(LMV_CVImatrixLoc, g_LightMVCameraVInverseMatrix );
-	shader->setUniformMatrix(LPmatrixLoc, g_LightPMatrix );
+	//shader->setUniformMatrix(LCmatrixLoc, g_LightMVPCameraVInverseMatrix );
+	//shader->setUniformMatrix(LMV_CVImatrixLoc, g_LightMVCameraVInverseMatrix );
+	//shader->setUniformMatrix(LPmatrixLoc, g_LightPMatrix );
 		// bind index buffer
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,eboId);
 		glBindBuffer(GL_ARRAY_BUFFER, vboId); 
@@ -244,7 +247,10 @@ void Terrain::init()
 	border_values_location = shader->getLocation("border_values");
 	border_widths_location = shader->getLocation("border_widths");
 	heightInterval_location = shader->getLocation("visibleHeightInterval");
+	if (g_shadowmap1!=NULL){
+		shader->linkTexture(g_shadowmap1);
 
+	}
 	// load heightmap
 	int resolution_x = TERRAIN_RESOLUTION_X;
 	int resolution_y = TERRAIN_RESOLUTION_Y;
@@ -261,12 +267,14 @@ void Terrain::init()
 	loadTextures(TERRAIN_TEX_NAME, TERRAIN_TEX_COUNT);
 
 	// shadow map
-	shader->linkTexture(textureManager->getTexture(textureManager->shadowMapID));
-	LCmatrixLoc					= shader->getLocation("LightMVPCameraVInverseMatrix");
-	shadowMappingEnabledLoc		= shader->getLocation("shadowMappingEnabled");
+	shader->linkTexture(g_shadowmap1);
+	shader->registerUniform("LightMVPCameraVInverseMatrix", UniformType::M4, g_LightMVPCameraVInverseMatrix->m);
+	//LCmatrixLoc					= shader->getLocation("LightMVPCameraVInverseMatrix");
+	//shadowMappingEnabledLoc		= shader->getLocation("shadowMappingEnabled");
 	fastModeLoc					= shader->getLocation("fastMode");
-	LMV_CVImatrixLoc			= shader->getLocation("LightMViewCameraViewInverseMatrix");
-	LPmatrixLoc					= shader->getLocation("LightProjectionMatrix");
+	//LMV_CVImatrixLoc			= shader->getLocation("LightMViewCameraViewInverseMatrix");
+	//LPmatrixLoc					= shader->getLocation("LightProjectionMatrix");
+
 
 	dim_x = resolution_x;
 	dim_y = resolution_y;

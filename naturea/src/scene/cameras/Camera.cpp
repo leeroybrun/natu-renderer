@@ -158,6 +158,9 @@ m4 Camera::getViewMatrix() {
 	glPopMatrix();
 	return view;
 }
+m4 Camera::getLightMVPCameraVInverse(){
+	return *g_LightMVPmatrix * getViewMatrix().getInverse();
+}
 
 m4 Camera::getProjectionMatrix() {
 	m4 projection;
@@ -247,11 +250,15 @@ void Camera::shoot()
   gluPerspective(fov, (GLfloat)g_WinWidth/g_WinHeight, near, far);  
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
-  v3 p(position+human_movement);
+  v3 p( position + human_movement );
   gluLookAt(p.x				, p.y				, p.z				,
 			p.x+direction.x	, p.y+direction.y	, p.z + direction.z	,
 			upVector.x		, upVector.y		, upVector.z		);
-//*/
+  m4 viewMatrix;
+  glGetFloatv(GL_MODELVIEW_MATRIX, viewMatrix);
+
+  *g_LightMVPCameraVInverseMatrix = *g_LightMVPmatrix * viewMatrix.getInverse();
+
 }
 
 void Camera::setup(v3 & pos, v3 & dir, v3 &up, int *w, int *h, float fo, float n, float fa)
@@ -266,6 +273,7 @@ void Camera::setup(v3 & pos, v3 & dir, v3 &up, int *w, int *h, float fo, float n
 	far			= fa;
 	ratio		= float(max(*w, *h))/float(min(*w,*h));
 	frustum_treshold = getFrustumTreshold();
+	g_LightMVPCameraVInverseMatrix = new m4();
 }
 float Camera::getFrustumTreshold(){
 	return cos(ratio * fov * 0.2);

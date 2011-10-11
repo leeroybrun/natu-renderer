@@ -1,4 +1,5 @@
 #version 120
+#define SHADOW_TRESHOLD 0.0001
 
 uniform sampler2D color_texture;
 uniform sampler2D frontDecalMap;
@@ -10,6 +11,9 @@ uniform sampler2D backNormalMap;
 uniform sampler2D backTranslucencyMap;
 uniform sampler2D backHalfLife2Map;
 uniform sampler2D seasonMap;
+uniform sampler2D shadowMap;
+varying vec4	lightSpacePosition;
+vec4 lpos;
 uniform	float season;
 uniform float transition_control;
 //uniform float MultiplyAmbient;
@@ -352,10 +356,19 @@ void main()
 	float gaussianCurve = a*exp(-(transition_control-b)*(transition_control-b)/(2*c*c));
 
 	color.rgb = pow(color.rgb, vec3(1.0 + gauss_weight*gaussianCurve));
-
 	
+	// shadow
+	vec4 lpos = (lightSpacePosition/lightSpacePosition.w * 0.5) + vec4(0.5);
+	float depthEye  = lpos.z;
+	float depthLight= texture2D(shadowMap, lpos.xy).x;
 	
+	float shade = 1.0;
+	if ((depthEye - depthLight) > SHADOW_TRESHOLD){
+		shade = 0.5;
+	}
+	color.rgb *= shade;
 	gl_FragData[0] = color;
+	//gl_FragData[0] = color;
 	gl_FragData[1] = color * vec4(0.1, 0.1, 0.1, 1.0);
 	//gl_FragData[1] =vec4(0.0, 0.0, 0.0, 1.0);
 	

@@ -147,6 +147,7 @@ void World::draw()
 	if (g_draw_light_direction){
 		p_activeLight->draw();
 	}
+	p_activeLight->drawSun(& p_activeCamera->position);
 	p_terrain->draw();
 	p_skybox->draw();
 	p_fog->turnOn();
@@ -372,7 +373,8 @@ void World::init()
 	p_activeLight->setup(GL_LIGHT0, &g_light_position, &g_light_direction, sunAmb, sunDif, sunSpe, 180, 0.0);
 	p_activeLight->turnOn();
 	p_activeLight->initShadowMapping(p_activeCamera, SHADOWMAP_RESOLUTION_X);
-
+	
+	
 	// sky
 	p_skybox = new SkyBox(&textureManager, &shaderManager, SKYBOX_TEX_FILENAMES);
 	p_skybox->init();

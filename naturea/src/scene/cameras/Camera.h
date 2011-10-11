@@ -22,6 +22,7 @@ public:
 	void orbitY(v3 &center, float radius, float time);
 
 	m4 getViewMatrix();
+	m4 getLightMVPCameraVInverse();
 	m4 getProjectionMatrix();
 
 	float getTurn();
