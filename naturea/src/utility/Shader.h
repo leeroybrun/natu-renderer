@@ -18,6 +18,7 @@ enum	UniformType{
 		F2,
 		F3,
 		F4,
+		B1,
 		I1,
 		I2,
 		I3,
@@ -71,6 +72,7 @@ public:
 	void    setUniform2v(int locIndex, v2 value);
 	void	setUniform3v(int locIndex, v3 value);
 	void    setUniform4v(int locIndex, v4 value);
+	void	setUniform1b(int locIndex, bool value);
 	void	setUniformMatrix(int locIndex, m4 & matrix);
 	void	setBoolean(int locIndex, bool value);
 	void	setTexture(int location, int texUnitNumber);

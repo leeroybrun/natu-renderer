@@ -14,7 +14,7 @@ varying vec2			b2_origin;
 uniform sampler2D		color_texture;
 uniform vec2			window_size;
 
-
+uniform int		shadowMappingEnabled;
 uniform sampler2D shadowMap;
 varying vec4	lightSpacePosition;
 vec4 lpos;
@@ -41,16 +41,21 @@ void main()
 	vec4 specular = gl_FrontLightProduct[0].specular * spec;
 	vec3 color = ((texColor) * (ambient + diffuse) + specular).xyz;
 	//vec3 color = (texColor * diffuse).xyz;
-	vec4 lpos = (lightSpacePosition/lightSpacePosition.w * 0.5) + vec4(0.5);
-	float depthEye   = lpos.z;
-	float depthLight = texture2D(shadowMap, lpos.xy).x;
-	
-	float shade = 1.0;
-	if ((depthEye - depthLight) > SHADOW_TRESHOLD){
-		shade = 0.5;
+	if (shadowMappingEnabled>0){
+	// SHADOW MAPPING //
+		vec4 lpos = (lightSpacePosition/lightSpacePosition.w * 0.5) + vec4(0.5);
+		float depthEye   = lpos.z;
+		float depthLight = texture2D(shadowMap, lpos.xy).x;
+		
+		float shade = 1.0;
+		if ((depthEye - depthLight) > SHADOW_TRESHOLD){
+			shade = 0.5;
+		}
+		color.rgb *= shade;
+	// END SHADOW MAPPING //
 	}
 	//gl_FragData[0] = vec4(vec3(shade), 1.0);
-	gl_FragData[0] = vec4(color*shade, gl_Color.a);
+	gl_FragData[0] = vec4(color, gl_Color.a);
 	//gl_FragData[1] = color * vec4(0.5, 0.5, 0.5, 1.0);
 	gl_FragData[1] =vec4(0.0, 0.0, 0.0, 1.0);
 	//gl_FragColor = vec4(1.0/level * texture2D(color_texture, gl_TexCoord[0].xy).xyz, 1.0);

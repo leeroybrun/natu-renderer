@@ -1,5 +1,5 @@
 #version 120
-#define SHADOW_TRESHOLD 0.0001
+#define SHADOW_TRESHOLD 0.001
 
 uniform sampler2D	branch_noise_tex;
 uniform sampler2D	leaf_noise_tex;
@@ -11,6 +11,8 @@ uniform sampler2D	normal_tex_1;
 uniform sampler2D	normal_tex_2;
 uniform sampler2D	branch_tex_1;
 uniform sampler2D	branch_tex_2;
+uniform sampler2D	depth_tex_1;
+uniform sampler2D	depth_tex_2;
 
 uniform float		season;
 uniform float		time;
@@ -27,6 +29,7 @@ uniform vec4		wood_amplitudes;
 uniform vec4		wood_frequencies;
 uniform float		leaf_amplitude;
 uniform float		leaf_frequency;
+uniform int			shadowMappingEnabled;
 
 varying vec3		eyeDir;
 varying vec3		normalDir;
@@ -118,13 +121,12 @@ void	main()
 	} else {
 		fragmentNormalLeaf   = texture2D(normal_tex_1, texCoord);
 		fragmentNormalBranch = texture2D(normal_tex_1, newPos);
-		
 	}
 	float branchFlag = fragmentNormalBranch.w + fragmentNormalLeaf.w;
 	vec2 lookUpPos;
 	vec4 fragmentNormal;
 	float leaf = 1.0;
-	if (branchFlag<0.1){
+	if (branchFlag<0.004){
 		// trunk / branch 
 		leaf = 0.0;
 		fragmentNormal = fragmentNormalBranch;
@@ -135,7 +137,7 @@ void	main()
 		fragmentNormal = fragmentNormalLeaf;
 		fragmentNormal.xyz = fragmentNormal.xyz*2.0 - vec3(1.0);
 		lookUpPos = texCoord;
-		leaf = (1.0/0.9)*(fragmentNormal.w-0.1);
+		leaf = (1.0/(1.0-0.004))*(fragmentNormal.w-0.004);
 		// if normal runs to the negative half-space
 		if (fragmentNormal.z<0.0){
 			fragmentNormal = -fragmentNormal;
@@ -143,10 +145,12 @@ void	main()
 	}
 	if (gl_FrontFacing){
 		// flip normal
+
 		fragmentNormal.z = -fragmentNormal.z;
 	}
 
 	vec4 decal_color;
+	
 	if (sliceDesc.y>0.0){
 		decal_color = texture2D(color_tex_2, lookUpPos);
 	} else {
@@ -157,8 +161,9 @@ void	main()
 	vec3 final_translucency;// * (shadow_intensity * ReduceTranslucencyInShadow)* MultiplyTranslucency;
 	vec4 final_ambient = vec4(0.0);
 	vec4 final_diffuse = vec4(0.0);
-	float NdotL = clamp ( dot ( normalize ( fragmentNormal.xyz ) , normalize ( lightDir_ts ) ) , 0.0, 1.0);
-	
+	float NdotL = dot ( normalize ( fragmentNormal.xyz ) , normalize ( lightDir_ts ));
+	float frontFacing = sign(NdotL);
+	NdotL = clamp(NdotL, 0.0, 1.0);
 	//vec3 variation = colorVar;
 	if (leaf>0.0){
 		// leaf
@@ -192,18 +197,36 @@ void	main()
 	color.a = alpha;
 	// fade LOD
 	color.a *= gl_Color.a;
-	// shadow
-	vec4 lpos = (lightSpacePosition/lightSpacePosition.w * 0.5) + vec4(0.5);
-	float depthEye   = lpos.z;
-	float depthLight = texture2D(shadowMap, lpos.xy).x;
 	
-	float shade = 1.0;
-	if ((depthEye - depthLight) > SHADOW_TRESHOLD){
-		shade = 0.5;
+	
+	
+	if (shadowMappingEnabled>0){
+		// SHADOW MAPPING //
+		float depth_tex;
+		if (sliceDesc.y>0.0){
+			depth_tex	= texture2D(depth_tex_2, lookUpPos).x;
+		} else {		
+			depth_tex	= texture2D(depth_tex_1, lookUpPos).x;
+		}
+		vec4 lpos = (lightSpacePosition/lightSpacePosition.w * 0.5) + vec4(0.5);
+		float depthEye   = lpos.z;
+		float depthLight = texture2D(shadowMap, lpos.xy).x;
+		float depth_offset = -frontFacing*(depth_tex*2.0-1.0)*0.02;
+		depthEye +=depth_offset;
+		float shade = 1.0;
+		if ((depthEye - depthLight) > SHADOW_TRESHOLD){
+			shade = 0.5;
+		}
+		color.rgb *= shade;
+		// SHADOW MAPPING END
 	}
-	color.rgb *= shade;
 
+
+
+	//color.rgb = vec3(shade);
+	//color.rgb = c;
 	gl_FragData[0] = color;
+	//gl_FragData[0] = vec4(1.0, 0.0, 0.0, 1.0);
 	gl_FragData[1] = vec4(0.0, 0.0, 0.0, 1.0);
 	return;
 }

@@ -169,6 +169,48 @@
     <ClInclude Include="src\utility\Sound.h">
       <Filter>Core</Filter>
     </ClInclude>
+    <ClInclude Include="common\GLFW\glfw.h">
+      <Filter>includes\GLFW</Filter>
+    </ClInclude>
+    <ClInclude Include="common\GLEW\glew.h">
+      <Filter>includes\GLEW</Filter>
+    </ClInclude>
+    <ClInclude Include="common\GLEW\wglew.h">
+      <Filter>includes\GLEW</Filter>
+    </ClInclude>
+    <ClInclude Include="common\GLEW\glxew.h">
+      <Filter>includes\GLEW</Filter>
+    </ClInclude>
+    <ClInclude Include="common\FMOD\inc\fmod.h">
+      <Filter>includes\FMOD</Filter>
+    </ClInclude>
+    <ClInclude Include="common\FMOD\inc\fmod.hpp">
+      <Filter>includes\FMOD</Filter>
+    </ClInclude>
+    <ClInclude Include="common\FMOD\inc\fmod_codec.h">
+      <Filter>includes\FMOD</Filter>
+    </ClInclude>
+    <ClInclude Include="common\FMOD\inc\fmod_dsp.h">
+      <Filter>includes\FMOD</Filter>
+    </ClInclude>
+    <ClInclude Include="common\FMOD\inc\fmod_errors.h">
+      <Filter>includes\FMOD</Filter>
+    </ClInclude>
+    <ClInclude Include="common\FMOD\inc\fmod_memoryinfo.h">
+      <Filter>includes\FMOD</Filter>
+    </ClInclude>
+    <ClInclude Include="common\FMOD\inc\fmod_output.h">
+      <Filter>includes\FMOD</Filter>
+    </ClInclude>
+    <ClInclude Include="common\AntTweakBar\AntTweakBar.h">
+      <Filter>includes\AntTweakBar</Filter>
+    </ClInclude>
+    <ClInclude Include="common\GL\glext.h">
+      <Filter>includes\GL</Filter>
+    </ClInclude>
+    <ClInclude Include="common\GL\glut.h">
+      <Filter>includes\GL</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Scene">
@@ -182,9 +224,6 @@
     </Filter>
     <Filter Include="IOfiles">
       <UniqueIdentifier>{583da79f-00a7-442b-bafe-482b203a317e}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="inis">
-      <UniqueIdentifier>{4e773305-477a-4456-9a4d-a809c56354e9}</UniqueIdentifier>
     </Filter>
     <Filter Include="Core">
       <UniqueIdentifier>{b79f5d01-3772-4efc-a3a3-8b651143d496}</UniqueIdentifier>
@@ -245,6 +284,24 @@
     </Filter>
     <Filter Include="Shaders\dynaTree\forShadow">
       <UniqueIdentifier>{0f04a265-b092-4de8-829c-68e9e360e17e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="includes">
+      <UniqueIdentifier>{4e773305-477a-4456-9a4d-a809c56354e9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="includes\GLFW">
+      <UniqueIdentifier>{e5116ff5-a787-416c-9c8e-ad7df8682a34}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="includes\GLEW">
+      <UniqueIdentifier>{7ff48516-d381-4247-a9dd-77b9a29c8b02}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="includes\FMOD">
+      <UniqueIdentifier>{acce5af2-2d7f-49c4-9679-5fb730c6b841}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="includes\AntTweakBar">
+      <UniqueIdentifier>{b286add0-d0e5-4ade-a1c2-e6ae30fe3050}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="includes\GL">
+      <UniqueIdentifier>{50a845e0-bee7-49d3-a691-493d96093081}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -792,5 +849,49 @@
     <None Include="shaders\test6_shadow_vs.glsl">
       <Filter>Shaders\testing</Filter>
     </None>
+    <None Include="bin\release\fmodex.dll">
+      <Filter>_binaries</Filter>
+    </None>
+    <None Include="bin\release\fmodexL.dll">
+      <Filter>_binaries</Filter>
+    </None>
+    <None Include="common\GLEW\glew32.dll">
+      <Filter>includes\GLEW</Filter>
+    </None>
+    <None Include="common\FMOD\lib\libfmodex.a">
+      <Filter>includes\FMOD</Filter>
+    </None>
+    <None Include="common\FMOD\lib\libfmodexL.a">
+      <Filter>includes\FMOD</Filter>
+    </None>
+    <None Include="common\FMOD\lib\which library do I use.txt">
+      <Filter>includes\FMOD</Filter>
+    </None>
+    <None Include="common\GL\glut32.dll">
+      <Filter>includes\GL</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Library Include="common\GLFW\msvc10\GLFW.lib">
+      <Filter>includes\GLFW</Filter>
+    </Library>
+    <Library Include="common\GLEW\glew32.lib">
+      <Filter>includes\GLEW</Filter>
+    </Library>
+    <Library Include="common\GLEW\glew32s.lib">
+      <Filter>includes\GLEW</Filter>
+    </Library>
+    <Library Include="common\FMOD\lib\fmodex_vc.lib">
+      <Filter>includes\FMOD</Filter>
+    </Library>
+    <Library Include="common\FMOD\lib\fmodexL_vc.lib">
+      <Filter>includes\FMOD</Filter>
+    </Library>
+    <Library Include="common\AntTweakBar\AntTweakBar.lib">
+      <Filter>includes\AntTweakBar</Filter>
+    </Library>
+    <Library Include="common\GL\glut32.lib">
+      <Filter>includes\GL</Filter>
+    </Library>
   </ItemGroup>
 </Project>

@@ -60,8 +60,8 @@ void Light::scale(v3 &scaleVector)
 }
 
 void Light::showTextures(){
-	show_texture(cb_shad_ID, 0,200,200,200);
-	show_texture(db_shad_ID, 200,200,200,200);
+	show_texture(cb_shad_ID, 0,0,400,400);
+	show_texture(db_shad_ID, 0,400,400,400);
 }
 
 void Light::initShadowMapping(Camera *_cam, int resolution)
@@ -312,10 +312,10 @@ void Light::setup(GLuint lid, v4 *pos, v4 *dir, v4 &ambi, v4 &diff, v4 &spec, fl
 	lightId		= lid;
 	position	= pos;
 	direction	= dir;
-	width		= 20.0;
-	height		= 20.0;
+	width		= 50.0;
+	height		= 50.0;
 	near		= 0.0;
-	far			= 10.0;
+	far			= 50.0;
 
 	glLightfv(lightId, GL_POSITION      , position->data);
 	glLightfv(lightId, GL_SPOT_DIRECTION, direction->data);

@@ -272,10 +272,9 @@ private:
 	float					time_offset;
 
 	GLint					tmLoc0;
-	GLint					tmLoc1;
-	GLint					tmLoc2;
-	GLint					tmLoc3;
 	GLint					iaLoc1;
+	GLint					iaLoc1_shadow;
+	GLint					tmLoc0_shadow;
 	GLint					iu1Loc1;
 	GLint					iu0Loc1;
 
@@ -330,10 +329,9 @@ private:
 
 	
 	GLint				tm2Loc0;
-	GLint				tm2Loc1;
-	GLint				tm2Loc2;
-	GLint				tm2Loc3;
+	GLint				tm2Loc0_shadow;
 	GLint				ia2Loc1;
+	GLint				ia2Loc1_shadow;
 	GLint				iu1_2Loc1;
 	GLint				iu0_2Loc1;
 

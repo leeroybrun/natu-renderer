@@ -208,7 +208,7 @@ static enum Attribs{
 #define GODRAYS_VS_FILENAME		"shaders/godrays/godrays_vs.glsl"
 #define GODRAYS_FS_FILENAME		"shaders/godrays/godrays_fs.glsl"
 
-#define LIGHT_POSITION			v4(-0.91f, -0.41f, 0.06f, 0.0f) //v4(0.f, 0.f, 1.f, 0.0f) // specific for sahara skybox... // direction
+#define LIGHT_POSITION			v4(0.0f, 20.0f, 0.0f, 0.0f) //v4(0.f, 0.f, 1.f, 0.0f) // specific for sahara skybox... // direction
 //#define LIGHT_POSITION			v3(10.f, 300.f, 0.f) 
 #define LIGHT_DIRECTION			v4(-0.91f, -0.41f, 0.06f, 0.0)
 #define SHADOWMAP_RESOLUTION_X  2048
