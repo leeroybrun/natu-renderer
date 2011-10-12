@@ -12,6 +12,7 @@ uniform sampler2D backTranslucencyMap;
 uniform sampler2D backHalfLife2Map;
 uniform sampler2D seasonMap;
 uniform sampler2D shadowMap;
+uniform int		shadowMappingEnabled;
 varying vec4	lightSpacePosition;
 vec4 lpos;
 uniform	float season;
@@ -357,16 +358,19 @@ void main()
 
 	color.rgb = pow(color.rgb, vec3(1.0 + gauss_weight*gaussianCurve));
 	
-	// shadow
-	vec4 lpos = (lightSpacePosition/lightSpacePosition.w * 0.5) + vec4(0.5);
-	float depthEye  = lpos.z;
-	float depthLight= texture2D(shadowMap, lpos.xy).x;
-	
-	float shade = 1.0;
-	if ((depthEye - depthLight) > SHADOW_TRESHOLD){
-		shade = 0.5;
+	if (shadowMappingEnabled>0){
+	// SHADOW MAPPING //
+		vec4 lpos = (lightSpacePosition/lightSpacePosition.w * 0.5) + vec4(0.5);
+		float depthEye   = lpos.z;
+		float depthLight = texture2D(shadowMap, lpos.xy).x;
+		
+		float shade = 1.0;
+		if ((depthEye - depthLight) > SHADOW_TRESHOLD){
+			shade = 0.5;
+		}
+		color.rgb *= shade;
+	// END SHADOW MAPPING //
 	}
-	color.rgb *= shade;
 	gl_FragData[0] = color;
 	//gl_FragData[0] = color;
 	gl_FragData[1] = color * vec4(0.1, 0.1, 0.1, 1.0);

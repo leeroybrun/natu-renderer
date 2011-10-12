@@ -1,4 +1,5 @@
 #version 120
+#define SHADOW_TRESHOLD 0.0001
 
 uniform sampler2D	colorMap;
 uniform sampler2D	branch_noise_tex;
@@ -14,74 +15,25 @@ uniform	vec2		movementVectorA;
 uniform	vec2		movementVectorB;
 uniform vec2		window_size;
 
-uniform float		varA;
-uniform float		scale;
-uniform float		bias;
-
 uniform vec4		wood_amplitudes;
 uniform vec4		wood_frequencies;
 uniform float		leaf_amplitude;
 uniform float		leaf_frequency;
-uniform float		shift;
 uniform float		transition_control;
-
-varying vec4		eyeDir;
-varying vec3		normalDir;
-varying vec3		normal_es;
-varying vec3		tangent_es;
-
-varying vec3		lightDir_ts;
-varying vec3		eyeDir_ts;
-varying	float		alpha;
 
 varying vec2		sliceDesc;
 
-varying mat3		TBN_Matrix;
-
-varying vec3		colorVar;
 varying float		time_offset_v;
 
-uniform float		MultiplyAmbient			;
-uniform float		MultiplyDiffuse			;
-uniform float		MultiplySpecular		;
-uniform float		MultiplyTranslucency	;
+uniform float		dither;
 
 #define sliceCnt		3
 #define sliceSetsCnt	3
 #define	texCols			18.0
-			 
-float		fogFactor;
+
 
 void	main()
 {	
-	vec2 texC		= gl_TexCoord[0].st;
-	vec2 fpos		= clamp ( texC + sliceDesc , sliceDesc, sliceDesc+vec2(1.0, 1.0) ) / vec2(sliceCnt,sliceSetsCnt);
-	
-	vec4 decal_color = texture2D(colorMap, fpos);
-	if (decal_color.a<0.5){
-		discard;
-	}
-	vec4 fragmentNormal = texture2D(normalMap, fpos);
-	vec4 depth	= texture2D(depthMap, fpos);
-	depth.rgb = vec3(1.0)-depth.rgb;
-	float NdotL = clamp ( dot ( normalize ( fragmentNormal.xyz ) , normalize ( lightDir_ts ) ) , 0.0, 1.0);
-	depth *= NdotL;
-	depth.a =1.0;
-	vec4 color = vec4(1.0);
-	color.rgb = vec3((gl_FragCoord.z+10.0*depth)/gl_FragCoord.w);
-	color.rgb *= 0.01;
-	
-	gl_FragData[0] = color;
-
-	gl_FragData[1] = color * vec4(0.1, 0.1, 0.1, 1.0);
-
-
-	/*
-
-
-
-
-	vec3 eyeDir_ts2 = normalize(eyeDir_ts);
 	float sizeFactor = 1.5/max(window_size.x, window_size.y);
 
 	float dist = gl_FragCoord.z;
@@ -90,8 +42,8 @@ void	main()
 	vec2 movVectorA = movementVectorA;
 	vec2 movVectorB = movementVectorB;
 
-	
-
+	vec2 texC		= gl_TexCoord[0].st;
+	vec2 fpos		= clamp ( texC + sliceDesc , sliceDesc, sliceDesc+vec2(1.0, 1.0) ) / vec2(sliceCnt,sliceSetsCnt);
 	
 	vec2 mv1 = texture2D(dataMap, fpos).xy*2.0 - vec2(1.0);
 	float mv_time = 0.01 * (time+time_offset_v);
@@ -153,106 +105,59 @@ void	main()
 	vec2 noiseOffset = (texCoordA+texCoordB)*sizeFactor*leaf_amplitude*0.5 / sliceCnt;
 	
 	vec2 texCoord = newPos + noiseOffset ;
-	vec4 fragmentNormalLeaf = texture2D(normalMap, texCoord);
-	vec4 fragmentNormalBranch = texture2D(normalMap, newPos);
-	float branchFlag = fragmentNormalBranch.w + fragmentNormalLeaf.w;
+	float branchFlag = texture2D(normalMap, texCoord).w + texture2D(normalMap, newPos).w;
 	vec2 lookUpPos = newPos;
 	float leaf = 1.0;
 	if (branchFlag<0.1){
 		// trunk / branch 
 		leaf = 0.0;
-		fragmentNormal = fragmentNormalBranch;
-		fragmentNormal.xyz = fragmentNormal.xyz*2.0 - vec3(1.0);
-		// pseudo-parallax mapping
-		//float height = fragmentNormal.z;			
-		//float hsb = height * scale + bias;    
-		//vec2 normalLookUp = newPos + (hsb * eyeDir_ts.xy);
-		//
-		//fragmentNormal = texture2D( normalMap, normalLookUp );
-		//lookUpPos = newPos;
-		
-
 	} else {
 		// foliage
-		fragmentNormal = fragmentNormalLeaf;
-		fragmentNormal.xyz = fragmentNormal.xyz*2.0 - vec3(1.0);
-		
 		lookUpPos = texCoord;
 		
 		leaf = (1.0/0.9)*(fragmentNormal.w-0.1);
-		// if normal runs to the negative half-space
-		if (fragmentNormal.z<0.0){
-			fragmentNormal = -fragmentNormal;
-		}
-		
 	}
 	//fragmentNormal = fragmentNormalBranch;
+	float frontFacing = -1.0;
 	if (gl_FrontFacing){
-		fragmentNormal.z = -fragmentNormal.z;
+		frontFacing = 1.0;
 	}
-	// float h = gl_FrontMaterial.shininess;
-	// vec3 E = -eyeDir_ts2;
-	// vec3 Refl = reflect(-lightDir_ts, normalize ( fragmentNormal.xyz ));
-	// float RdotE = max(dot(Refl, E),0.0);
-	float NdotL = clamp ( dot ( normalize ( fragmentNormal.xyz ) , normalize ( lightDir_ts ) ) , 0.0, 1.0);
-	// float NodotE = clamp ( abs(dot ( vec3(0.0, 0.0, 1.0), eyeDir_ts2 )) , 0.0, 1.0);
-	
-
-	//float spec = pow( RdotE, h );
-	//vec4 ambient = gl_LightSource[0].ambient;
-	//vec4 diffuse = gl_FrontLightProduct[0].diffuse * NdotL * NodotE;
-	//vec4 specular = gl_FrontLightProduct[0].specular * spec;
 	vec4 decal_color = texture2D(colorMap, lookUpPos);
-	
+	float depth_tex = texture2D(depthMap, lookUpPos).x;
+
 	// escape when transparent...
 	if (decal_color.a<0.75){discard;}
 
 	//vec3 translucency_in_light = translucency * other_cpvcolor.rgb * gl_LightSource[0].diffuse.rgb ;
-	vec3 final_translucency;// * (shadow_intensity * ReduceTranslucencyInShadow)* MultiplyTranslucency;
-	vec4 final_ambient = vec4(0.0);
-	vec4 final_diffuse = vec4(0.0);
-	//vec3 variation = colorVar;
-	float noise1f = 0.0;
 	if (leaf>0.0){
 		// leaf
-		float mNdotL = max ( -dot ( normalize ( fragmentNormal.xyz ) , normalize ( lightDir_ts ) ) , 0.0);
-		vec4 noise = texture2D(leaf_noise_tex, vec2(1.0, leaf)*t);
-		noise1f = noise.x*2.0-1.0;
-		//mNdotL += noise1f;
-		NdotL += 0.5*noise1f;
-		//leaf-=0.1;
 		vec2 seasonCoord = vec2(0.5, season + 0.2*leaf - 0.0001*time_offset_v);
 		vec4 seasonColor =  texture2D(seasonMap, seasonCoord);
 		if (seasonColor.a<0.5){
 			discard;
 		}
-		decal_color.rgb += seasonColor.rgb;
-		decal_color.rgb *= colorVar;
-		decal_color.a *= seasonColor.a;
-		final_translucency = decal_color.rgb * mNdotL * 0.6 * MultiplyTranslucency;
-		final_ambient = decal_color * gl_LightSource[0].ambient * MultiplyAmbient;
-		final_diffuse = decal_color * NdotL * gl_FrontLightProduct[0].diffuse * MultiplyDiffuse;
 	} 
-	else {
-		// branch
-		//decal_color = vec4(1.0, 0.0, .0, 1.0); // debug
-		final_translucency = vec3(0.0, 0.0, 0.0);
-		final_ambient = decal_color * gl_LightSource[0].ambient * MultiplyAmbient;
-		final_diffuse = decal_color * NdotL * MultiplyDiffuse;
-	}
-	color.rgb = final_ambient.rgb + final_diffuse.rgb + final_translucency;
-	color.a = alpha;
-
-	// fade LOD
-	color.a *= gl_Color.a;
-
+	gl_FragData[0] = vec4(1.0, 0.0, 0.0, 1.0);
+	float treshold = 0.5;
+	float depth = gl_FragCoord.z + frontFacing*(depth_tex*2.0 - 1.0)*0.02;
+	/*
+	ivec2 screen_pos = ivec2(gl_FragCoord.xy);
 	
-	gl_FragData[0] = color;
-
-	if (leaf>0.0){
-		gl_FragData[1] = color * vec4(0.1, 0.1, 0.1, 1.0);
-	} else {		
-		gl_FragData[1] = vec4(0.0, 0.0, 0.0, 1.0);	
-	}	
+	
+	if (mod(screen_pos.x, dither)<treshold && mod(screen_pos.y, dither)<treshold){
+		//depth += 0.01*transition_control*transition_control;
+	} else {	
+		depth = 1.0;
+	}
 	*/
+	gl_FragData[0] = vec4(1.0, 0.0, 0.0, 1.0);
+	//float depth = gl_FragCoord.z + frontFacing*(depth_tex*2.0 - 1.0)*0.01*3.0;
+	//if (leaf>0.0){
+	//	gl_FragData[1] = color * vec4(0.1, 0.1, 0.1, 1.0);
+	//} else {		
+	//	gl_FragData[1] = vec4(0.0, 0.0, 0.0, 1.0);	
+	//}	
+	//float signal = 1.0-transition_control;
+	gl_FragDepth = depth; // + 0.01*signal*signal;
+	
 }

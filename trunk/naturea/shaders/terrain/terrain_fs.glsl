@@ -90,62 +90,65 @@ void main()
 		tex_color2 = texture2D(terrain_tex_05, gl_TexCoord[0].st*SCALE);
 		tex_color = mix(tex_color2, tex_color1, min(max((height - border_values.w)/border_widths.w, 0.0), 1.0));
 	}
-
-	// shadow
-	lpos = (lightSpacePosition/lightSpacePosition.w * 0.5) + vec4(0.5);
-	float depthEye  = lpos.z;
-	float depthLight= texture2D(shadowMap, lpos.xy).x;
-		// lightSpacePosition = LightProjectionMatrix * LightViewModelMatrix * CameraViewInvereseMatrix * gl_ModelViewMatrix * gl_Vertex
-		
-		
-		//float lightDistance = length(lightSpacePosition);
-		//float depthLight  = texture2D(shadowMap, l.xy).a;
-		//float depthDifference = lightDistance - depthLight;
-		/*
-		vec4 L = lightProjSpacePosition;
-		vec4 l = (L/L.w + vec4(1.0,1.0,1.0,0.0))*0.5;
-		float depthCamera = l.z;
-		float depthLight0  = texture(shadowMap, l.xy).r;
-		vec2 coord = l.xy + vec2(DIST, 0.0);
-		float depthLight1 = texture(shadowMap, coord).r;
-		coord = l.xy + vec2(-DIST, 0.0);
-		float depthLight2 = texture(shadowMap, coord).r;
-		coord = l.xy + vec2(0.0, DIST);
-		float depthLight3 = texture(shadowMap, coord).r;
-		coord = l.xy + vec2(0.0, -DIST);
-		float depthLight4 = texture(shadowMap, coord).r;
-
-		float depthDifference = depthCamera - depthLight0;
-		if (depthDifference > 0.001){
-			shade =shade - 0.05;
-		}
-		depthDifference = depthCamera - depthLight1;
-		if (depthDifference > 0.001){
-			shade =shade - 0.05;
-		}
-		depthDifference = depthCamera - depthLight2;
-		if (depthDifference > 0.001){
-			shade =shade - 0.05;
-		}
-		depthDifference = depthCamera - depthLight3;
-		if (depthDifference > 0.001){
-			shade =shade - 0.05;
-		}
-		depthDifference = depthCamera - depthLight4;
-		if (depthDifference > 0.001){
-			shade =shade - 0.05;
-		}
-		*/
-		
-		
-		//shade = depthDifference;
-	//}
-	float shade = 1.0;
-	if ((depthEye - depthLight) > SHADOW_TRESHOLD){
-		shade = 0.5;
-	}
 	vec4 color = gl_FrontLightModelProduct.sceneColor + (Ia + Id)*tex_color +Is;
-	color.rgb *= shade;
+	
+	if (shadowMappingEnabled>0){
+		// shadow
+		lpos = (lightSpacePosition/lightSpacePosition.w * 0.5) + vec4(0.5);
+		float depthEye  = lpos.z;
+		float depthLight= texture2D(shadowMap, lpos.xy).x;
+			// lightSpacePosition = LightProjectionMatrix * LightViewModelMatrix * CameraViewInvereseMatrix * gl_ModelViewMatrix * gl_Vertex
+		
+		
+			//float lightDistance = length(lightSpacePosition);
+			//float depthLight  = texture2D(shadowMap, l.xy).a;
+			//float depthDifference = lightDistance - depthLight;
+			/*
+			vec4 L = lightProjSpacePosition;
+			vec4 l = (L/L.w + vec4(1.0,1.0,1.0,0.0))*0.5;
+			float depthCamera = l.z;
+			float depthLight0  = texture(shadowMap, l.xy).r;
+			vec2 coord = l.xy + vec2(DIST, 0.0);
+			float depthLight1 = texture(shadowMap, coord).r;
+			coord = l.xy + vec2(-DIST, 0.0);
+			float depthLight2 = texture(shadowMap, coord).r;
+			coord = l.xy + vec2(0.0, DIST);
+			float depthLight3 = texture(shadowMap, coord).r;
+			coord = l.xy + vec2(0.0, -DIST);
+			float depthLight4 = texture(shadowMap, coord).r;
+
+			float depthDifference = depthCamera - depthLight0;
+			if (depthDifference > 0.001){
+				shade =shade - 0.05;
+			}
+			depthDifference = depthCamera - depthLight1;
+			if (depthDifference > 0.001){
+				shade =shade - 0.05;
+			}
+			depthDifference = depthCamera - depthLight2;
+			if (depthDifference > 0.001){
+				shade =shade - 0.05;
+			}
+			depthDifference = depthCamera - depthLight3;
+			if (depthDifference > 0.001){
+				shade =shade - 0.05;
+			}
+			depthDifference = depthCamera - depthLight4;
+			if (depthDifference > 0.001){
+				shade =shade - 0.05;
+			}
+			*/
+		
+		
+			//shade = depthDifference;
+		//}
+		float shade = 1.0;
+		if ((depthEye - depthLight) > SHADOW_TRESHOLD){
+			shade = 0.5;
+		}
+		color.rgb *= shade;
+	}
+	
 	//vec4 color = (Ia + Id)*tex_color +Is;
 	//vec4 color = gl_FrontLightModelProduct.sceneColor;// + (Ia + Id)*tex_color +Is;
 	gl_FragData[0] = color;

@@ -106,10 +106,12 @@ void World::draw()
 	*/
 
 	// 1st pass (light shadows - create shadow map...)
-	p_activeLight->beginShadowMap();
-		// render whole shadow casting&recieving scene
-		drawForShadowmapping();
-	p_activeLight->endShadowMap();
+	if (g_ShadowMappingEnabled){
+		p_activeLight->beginShadowMap();
+			// render whole shadow casting&recieving scene
+			drawForShadowmapping();
+		p_activeLight->endShadowMap();
+	}
 	// 2nd pass (water)
 	//p_activeCamera->shoot();
 	p_activeLight->turnOn();
@@ -191,7 +193,7 @@ void World::draw()
 	if(g_showTextures){
 		//p_water->showTextures();
 		p_activeLight->showTextures();
-		show_textures();
+		//show_textures();
 	}
 	//p_terrain->drawNormals();
 	
@@ -233,12 +235,13 @@ void World::drawWithAlpha(){
 	}
 	/***/
 	//p_test_model->draw();
-	p_dtree->draw2();
+	
 	if (g_draw_low_vegetation){
 		p_grass_growth->draw();
 		p_tree1_growth->draw();
 		p_tree2_growth->draw();
 	}
+	p_dtree->draw2();
 	
 }
 

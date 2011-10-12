@@ -195,7 +195,7 @@ static void show_texture(GLuint texId, GLint x,GLint y, GLsizei width, GLsizei h
 
 	glDisable(GL_LIGHTING);
 	glDisable(GL_DEPTH_TEST);
-	//glEnable(GL_TEXTURE_2D);
+	glEnable(GL_TEXTURE_2D);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, texId);
 	glColor4f(1.f,1.f,1.f,1.f);
@@ -209,7 +209,7 @@ static void show_texture(GLuint texId, GLint x,GLint y, GLsizei width, GLsizei h
 
 	glEnable(GL_LIGHTING);
 	glEnable(GL_DEPTH_TEST);
-	//glDisable(GL_TEXTURE_2D);
+	glDisable(GL_TEXTURE_2D);
 
 	glMatrixMode(GL_PROJECTION);
 	glPopMatrix();

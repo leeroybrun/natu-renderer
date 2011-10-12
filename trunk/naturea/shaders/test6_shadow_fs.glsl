@@ -11,48 +11,26 @@ uniform sampler2D	normal_tex_1;
 uniform sampler2D	normal_tex_2;
 uniform sampler2D	branch_tex_1;
 uniform sampler2D	branch_tex_2;
+uniform sampler2D	depth_tex_1;
+uniform sampler2D	depth_tex_2;
 
 uniform float		season;
 uniform float		time;
 
-uniform	vec2		movementVectorA;
-uniform	vec2		movementVectorB;
 uniform vec2		window_size;
-
-uniform float		varA;
-uniform float		scale;
-uniform float		bias;
 
 uniform vec4		wood_amplitudes;
 uniform vec4		wood_frequencies;
 uniform float		leaf_amplitude;
 uniform float		leaf_frequency;
+uniform vec2		movementVectorA;	
+uniform vec2		movementVectorB;	
 
-varying vec3		eyeDir;
-varying vec3		normalDir;
-varying vec3		normal_es;
-varying vec3		tangent_es;
-
-varying vec3		lightDir_ts;
-varying vec3		eyeDir_ts;
-varying	float		alpha;
 
 varying vec2		sliceDesc;
 
-varying mat3		TBN_Matrix;
-
-varying vec3		colorVar;
 varying float		time_offset_v;
 
-uniform float		MultiplyAmbient			;
-uniform float		MultiplyDiffuse			;
-uniform float		MultiplySpecular		;
-uniform float		MultiplyTranslucency	;
-			 
-float		fogFactor;
-uniform sampler2D shadowMap;
-varying vec4	lightSpacePosition;
-vec4 lpos;
 
 
 void	main()
@@ -109,63 +87,46 @@ void	main()
 	rotatedDifVec = R*difVec;
 	newPos = b0 + rotatedDifVec;
 	vec2 texCoord = newPos + noiseOffset ;
-	vec4 fragmentNormalLeaf  ;
-	vec4 fragmentNormalBranch;
+	float fragmentNormalLeaf  ;
+	float fragmentNormalBranch;
 	if (sliceDesc.y>0.0){
 		// 90 degrees rotated billboard
-		fragmentNormalLeaf   = texture2D(normal_tex_2, texCoord);
-		fragmentNormalBranch = texture2D(normal_tex_2, newPos);		
+		fragmentNormalLeaf   = texture2D(normal_tex_2, texCoord).w;
+		fragmentNormalBranch = texture2D(normal_tex_2, newPos).w;		
 	} else {
-		fragmentNormalLeaf   = texture2D(normal_tex_1, texCoord);
-		fragmentNormalBranch = texture2D(normal_tex_1, newPos);
-		
+		fragmentNormalLeaf   = texture2D(normal_tex_1, texCoord).w;
+		fragmentNormalBranch = texture2D(normal_tex_1, newPos).w;
 	}
-	float branchFlag = fragmentNormalBranch.w + fragmentNormalLeaf.w;
+	float branchFlag = fragmentNormalBranch + fragmentNormalLeaf;
 	vec2 lookUpPos;
-	vec4 fragmentNormal;
-	float leaf = 1.0;
+	float leaf = 0.0;
 	if (branchFlag<0.1){
 		// trunk / branch 
-		leaf = 0.0;
-		fragmentNormal = fragmentNormalBranch;
-		fragmentNormal.xyz = fragmentNormal.xyz*2.0 - vec3(1.0);
 		lookUpPos = newPos;
 	} else {
 		// foliage
-		fragmentNormal = fragmentNormalLeaf;
-		fragmentNormal.xyz = fragmentNormal.xyz*2.0 - vec3(1.0);
 		lookUpPos = texCoord;
-		leaf = (1.0/0.9)*(fragmentNormal.w-0.1);
-		// if normal runs to the negative half-space
-		if (fragmentNormal.z<0.0){
-			fragmentNormal = -fragmentNormal;
-		}		
+		leaf = (1.0/0.9)*(fragmentNormalLeaf-0.1);
 	}
+	float frontFacing = -1.0;
 	if (gl_FrontFacing){
-		// flip normal
-		fragmentNormal.z = -fragmentNormal.z;
+		frontFacing = 1.0;
 	}
 
 	vec4 decal_color;
+	float depth_tex;
 	if (sliceDesc.y>0.0){
 		decal_color = texture2D(color_tex_2, lookUpPos);
+		depth_tex = texture2D(depth_tex_2, lookUpPos).x;
 	} else {
 		decal_color = texture2D(color_tex_1, lookUpPos);
+		depth_tex = texture2D(depth_tex_1, lookUpPos).x;
 	}
 	// escape when transparent...
 	if (decal_color.a<0.5){discard;}
-	vec3 final_translucency;// * (shadow_intensity * ReduceTranslucencyInShadow)* MultiplyTranslucency;
-	vec4 final_ambient = vec4(0.0);
-	vec4 final_diffuse = vec4(0.0);
-	float NdotL = clamp ( dot ( normalize ( fragmentNormal.xyz ) , normalize ( lightDir_ts ) ) , 0.0, 1.0);
-	
 	//vec3 variation = colorVar;
-	if (leaf>0.0){
+	if (branchFlag>=0.1){
 		// leaf
-		float mNdotL = max ( -dot ( normalize ( fragmentNormal.xyz ) , normalize ( lightDir_ts ) ) , 0.0);
-		vec4 noise = texture2D(leaf_noise_tex, 0.5*vec2(1.0, leaf)*t);
-		float noise1f = noise.x*2.0-1.0;
-		NdotL += noise1f;
 		vec2 seasonCoord = vec2(0.5, season + 0.2*leaf - 0.0001*time_offset_v);
 		
 		vec4 seasonColor =  texture2D(seasonMap, seasonCoord);
@@ -173,37 +134,9 @@ void	main()
 		if (seasonColor.a<0.5){
 			discard;
 		}
-		decal_color.rgb += seasonColor.rgb;
-		decal_color.rgb *= colorVar;
-		decal_color.a	*= seasonColor.a;
-		final_translucency = decal_color.rgb * 0.7 * mNdotL * 0.6 * MultiplyTranslucency;
-		final_ambient = decal_color * gl_LightSource[0].ambient * MultiplyAmbient;
-		final_diffuse = decal_color * NdotL * 0.7 * gl_FrontLightProduct[0].diffuse * MultiplyDiffuse;
 	} 
-	else {
-		// branch
-		//decal_color = vec4(1.0, 0.0, .0, 1.0); // debug
-		final_translucency = vec3(0.0, 0.0, 0.0);
-		final_ambient = decal_color * gl_LightSource[0].ambient * MultiplyAmbient;
-		final_diffuse = decal_color * NdotL * MultiplyDiffuse;
-	}
 	// compose color (phong)
-	color.rgb = ( final_ambient.rgb + final_diffuse.rgb + final_translucency);
-	color.a = alpha;
-	// fade LOD
-	color.a *= gl_Color.a;
-	// shadow
-	vec4 lpos = (lightSpacePosition/lightSpacePosition.w * 0.5) + vec4(0.5);
-	float depthEye   = lpos.z;
-	float depthLight = texture2D(shadowMap, lpos.xy).x;
-	
-	float shade = 1.0;
-	if ((depthEye - depthLight) > SHADOW_TRESHOLD){
-		shade = 0.5;
-	}
-	color.rgb *= shade;
-
-	gl_FragData[0] = color;
-	gl_FragData[1] = vec4(0.0, 0.0, 0.0, 1.0);
+	gl_FragData[0] = vec4(1.0, 0.0, 0.0, 1.0);
+	gl_FragDepth = gl_FragCoord.z + frontFacing*(depth_tex*2.0 - 1.0)*0.02;
 	return;
 }

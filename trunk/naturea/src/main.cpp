@@ -80,7 +80,7 @@ float	g_illuminationDecay	= 3.27;
 v4 g_light_position			= LIGHT_POSITION;
 v4 g_light_direction		= LIGHT_DIRECTION;
 bool g_light_showDir		= true;
-bool g_godraysEnabled		= true;
+bool g_godraysEnabled		= false;
 bool g_fastMode				= false;
 bool g_drawingReflection	= false;
 bool g_showTextures			= false;
@@ -155,8 +155,9 @@ float	g_tree_time_offset_2	= 0.5;
 
 const int	g_tree_gridSize			= 1;			// = SQRT(count of the trees)
 float		g_tree_mean_distance	= 8.0;			// = how dense is the grid
-float		g_tree_dither			= 0;			// = how far can be the tree placed from its' position in grid
+float		g_tree_dither			= 0.0;			// = how far can be the tree placed from its' position in grid
 
+float		g_dither				= 2.0;
 
 float	g_leaves_MultiplyAmbient			= 1.0;
 float	g_leaves_MultiplyDiffuse			= 0.7;
@@ -175,7 +176,7 @@ int		g_tree_lod12_count					 = 0;
 
 
 bool	g_draw_lod1_method		= true;
-bool	g_orbit					= true;
+bool	g_orbit					= false;
 float	g_orbit_speed			= 0.1;
 float	g_orbit_radius			= 10.0;
 v3		g_center				= v3(0.0, 5.0, 0.0);
@@ -203,7 +204,7 @@ float   g_transitionControl		= 0.0;
 
 float	g_gauss_shift			= 0.5;
 float	g_gauss_steep			= 0.1;
-float	g_gauss_weight			= 1.0;
+float	g_gauss_weight			= 0.05;
 
 
 World* p_world;
@@ -690,6 +691,12 @@ void initGUI()
 	TwAddVarRW(controlBar, "g_god_density		", TW_TYPE_FLOAT, &(g_god_density		), " label='g_god_density'			group=Light min=0 max=5 step=0.01");  
 	TwAddVarRW(controlBar, "g_god_weight		", TW_TYPE_FLOAT, &(g_god_weight		), " label='g_god_weight'			group=Light min=0 max=5 step=0.01");  
 	TwAddVarRW(controlBar, "g_illuminationDecay	", TW_TYPE_FLOAT, &(g_illuminationDecay	), " label='g_illuminationDecay'	group=Light min=0 max=5 step=0.01"); 
+
+
+	TwAddVarRW(controlBar, "shadows", TW_TYPE_BOOLCPP, &(g_ShadowMappingEnabled), 
+		" label='Shadows enabled' group=Light help='enable/disable shadows' ");  
+	TwAddVarRW(controlBar, "g_dither			", TW_TYPE_FLOAT, &(g_dither			), " label='g_dither'				group=Light min=0 max=100 step=0.01");  
+	
 
 	TwAddVarRW(controlBar, "godrays", TW_TYPE_BOOLCPP, &(g_godraysEnabled), 
 		" label='God rays enabled' group=Light help='enable/disable god rays' ");  

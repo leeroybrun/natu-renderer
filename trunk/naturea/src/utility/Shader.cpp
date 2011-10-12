@@ -458,6 +458,10 @@ void	Shader::setUniform(Uniform * uni){
 		case UniformType::M4:
 			glUniformMatrix4fv(uni->location, 1, false,  (GLfloat*)(uni->data));
 			break;
+		case UniformType::B1:
+			bool value = *(bool*)(uni->data);
+			glUniform1i(uni->location, value?1:0);
+			break;
 	
 	}
 }
