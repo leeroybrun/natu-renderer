@@ -48,6 +48,8 @@ uniform float		MultiplyDiffuse			;
 uniform float		MultiplySpecular		;
 uniform float		MultiplyTranslucency	;
 
+uniform float		near;
+uniform	float		far;
 #define sliceCnt		3
 #define sliceSetsCnt	3
 #define	texCols			18.0
@@ -250,11 +252,17 @@ void	main()
 		float depthLight = getDepth( lpos.xy );
 		float shade = 1.0;
 		// offset camera depth
-		depthEye += -frontFacing*(depth_tex*2.0-1.0)*0.02;
+		float remapFactor = 1.0 / (far-near);
+		float offset = (depth_tex*2.0 - 1.0)*0.333*remapFactor;
+
+		// perspective
+		//offset = ((-2.0*near*far/(offset*(near-far))) + 1.0);
+
+		depthEye += -frontFacing*offset;
 		if ((depthEye - depthLight) > SHADOW_TRESHOLD){
 			shade = 0.5;
 		}
-		//color.rgb =vec3 (-frontFacing*(depth_tex*2.0-1.0)); 
+		//color.rgb =vec3 (-frontFacing*offset*0.5 + 0.5); 
 		color.rgb *= shade;
 		// SHADOW MAPPING END
 	}

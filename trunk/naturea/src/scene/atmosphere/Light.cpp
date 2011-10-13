@@ -104,7 +104,6 @@ void Light::initShadowMapping(Camera *_cam, int resolution)
 
 
 void Light::beginShadowMap(){
-	
 	// set camera to light position and set its params...
 	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fb_shad_ID);
     // setup viewport
@@ -314,8 +313,8 @@ void Light::setup(GLuint lid, v4 *pos, v4 *dir, v4 &ambi, v4 &diff, v4 &spec, fl
 	direction	= dir;
 	width		= 20.0;
 	height		= 20.0;
-	near		= 0.0;
-	far			= 20.0;
+	near		= g_ShadowNear;
+	far			= g_ShadowFar;
 
 	glLightfv(lightId, GL_POSITION      , position->data);
 	glLightfv(lightId, GL_SPOT_DIRECTION, direction->data);

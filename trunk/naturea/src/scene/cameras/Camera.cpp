@@ -271,6 +271,8 @@ void Camera::setup(v3 & pos, v3 & dir, v3 &up, int *w, int *h, float fo, float n
 	fov			= fo;
 	near		= n;
 	far			= fa;
+	g_CameraFar = fa;
+	g_CameraNear= n;
 	ratio		= float(max(*w, *h))/float(min(*w,*h));
 	frustum_treshold = getFrustumTreshold();
 	g_LightMVPCameraVInverseMatrix = new m4();

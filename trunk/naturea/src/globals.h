@@ -193,6 +193,10 @@ extern LODTransitionMethod g_lodTransition;
 extern Texture* g_shadowmap1;
 extern m4	  * g_LightMVPmatrix;
 extern m4	  * g_LightMVPCameraVInverseMatrix;
+extern float	g_ShadowNear;
+extern float	g_ShadowFar;
+extern float	g_CameraNear;
+extern float	g_CameraFar ;
 
 extern float	g_dither;
 #endif
