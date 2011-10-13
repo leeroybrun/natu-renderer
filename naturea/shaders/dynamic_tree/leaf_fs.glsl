@@ -372,7 +372,7 @@ void main()
 	color.rgb = pow(color.rgb, vec3(1.0 + gauss_weight*gaussianCurve));
 	
 	if (shadowMappingEnabled>0){
-	// SHADOW MAPPING //
+		// SHADOW MAPPING //
 		vec4 lpos = (lightSpacePosition/lightSpacePosition.w * 0.5) + vec4(0.5);
 		float depthEye   = lpos.z;
 		float depthLight = getDepth(lpos.xy);
@@ -382,7 +382,7 @@ void main()
 			shade = 0.5;
 		}
 		color.rgb *= shade;
-	// END SHADOW MAPPING //
+		// END SHADOW MAPPING //
 	}
 	gl_FragData[0] = color;
 	//gl_FragData[0] = color;

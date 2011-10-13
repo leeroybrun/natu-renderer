@@ -51,6 +51,8 @@ uniform float		MultiplyAmbient			;
 uniform float		MultiplyDiffuse			;
 uniform float		MultiplySpecular		;
 uniform float		MultiplyTranslucency	;
+uniform float		near;
+uniform	float		far;
 			 
 float		fogFactor;
 uniform sampler2D shadowMap;

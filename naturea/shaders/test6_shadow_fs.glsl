@@ -25,7 +25,8 @@ uniform float		leaf_amplitude;
 uniform float		leaf_frequency;
 uniform vec2		movementVectorA;	
 uniform vec2		movementVectorB;	
-
+uniform float		near;
+uniform	float		far;
 
 varying vec2		sliceDesc;
 

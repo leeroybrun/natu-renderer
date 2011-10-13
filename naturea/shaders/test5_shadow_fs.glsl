@@ -20,6 +20,8 @@ uniform vec4		wood_frequencies;
 uniform float		leaf_amplitude;
 uniform float		leaf_frequency;
 uniform float		transition_control;
+uniform float		near;
+uniform	float		far;
 
 varying vec2		sliceDesc;
 
@@ -139,7 +141,8 @@ void	main()
 	} 
 	gl_FragData[0] = vec4(1.0, 0.0, 0.0, 1.0);
 	float treshold = 0.5;
-	float depth = gl_FragCoord.z + frontFacing*(depth_tex*2.0 - 1.0)*0.02;
+	float remapFactor = 1.0/(far-near);
+	float depth = gl_FragCoord.z + frontFacing*(depth_tex*2.0 - 1.0)*remapFactor;
 	
 
 	// DITHER //

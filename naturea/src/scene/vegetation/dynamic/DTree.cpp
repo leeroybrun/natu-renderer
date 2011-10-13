@@ -3088,6 +3088,9 @@ void DTree::initLOD1b()
 	lod1shader2->registerUniform("shadow_intensity",			UniformType::F1,	& g_leaves_shadow_intensity);
 	lod1shader2->registerUniform("LightDiffuseColor",			UniformType::F3,	& g_leaves_LightDiffuseColor.data);
 	
+	lod1shader2->registerUniform("near",	UniformType::F1,	& g_ShadowNear);
+	lod1shader2->registerUniform("far",		UniformType::F1,	& g_ShadowFar);
+
 	lod1shader2->registerUniform("LightMVPCameraVInverseMatrix",			UniformType::M4,	g_LightMVPCameraVInverseMatrix);
 	lod1shader2->registerUniform("shadowMappingEnabled",	UniformType::B1,	& g_ShadowMappingEnabled);
 
@@ -3106,6 +3109,9 @@ void DTree::initLOD1b()
 	lod1shader_shadow->registerUniform("leaf_amplitude"				, UniformType::F1, & g_tree_leaf_amplitude			);
 	lod1shader_shadow->registerUniform("leaf_frequency"				, UniformType::F1, & g_tree_leaf_frequency			);
 	lod1shader_shadow->registerUniform("dither"						, UniformType::F1, & g_dither						);
+	lod1shader_shadow->registerUniform("near"						, UniformType::F1, & g_ShadowNear);
+	lod1shader_shadow->registerUniform("far"						, UniformType::F1, & g_ShadowFar);
+
 	iu1Loc1 = lod1shader2->getLocation("u_colorVariance");
 	
 	tmLoc0 = lod1shader2->getAttributeLocation("transformMatrix");
@@ -3605,17 +3611,17 @@ void DTree::initLOD2()
 	//lod2loc_branch_tex	= lod2shader->getGLLocation("branch_noise_tex"	);
 
 
-	lod2shader->registerUniform("time"					, UniformType::F1, & g_float_time	);
-	lod2shader->registerUniform("time_offset"			, UniformType::F1, & time_offset	);
-	lod2shader->registerUniform("season"				, UniformType::F1, & g_season		);
-	lod2shader->registerUniform("instancing", UniformType::I1, & isInstancingEnabled);
-	lod2shader->registerUniform("movementVectorA"		, UniformType::F2, & g_tree_movementVectorA			);
-	lod2shader->registerUniform("movementVectorB"		, UniformType::F2, & g_tree_movementVectorB			);
-	lod2shader->registerUniform("window_size"			, UniformType::F2, & lod2_win_resolution			);
-	lod2shader->registerUniform("wood_amplitudes"		, UniformType::F4, & g_tree_wood_amplitudes.data	);
-	lod2shader->registerUniform("wood_frequencies"		, UniformType::F4, & g_tree_wood_frequencies.data	);
-	lod2shader->registerUniform("leaf_amplitude"		, UniformType::F1, & g_tree_leaf_amplitude			);
-	lod2shader->registerUniform("leaf_frequency"		, UniformType::F1, & g_tree_leaf_frequency			);
+	lod2shader->registerUniform("time"						, UniformType::F1, & g_float_time	);
+	lod2shader->registerUniform("time_offset"				, UniformType::F1, & time_offset	);
+	lod2shader->registerUniform("season"					, UniformType::F1, & g_season		);
+	lod2shader->registerUniform("instancing"				, UniformType::I1, & isInstancingEnabled);
+	lod2shader->registerUniform("movementVectorA"			, UniformType::F2, & g_tree_movementVectorA			);
+	lod2shader->registerUniform("movementVectorB"			, UniformType::F2, & g_tree_movementVectorB			);
+	lod2shader->registerUniform("window_size"				, UniformType::F2, & lod2_win_resolution			);
+	lod2shader->registerUniform("wood_amplitudes"			, UniformType::F4, & g_tree_wood_amplitudes.data	);
+	lod2shader->registerUniform("wood_frequencies"			, UniformType::F4, & g_tree_wood_frequencies.data	);
+	lod2shader->registerUniform("leaf_amplitude"			, UniformType::F1, & g_tree_leaf_amplitude			);
+	lod2shader->registerUniform("leaf_frequency"			, UniformType::F1, & g_tree_leaf_frequency			);
 	lod2shader->registerUniform("MultiplyAmbient",				UniformType::F1,	& g_leaves_MultiplyAmbient);
 	lod2shader->registerUniform("MultiplyDiffuse",				UniformType::F1,	& g_leaves_MultiplyDiffuse);
 	lod2shader->registerUniform("MultiplySpecular",				UniformType::F1,	& g_leaves_MultiplySpecular);
@@ -3624,21 +3630,25 @@ void DTree::initLOD2()
 	lod2shader->registerUniform("shadow_intensity",				UniformType::F1,	& g_leaves_shadow_intensity);
 	lod2shader->registerUniform("LightDiffuseColor",			UniformType::F3,	& g_leaves_LightDiffuseColor.data);
 	lod2loc_colorVariance = lod2shader->getLocation("u_colorVariance");
-	lod2shader->registerUniform("LightMVPCameraVInverseMatrix",			UniformType::M4,	g_LightMVPCameraVInverseMatrix);
-	lod2shader->registerUniform("shadowMappingEnabled",	UniformType::B1,	& g_ShadowMappingEnabled);
+	lod2shader->registerUniform("LightMVPCameraVInverseMatrix"	, UniformType::M4,	g_LightMVPCameraVInverseMatrix);
+	lod2shader->registerUniform("shadowMappingEnabled"			, UniformType::B1, & g_ShadowMappingEnabled);
+	lod2shader->registerUniform("near"							, UniformType::F1, & g_ShadowNear);
+	lod2shader->registerUniform("far"							, UniformType::F1, & g_ShadowFar);
 
 	// shadow
 	lod2shader_shadow->registerUniform("time"					, UniformType::F1, & g_float_time	);
 	lod2shader_shadow->registerUniform("time_offset"			, UniformType::F1, & time_offset	);
-	lod2shader_shadow->registerUniform("season"				, UniformType::F1, & g_season		);
-	lod2shader_shadow->registerUniform("instancing", UniformType::I1, & isInstancingEnabled);
+	lod2shader_shadow->registerUniform("season"					, UniformType::F1, & g_season		);
+	lod2shader_shadow->registerUniform("instancing"				, UniformType::I1, & isInstancingEnabled);
 	lod2shader_shadow->registerUniform("movementVectorA"		, UniformType::F2, & g_tree_movementVectorA			);
 	lod2shader_shadow->registerUniform("movementVectorB"		, UniformType::F2, & g_tree_movementVectorB			);
 	lod2shader_shadow->registerUniform("window_size"			, UniformType::F2, & lod2_win_resolution			);
 	lod2shader_shadow->registerUniform("wood_amplitudes"		, UniformType::F4, & g_tree_wood_amplitudes.data	);
 	lod2shader_shadow->registerUniform("wood_frequencies"		, UniformType::F4, & g_tree_wood_frequencies.data	);
-	lod2shader_shadow->registerUniform("leaf_amplitude"		, UniformType::F1, & g_tree_leaf_amplitude			);
-	lod2shader_shadow->registerUniform("leaf_frequency"		, UniformType::F1, & g_tree_leaf_frequency			);
+	lod2shader_shadow->registerUniform("leaf_amplitude"			, UniformType::F1, & g_tree_leaf_amplitude			);
+	lod2shader_shadow->registerUniform("leaf_frequency"			, UniformType::F1, & g_tree_leaf_frequency			);
+	lod2shader_shadow->registerUniform("near"					, UniformType::F1, & g_ShadowNear);
+	lod2shader_shadow->registerUniform("far"					, UniformType::F1, & g_ShadowFar);
 
 	tm2Loc0 = lod2shader->getAttributeLocation("transformMatrix");
 	ia2Loc1 = lod2shader->getAttributeLocation("colorVariance");
