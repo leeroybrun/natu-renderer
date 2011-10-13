@@ -140,16 +140,18 @@ void	main()
 	gl_FragData[0] = vec4(1.0, 0.0, 0.0, 1.0);
 	float treshold = 0.5;
 	float depth = gl_FragCoord.z + frontFacing*(depth_tex*2.0 - 1.0)*0.02;
-	/*
-	ivec2 screen_pos = ivec2(gl_FragCoord.xy);
 	
-	
-	if (mod(screen_pos.x, dither)<treshold && mod(screen_pos.y, dither)<treshold){
-		//depth += 0.01*transition_control*transition_control;
-	} else {	
-		depth = 1.0;
+
+	// DITHER //
+	if (transition_control<1.0 && transition_control>0.0){
+		ivec2 screen_pos = ivec2(gl_FragCoord.xy);
+		float c = 2.0*(1.0-transition_control);
+		if (mod(screen_pos.x, c)<treshold && mod(screen_pos.y, c)<treshold){
+		} else {	
+			discard;
+		}
 	}
-	*/
+	
 	gl_FragData[0] = vec4(1.0, 0.0, 0.0, 1.0);
 	//float depth = gl_FragCoord.z + frontFacing*(depth_tex*2.0 - 1.0)*0.01*3.0;
 	//if (leaf>0.0){

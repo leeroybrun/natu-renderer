@@ -25,29 +25,24 @@ void main()
 	{
 		discard;
 	}
-	ivec2 screen_pos = ivec2(gl_FragCoord.xy);
-	/*
-	if ( mod(screen_position.x+screen_position.y,2.0)){
-		//	odd
-		discard;
-	} else {
-		// even
-	}
-	*/
+	
 	vec3 color = vec3(0.0, 0.0, 0.0);
 	float treshold = 0.5;
 	//gl_FragDepth = gl_FragCoord.z + frontFacing*(depth_tex*2.0 - 1.0)*0.01;
 	gl_FragColor = vec4(color, 1.0);
-	/*
-	if (mod(screen_pos.x, dither)<treshold && mod(screen_pos.y, dither)<treshold){
-		color = vec3(1.0, 0.0, 0.0);
-		gl_FragColor = vec4(color, 1.0);
-		gl_FragDepth = 1.0;
-	} else {
-		gl_FragColor = vec4(color, 1.0);
-		//gl_FragDepth = gl_FragCoord.z + 0.001*transition_control*transition_control;	
-
+	// DITHER //
+	if (transition_control<1.0 && transition_control>0.0){
+		float c = 2.0*(1.0-transition_control);
+		ivec2 screen_pos = ivec2(gl_FragCoord.xy);
+		if (mod(screen_pos.x, c)<treshold && mod(screen_pos.y, c)<treshold){
+			
+			discard;
+			//color = vec3(1.0, 0.0, 0.0);
+			//gl_FragColor = vec4(color, 1.0);
+			//gl_FragDepth = 1.0;
+		}
 	}
-	*/
+
+	gl_FragColor = vec4(color, 1.0);
 
 }

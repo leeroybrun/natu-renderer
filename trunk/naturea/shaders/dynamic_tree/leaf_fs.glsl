@@ -72,6 +72,19 @@ vec3			ts_lightDir		= normalize(ts_lightDir_v);
 //--------------------------------------------------------------------------------------
 // Pixel Shaders
 //--------------------------------------------------------------------------------------
+const float infinity = 999999999;
+float getDepth(vec2 coords){
+	if (clamp(coords.xy, 0.0, 1.0)!= coords.xy){
+		return infinity; // infinity
+	}
+
+	float depth =  texture2D(shadowMap, coords.xy).x;
+	if (depth>=1.0){
+		return infinity;
+	}
+	return depth;
+}
+
 
 float getRoughness(float cosa, float m)
 {
@@ -362,7 +375,7 @@ void main()
 	// SHADOW MAPPING //
 		vec4 lpos = (lightSpacePosition/lightSpacePosition.w * 0.5) + vec4(0.5);
 		float depthEye   = lpos.z;
-		float depthLight = texture2D(shadowMap, lpos.xy).x;
+		float depthLight = getDepth(lpos.xy);
 		
 		float shade = 1.0;
 		if ((depthEye - depthLight) > SHADOW_TRESHOLD){

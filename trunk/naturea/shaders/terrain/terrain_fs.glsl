@@ -32,6 +32,19 @@ uniform mat4    LightProjectionMatrix;
 uniform mat4    LightMVPmatrix;
 uniform int		fastMode;
 
+const float infinity = 999999999;
+float getDepth(vec2 coords){
+	if (clamp(coords.xy, 0.0, 1.0)!= coords.xy){
+		return infinity; // infinity
+	}
+
+	float depth =  texture2D(shadowMap, coords.xy).x;
+	if (depth>=1.0){
+		return infinity;
+	}
+	return depth;
+}
+
 void main()
 {
 	if (height>visibleHeightInterval.y || height<visibleHeightInterval.x){
@@ -96,7 +109,7 @@ void main()
 		// shadow
 		lpos = (lightSpacePosition/lightSpacePosition.w * 0.5) + vec4(0.5);
 		float depthEye  = lpos.z;
-		float depthLight= texture2D(shadowMap, lpos.xy).x;
+		float depthLight= getDepth( lpos.xy );
 			// lightSpacePosition = LightProjectionMatrix * LightViewModelMatrix * CameraViewInvereseMatrix * gl_ModelViewMatrix * gl_Vertex
 		
 		

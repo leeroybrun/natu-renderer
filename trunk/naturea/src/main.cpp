@@ -153,9 +153,9 @@ float	g_tree_wave_increase_factor = 1.0;
 float	g_tree_time_offset_1	= 0.0;
 float	g_tree_time_offset_2	= 0.5;		
 
-const int	g_tree_gridSize			= 1;			// = SQRT(count of the trees)
+const int	g_tree_gridSize			= 10;			// = SQRT(count of the trees)
 float		g_tree_mean_distance	= 8.0;			// = how dense is the grid
-float		g_tree_dither			= 0.0;			// = how far can be the tree placed from its' position in grid
+float		g_tree_dither			= 2.0;			// = how far can be the tree placed from its' position in grid
 
 float		g_dither				= 2.0;
 
