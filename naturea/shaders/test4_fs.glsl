@@ -57,6 +57,22 @@ uniform sampler2D shadowMap;
 varying vec4	lightSpacePosition;
 vec4 lpos;
 
+const float infinity = 999999999;
+float getDepth(vec2 coords){
+	if (clamp(coords.xy, 0.0, 1.0)!= coords.xy){
+		return infinity; // infinity
+	}
+	float depth;
+	if (sliceDesc.y>0.0){
+		depth =  texture2D(depth_tex_2, coords.xy).x;
+	} else {		
+		depth = texture2D(depth_tex_1, coords.xy).x;
+	}
+	if (depth>=0.9){
+		return infinity;
+	}
+	return depth;
+}
 
 void	main()
 {	
@@ -202,15 +218,14 @@ void	main()
 	
 	if (shadowMappingEnabled>0){
 		// SHADOW MAPPING //
-		float depth_tex;
-		if (sliceDesc.y>0.0){
-			depth_tex	= texture2D(depth_tex_2, lookUpPos).x;
-		} else {		
-			depth_tex	= texture2D(depth_tex_1, lookUpPos).x;
-		}
+		float depth_tex = getDepth(lookUpPos);
+		//	depth_tex	= texture2D(depth_tex_2, lookUpPos).x;
+		//} else {		
+		//	depth_tex	= texture2D(depth_tex_1, lookUpPos).x;
+		//}
 		vec4 lpos = (lightSpacePosition/lightSpacePosition.w * 0.5) + vec4(0.5);
 		float depthEye   = lpos.z;
-		float depthLight = texture2D(shadowMap, lpos.xy).x;
+		float depthLight = getDepth( lpos.xy );
 		float depth_offset = -frontFacing*(depth_tex*2.0-1.0)*0.02;
 		depthEye +=depth_offset;
 		float shade = 1.0;
@@ -220,13 +235,7 @@ void	main()
 		color.rgb *= shade;
 		// SHADOW MAPPING END
 	}
-
-
-
-	//color.rgb = vec3(shade);
-	//color.rgb = c;
 	gl_FragData[0] = color;
-	//gl_FragData[0] = vec4(1.0, 0.0, 0.0, 1.0);
 	gl_FragData[1] = vec4(0.0, 0.0, 0.0, 1.0);
 	return;
 }
