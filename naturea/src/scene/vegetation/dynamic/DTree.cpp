@@ -697,7 +697,7 @@ void DTree::createLODdataTexture(Texture * dataTex, vector<Matrix4x4*> &MVPs)
 {
 	int branchCount = branches.size();
 	int sliceCount = MVPs.size();
-	int sliceItems = 3;
+	int sliceItems = 5;
 	int x = 0; // row = branch index
 	int y = 0; // item index + slice index
 	int channels = 4;
@@ -710,29 +710,36 @@ void DTree::createLODdataTexture(Texture * dataTex, vector<Matrix4x4*> &MVPs)
 	m4 * mvp;
 	DTreeBranch * branch;
 	int item = 0;
+
+	v4 o0 = v4(0.0, 0.0, 0.0, 1.0);
+	v4 t0 = v4(0.0, 0.0, 1.0, 1.0);
+	v4 r0 = v4(1.0, 0.0, 0.0, 1.0);
+	v4 s0 = v4(0.0, 1.0, 0.0, 1.0);
+
 	// each sliceset
 	for (int si=0; si<sliceCount; si++){
 		// get MVP
 		mvp = MVPs[si];
-
+		printf("slice %i mvp: \n", si);
+		mvp->printOut();
 		// for each branch
 		for (int bi=0; bi<branchCount; bi++){
 			branch = branches[bi];
 			// project original t, original s, original r
-			v4 o = (*mvp) * v3(0.0, 0.0, 0.0);
-			v4 t = (*mvp) * v3(0.0, 1.0, 0.0);
-			v4 r = (*mvp) * v3(1.0, 0.0, 0.0);
-			v4 s = (*mvp) * v3(0.0, 0.0, 1.0);
-			/*
-			v4 o = (*mvp) * branch->originalCS.origin;
-			v4 t = (*mvp) * branch->originalCS.t;
-			v4 r = (*mvp) * branch->originalCS.r;
-			v4 s = (*mvp) * branch->originalCS.s;
-			*/
-			o = o/o.w;
-			r = r/r.w;
-			s = s/s.w;
-			t = t/t.w;
+			// v4 o = (*mvp) * branch->originalCS.origin;
+			// v4 t = (o - (*mvp) * branch->originalCS.t)*0.5;
+			// v4 r = (o - (*mvp) * branch->originalCS.r)*0.5;
+			// v4 s = (o - (*mvp) * branch->originalCS.s)*0.5;
+
+			v4 o = (*mvp) * o0;
+			v4 t = (o + (*mvp) * t0)*0.5;
+			v4 r = (o + (*mvp) * r0)*0.5;
+			v4 s = (o + (*mvp) * s0)*0.5;
+			
+			//o = o/o.w;
+			//r = r/r.w;
+			//s = s/s.w;
+			//t = t/t.w;
 
 			// project LENGHT of the branch...
 			v4 be = (*mvp) * (branch->originalCS.origin + branch->originalCS.t * branch->L);
@@ -741,22 +748,34 @@ void DTree::createLODdataTexture(Texture * dataTex, vector<Matrix4x4*> &MVPs)
 
 			// save data
 			item = 0;
-			data[bi*branchOffset + si*sliceOffset + item*channels + 0] =  o.x ;
-			data[bi*branchOffset + si*sliceOffset + item*channels + 1] =  o.y ;
-			data[bi*branchOffset + si*sliceOffset + item*channels + 2] =  t.x ;
-			data[bi*branchOffset + si*sliceOffset + item*channels + 3] =  t.y ;
+			data[bi*branchOffset + si*sliceOffset + item*channels + 0] = o.x ;
+			data[bi*branchOffset + si*sliceOffset + item*channels + 1] = o.y ;
+			data[bi*branchOffset + si*sliceOffset + item*channels + 2] = o.z ;
+			data[bi*branchOffset + si*sliceOffset + item*channels + 3] = o.w ;
 
 			item = 1;
-			data[bi*branchOffset + si*sliceOffset + item*channels + 0] =  r.x ;
-			data[bi*branchOffset + si*sliceOffset + item*channels + 1] =  r.y ;
-			data[bi*branchOffset + si*sliceOffset + item*channels + 2] =  s.x ;
-			data[bi*branchOffset + si*sliceOffset + item*channels + 3] =  s.y ;
+			data[bi*branchOffset + si*sliceOffset + item*channels + 0] = t.x ;
+			data[bi*branchOffset + si*sliceOffset + item*channels + 1] = t.y ;
+			data[bi*branchOffset + si*sliceOffset + item*channels + 2] = t.z ;
+			data[bi*branchOffset + si*sliceOffset + item*channels + 3] = t.w ;
 
 			item = 2;
-			data[bi*branchOffset + si*sliceOffset + item*channels + 0] =  lenght ;
-			data[bi*branchOffset + si*sliceOffset + item*channels + 1] =  lenght ;
-			data[bi*branchOffset + si*sliceOffset + item*channels + 2] =  lenght ;
-			data[bi*branchOffset + si*sliceOffset + item*channels + 3] =  lenght ;
+			data[bi*branchOffset + si*sliceOffset + item*channels + 0] = r.x ;
+			data[bi*branchOffset + si*sliceOffset + item*channels + 1] = r.y ;
+			data[bi*branchOffset + si*sliceOffset + item*channels + 2] = r.z ;
+			data[bi*branchOffset + si*sliceOffset + item*channels + 3] = r.w ;
+
+			item = 3;
+			data[bi*branchOffset + si*sliceOffset + item*channels + 0] = s.x ;
+			data[bi*branchOffset + si*sliceOffset + item*channels + 1] = s.y ;
+			data[bi*branchOffset + si*sliceOffset + item*channels + 2] = s.z ;
+			data[bi*branchOffset + si*sliceOffset + item*channels + 3] = s.w ;
+
+			item = 4;
+			data[bi*branchOffset + si*sliceOffset + item*channels + 0] = lenght ;
+			data[bi*branchOffset + si*sliceOffset + item*channels + 1] = lenght ;
+			data[bi*branchOffset + si*sliceOffset + item*channels + 2] = lenght ;
+			data[bi*branchOffset + si*sliceOffset + item*channels + 3] = lenght ;
 
 
 		} // for each branch
@@ -4044,8 +4063,8 @@ void DTree::createSlices(v3 & direction, v3 & rightVector, Matrix4x4 *mvp, bool 
 	//int		loc_cam_dir		= dataProcessShader->getLocation("cam_dir");
 	v3 d = direction.getRotated(90*DEG_TO_RAD, v3(0.0, 1.0, 0.0));
 	v3 r = rightVector.getRotated(90*DEG_TO_RAD, v3(0.0, 1.0, 0.0));
-	bLODShader->registerUniform("cam_dir", UniformType::F3, & d);
-	lLODShader->registerUniform("cam_dir", UniformType::F3, & d);
+	bLODShader->registerUniform("cam_dir",   UniformType::F3, & d);
+	lLODShader->registerUniform("cam_dir",   UniformType::F3, & d);
 	bLODShader->registerUniform("cam_right", UniformType::F3, & r);
 	lLODShader->registerUniform("cam_right", UniformType::F3, & r);
 	// dummy depth map
@@ -4060,7 +4079,7 @@ void DTree::createSlices(v3 & direction, v3 & rightVector, Matrix4x4 *mvp, bool 
 
 // get "slice thickness"
 	BBox * box = getBBox();
-	float distance = -10.f;
+	float distance = -0.5f;
 	v3 position = direction * distance;
 	float diameter = 0.7*box->getMinSize();
 	float radius = diameter*0.5f;
@@ -4076,12 +4095,13 @@ void DTree::createSlices(v3 & direction, v3 & rightVector, Matrix4x4 *mvp, bool 
 		glPushMatrix();
 		glLoadIdentity();
 		near = 0.0;
-		far = 1000.0;
+		far = 1.0;
 		glOrtho(left, right, bottom, top, near, far);
 		// get P matrix:
 		Matrix4x4 P;
 		
 		glGetFloatv(GL_PROJECTION_MATRIX, (P.m) );
+		P.printOut();
 		glPopMatrix();
 	glMatrixMode(GL_MODELVIEW);
 		glPushMatrix();
@@ -4090,10 +4110,10 @@ void DTree::createSlices(v3 & direction, v3 & rightVector, Matrix4x4 *mvp, bool 
 		// get MV matrix:
 		Matrix4x4 MV;
 		glGetFloatv(GL_MODELVIEW_MATRIX, (MV.m));
-
+		MV.printOut();
 		glPopMatrix();
 	/// compute ModelViewProjection matrix
-		Matrix4x4 LocMVP = P * MV;
+		Matrix4x4 LocMVP = P*MV;
 		memcpy(mvp->m, LocMVP.m, sizeof(float)*16);
 
 
@@ -4181,11 +4201,13 @@ void DTree::createSlices(v3 & direction, v3 & rightVector, Matrix4x4 *mvp, bool 
 				g_window_sizes.y = resolution_y;
 				glViewport(0, 0, g_window_sizes.x, g_window_sizes.y);
 				//system("PAUSE");
+				//glMultMatrixf(P.m);
 				glOrtho(left, right, bottom, top, near, far);
 				
 			glMatrixMode(GL_MODELVIEW);
 				glPushMatrix();
 				glLoadIdentity();
+				//glMultMatrixf(MV.m);
 				gluLookAt( position.x, position.y, position.z, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
 		// render offscreen
 		// draw tree now...
