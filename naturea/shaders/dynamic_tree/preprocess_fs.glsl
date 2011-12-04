@@ -7,10 +7,10 @@ uniform vec2 window_size;
 //--------------------------------------------------------------------------------------
 // Defines
 //--------------------------------------------------------------------------------------
-#define EPSILON1		200	
-#define EPSILON2		120
-#define MEPSILON		-20
-#define STEP			3.0
+#define EPSILON1		30	
+#define EPSILON2		30
+#define MEPSILON		-10
+#define STEP			2.0
 //--------------------------------------------------------------------------------------
 // Fragment Shader
 // PREPROCESS

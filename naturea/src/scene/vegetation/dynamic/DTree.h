@@ -115,6 +115,8 @@ public:
 	void createVBOs();
 	void createDataTexture();
 
+	void createLODdataTexture(Texture * dataTex, vector<Matrix4x4*> &MVPs);
+	
 	bool loadDataTexture(string filename);
 	bool saveDataTexture(string filename);
 
@@ -141,10 +143,11 @@ public:
 	void draw2Shadowmap();
 
 	void init();
-	void init2(v4 ** positions_rotations, int count);
+
+	void setInstances(v4 ** positions_rotations, int count);
 	void initLOD0();
 	void initLOD1();
-	void initLOD1b();
+	//void initLOD1b();
 	void initLOD2();
 
 	void update(double time);
@@ -156,7 +159,7 @@ public:
 
 
 	BBox * getBBox(void);
-	void createSlices(v3 & direction, v3 & right,  bool half=true);
+	void createSlices(v3 & direction, v3 & right,  Matrix4x4 *mvp, bool half=true);
 	int resolution_x, resolution_y;
 	int	slice_count;
 
@@ -177,6 +180,11 @@ public:
 	vector<DTreeInstanceData*>			tree_instances_lod1;
 
 private:
+	// INSTANCES
+	v4**				positions_rotations;
+	int					count;
+	// INSTANCES END
+
 	int					instanceFloatCount;
 	DTreeBranch			*trunk;
 	vector<DTreeBranch*> branches;
@@ -246,6 +254,7 @@ private:
 
 	Texture*				colorMap;
 	Texture*				colorMap2;
+	Texture*				lod1dataTexture;
 	Texture*				weightMap;
 	Texture*				dataMap;
 	vector<DTreeSliceSet*>	sliceSets;
@@ -322,6 +331,7 @@ private:
 	Texture *			lod2branch2;
 	Texture	*			lod2depth1;
 	Texture *			lod2depth2;
+	Texture *			lod2dataTexture;
 	int					lod2loc_season_tex;
 	int					lod2loc_colorVariance;
 	int					lod2loc_leaf_tex;

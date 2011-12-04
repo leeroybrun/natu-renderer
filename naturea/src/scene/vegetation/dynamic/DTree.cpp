@@ -692,6 +692,93 @@ void DTree::createDataTexture()
 	data = NULL;
 }
 
+
+void DTree::createLODdataTexture(Texture * dataTex, vector<Matrix4x4*> &MVPs)
+{
+	int branchCount = branches.size();
+	int sliceCount = MVPs.size();
+	int sliceItems = 3;
+	int x = 0; // row = branch index
+	int y = 0; // item index + slice index
+	int channels = 4;
+	int dimX = branchCount;
+	int dimY = sliceItems*sliceCount;
+	float *data = new float[dimX*dimY*channels];
+	int sliceOffset = channels * sliceItems;
+	int branchOffset = sliceOffset * sliceCount;
+	// fill data buffer
+	m4 * mvp;
+	DTreeBranch * branch;
+	int item = 0;
+	// each sliceset
+	for (int si=0; si<sliceCount; si++){
+		// get MVP
+		mvp = MVPs[si];
+
+		// for each branch
+		for (int bi=0; bi<branchCount; bi++){
+			branch = branches[bi];
+			// project original t, original s, original r
+			v4 o = (*mvp) * v3(0.0, 0.0, 0.0);
+			v4 t = (*mvp) * v3(0.0, 1.0, 0.0);
+			v4 r = (*mvp) * v3(1.0, 0.0, 0.0);
+			v4 s = (*mvp) * v3(0.0, 0.0, 1.0);
+			/*
+			v4 o = (*mvp) * branch->originalCS.origin;
+			v4 t = (*mvp) * branch->originalCS.t;
+			v4 r = (*mvp) * branch->originalCS.r;
+			v4 s = (*mvp) * branch->originalCS.s;
+			*/
+			o = o/o.w;
+			r = r/r.w;
+			s = s/s.w;
+			t = t/t.w;
+
+			// project LENGHT of the branch...
+			v4 be = (*mvp) * (branch->originalCS.origin + branch->originalCS.t * branch->L);
+			be = be/be.w;
+			float lenght = (be-o).lenght() / t.lenght();
+
+			// save data
+			item = 0;
+			data[bi*branchOffset + si*sliceOffset + item*channels + 0] =  o.x ;
+			data[bi*branchOffset + si*sliceOffset + item*channels + 1] =  o.y ;
+			data[bi*branchOffset + si*sliceOffset + item*channels + 2] =  t.x ;
+			data[bi*branchOffset + si*sliceOffset + item*channels + 3] =  t.y ;
+
+			item = 1;
+			data[bi*branchOffset + si*sliceOffset + item*channels + 0] =  r.x ;
+			data[bi*branchOffset + si*sliceOffset + item*channels + 1] =  r.y ;
+			data[bi*branchOffset + si*sliceOffset + item*channels + 2] =  s.x ;
+			data[bi*branchOffset + si*sliceOffset + item*channels + 3] =  s.y ;
+
+			item = 2;
+			data[bi*branchOffset + si*sliceOffset + item*channels + 0] =  lenght ;
+			data[bi*branchOffset + si*sliceOffset + item*channels + 1] =  lenght ;
+			data[bi*branchOffset + si*sliceOffset + item*channels + 2] =  lenght ;
+			data[bi*branchOffset + si*sliceOffset + item*channels + 3] =  lenght ;
+
+
+		} // for each branch
+
+
+	}// for each slice set
+
+	dataTexture = new Texture(  
+		GL_TEXTURE_2D,
+		GL_RGBA32F,
+		GL_RGBA,
+		GL_FLOAT,
+		data,
+		dimY, 
+		dimX,
+		DYN_TREE::LOD_DATA_TEXTURE_NAME
+		);
+	delete [] data;
+	data = NULL;
+
+}
+
 bool DTree::loadDataTexture(string filename)
 {
 	return false;
@@ -1436,7 +1523,7 @@ void DTree::draw_all_instances_LOD2(){
 			glEnable(GL_CULL_FACE);
 			glEnable(GL_LIGHTING);
 		} else {
-		
+			// not draw to shadow map...
 			glColor4f(1.0, 1.0, 1.0, 1.0);	
 		
 			glDisable(GL_CULL_FACE);
@@ -1473,7 +1560,6 @@ void DTree::draw_all_instances_LOD2(){
 				lod2vbo->bind(lod2shader);	
 
 				// instance matrices VBO
-
 
 				// bind instance data
 				glBindBuffer(GL_ARRAY_BUFFER, i_matricesBuffID);
@@ -2975,9 +3061,12 @@ void DTree::initLOD0()
 
 }
 
-void DTree::initLOD1b()
+void DTree::initLOD1()
 {
 	
+	// create place to store MVP matrices of slices...
+	vector<Matrix4x4*> MVPmatrices;
+
 	// create slices
 
 	// create 2 sliceSets (cross, double sided)
@@ -2992,8 +3081,10 @@ void DTree::initLOD1b()
 	resolution_y = lod1_win_resolution.y;
 	
 	set = new DTreeSliceSet();
-	set->rotation_y = 0.0f;	
-	this->createSlices(dir, right, false);
+	set->rotation_y = 0.0f;
+	Matrix4x4 *mvp = new Matrix4x4();
+	this->createSlices(dir, right, mvp, false);
+	MVPmatrices.push_back(mvp);
 	set->setSlices(this->slices);
 	sliceSets2.push_back(set);
 	slices.clear();	
@@ -3002,7 +3093,9 @@ void DTree::initLOD1b()
 	right.rotateY(60*DEG_TO_RAD);
 	set = new DTreeSliceSet();
 	set->rotation_y = 60;
-	this->createSlices(dir, right, false);
+	mvp = new Matrix4x4();
+	this->createSlices(dir, right, mvp, false);
+	MVPmatrices.push_back(mvp);
 	set->setSlices(this->slices);
 	//set->createFromDir(this, dir);
 	sliceSets2.push_back(set);
@@ -3013,12 +3106,24 @@ void DTree::initLOD1b()
 	dir.rotateY(-60*DEG_TO_RAD);
 	right.rotateY(-60*DEG_TO_RAD);
 	set = new DTreeSliceSet();	
-	this->createSlices(dir, right, false);
+	mvp = new Matrix4x4();
+	this->createSlices(dir, right, mvp, false);
+	MVPmatrices.push_back(mvp);
 	set->rotation_y = -60;
 	set->setSlices(this->slices);
 	//set->createFromDir(this, dir);
 	sliceSets2.push_back(set);
 	slices.clear();	
+
+
+	// create data texture for slices...
+	createLODdataTexture(lod1dataTexture, MVPmatrices);
+
+	for (int t=0; t<3; t++){
+		SAFE_DELETE_PTR(MVPmatrices[t]);
+	}
+	MVPmatrices.clear();
+	system("PAUSE");
 	// join textures to one...
 	joinSliceSetsTextures();
 	
@@ -3340,7 +3445,8 @@ void DTree::initLOD1b()
 	eboLOD1->create(GL_UNSIGNED_INT, GL_QUADS, iCnt, ebo_data, GL_STATIC_DRAW);
 }
 
-void DTree::initLOD1()
+
+/*void DTree::initLOD1()
 {
 	
 	// create slices
@@ -3429,19 +3535,19 @@ void DTree::initLOD1()
 	//int i = lod1shader->registerUniform("time_offset"	, UniformType::F1, & tree_time_offset);
 	//u_time_offset = lod1shader->getUniform(i);
 	
-	/*
-	shader = new Shader("test");
-	shader->loadShader("shaders/test_vs.glsl", "shaders/test_fs.glsl");
-	// link textures to shader
-	shader->linkTexture(frontDecalMap		);
-	shader->linkTexture(frontNormalMap		);
-	shader->linkTexture(frontTranslucencyMap);
-	shader->linkTexture(frontHalfLife2Map	);
-	shader->linkTexture(backDecalMap		);
-	shader->linkTexture(backNormalMap		);
-	shader->linkTexture(backTranslucencyMap	);
-	shader->linkTexture(backHalfLife2Map	);
-	*/
+	
+	// shader = new Shader("test");
+	// shader->loadShader("shaders/test_vs.glsl", "shaders/test_fs.glsl");
+	// // link textures to shader
+	// shader->linkTexture(frontDecalMap		);
+	// shader->linkTexture(frontNormalMap		);
+	// shader->linkTexture(frontTranslucencyMap);
+	// shader->linkTexture(frontHalfLife2Map	);
+	// shader->linkTexture(backDecalMap		);
+	// shader->linkTexture(backNormalMap		);
+	// shader->linkTexture(backTranslucencyMap	);
+	// shader->linkTexture(backHalfLife2Map	);
+	
 
 	// init VBO
 	int count = 4;
@@ -3490,7 +3596,7 @@ void DTree::initLOD1()
 	lod1vbo->compileData(GL_STATIC_DRAW);
 	lod1vbo->compileWithShader(lod1shader);
 	
-}
+}*/
 
 void DTree::initLOD2()
 {
@@ -3805,7 +3911,12 @@ void DTree::initLOD2()
 
 }
 
-void DTree::init2(v4 ** positions_rotations, int count){
+void DTree::setInstances(v4 ** p_r, int c){
+	positions_rotations = p_r;
+	count = c;
+}
+
+void DTree::init(){
 	swapCnt = 0;
 	instanceFloatCount = 20;
 	/*****
@@ -3836,7 +3947,7 @@ void DTree::init2(v4 ** positions_rotations, int count){
 		instance->transformMatrix = matrix; // copy matrix
 
 		// to be able to determine the proper type to display,
-		// we need to know from which angle are we looking at the geometry
+		// we need to know from which angle we are looking at the geometry
 		// so we precalculate all we can now, to spare time in draw calls
 		instance->dirA = v3( -1.0, 0.0, 0.0).getRotated( instance->rotation_y*DEG_TO_RAD, v3(0.0, 1.0, 0.0));	// A									// A
 		instance->dirB = instance->dirA.getRotated( 60 * DEG_TO_RAD, v3(0.0, 1.0, 0.0));				// B
@@ -3877,8 +3988,7 @@ void DTree::init2(v4 ** positions_rotations, int count){
 	lod1_typeIndices.push_back(2);
 
 	initLOD0();
-	//initLOD1();
-	initLOD1b();
+	initLOD1();
 	initLOD2();
 	
 	
@@ -3891,13 +4001,13 @@ void DTree::init2(v4 ** positions_rotations, int count){
 		glBufferData(GL_ARRAY_BUFFER, count * instanceFloatCount* sizeof(float), NULL, GL_STREAM_DRAW);  
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
-
+/*
 void DTree::init(){
 	initLOD0();
 	initLOD1();
 	//initLOD1b();
 	initLOD2();
-}
+}/*/
 
 void DTree::update(double time){
 	prepareForRender();
@@ -3923,7 +4033,8 @@ BBox * DTree::getBBox()
 	return bbox;
 }
 
-void DTree::createSlices(v3 & direction, v3 & rightVector, bool half){
+void DTree::createSlices(v3 & direction, v3 & rightVector, Matrix4x4 *mvp, bool half)
+{
 	// init data pre-processing shader
 	time_offset = 0.0;
 	Shader * dataProcessShader = new Shader("data_pre-processor");
@@ -3960,6 +4071,33 @@ void DTree::createSlices(v3 & direction, v3 & rightVector, bool half){
 	DTreeSlice * slice;
 	int i;
 
+	// get MVP matrix:
+	glMatrixMode(GL_PROJECTION);
+		glPushMatrix();
+		glLoadIdentity();
+		near = 0.0;
+		far = 1000.0;
+		glOrtho(left, right, bottom, top, near, far);
+		// get P matrix:
+		Matrix4x4 P;
+		
+		glGetFloatv(GL_PROJECTION_MATRIX, (P.m) );
+		glPopMatrix();
+	glMatrixMode(GL_MODELVIEW);
+		glPushMatrix();
+		glLoadIdentity();
+		gluLookAt( position.x, position.y, position.z, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
+		// get MV matrix:
+		Matrix4x4 MV;
+		glGetFloatv(GL_MODELVIEW_MATRIX, (MV.m));
+
+		glPopMatrix();
+	/// compute ModelViewProjection matrix
+		Matrix4x4 LocMVP = P * MV;
+		memcpy(mvp->m, LocMVP.m, sizeof(float)*16);
+
+
+	
 	// clear previous slices
 	/*
 	for ( i = 0; i < slices.size(); i++){
@@ -4030,7 +4168,7 @@ void DTree::createSlices(v3 & direction, v3 & rightVector, bool half){
 		// setup near & far plane
 			near = positionDist-radius + i * thickness;
 			far = near + thickness;
-			// last interval must be to infinity if half slicing
+			// last interval must continue to infinity in case of half slicing
 			if (half && i==slice_count-1)
 			{
 				far = positionDist-radius + 2*(i+1) * thickness;
@@ -4053,6 +4191,9 @@ void DTree::createSlices(v3 & direction, v3 & rightVector, bool half){
 		// draw tree now...
 			drawForLOD();
 			glFinish();
+			
+
+
 		glMatrixMode(GL_PROJECTION);
 			glPopMatrix();
 		glMatrixMode(GL_MODELVIEW);
@@ -4122,8 +4263,6 @@ void DTree::createSlices(v3 & direction, v3 & rightVector, bool half){
 	} // for each slice
 	SAFE_DELETE_PTR ( depthmap );
 	SAFE_DELETE_PTR ( dataProcessShader );
-
-	//system("PAUSE");
 }
 
 void DTree::joinSliceSetsTextures(){
