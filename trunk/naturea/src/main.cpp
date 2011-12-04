@@ -79,12 +79,12 @@ float	g_illuminationDecay	= 3.27;
 
 v4 g_light_position			= LIGHT_POSITION;
 v4 g_light_direction		= LIGHT_DIRECTION;
-bool g_light_showDir		= true;
+bool g_light_showDir		= false;
 bool g_godraysEnabled		= false;
 bool g_fastMode				= false;
 bool g_drawingReflection	= false;
 bool g_showTextures			= false;
-bool g_ShadowMappingEnabled	= true;
+bool g_ShadowMappingEnabled	= false;
 bool g_Draw2Shadowmap		= false;
 m4 g_LightMVCameraVInverseMatrix;
 m4 g_LightPMatrix;
@@ -127,7 +127,8 @@ bool	g_draw_dtree_lod		= true;
 bool	g_draw_lod0				= true;
 bool	g_draw_lod1				= true;
 bool	g_draw_lod2				= true;
-v4		g_lodTresholds			= v4(15, 20, 50, 60);
+//v4		g_lodTresholds			= v4(15, 20, 50, 60);
+v4		g_lodTresholds			= v4(15, 20, 1000, 1000);
 bool	g_draw_low_vegetation	= true;
 bool	g_draw_dtree			= true;
 bool	g_draw_light_direction	= false;
@@ -153,11 +154,13 @@ float	g_tree_wave_increase_factor = 1.0;
 float	g_tree_time_offset_1	= 0.0;
 float	g_tree_time_offset_2	= 0.5;		
 
-const int	g_tree_gridSize			= 10;			// = SQRT(count of the trees)
-float		g_tree_mean_distance	= 5.0;			// = how dense is the grid
-float		g_tree_dither			= 2.0;			// = how far can be the tree placed from its' position in grid
+const int	g_tree_gridSize			= 1;			// = SQRT(count of the trees)
+float		g_tree_mean_distance	= 2.0;			// = how dense is the grid
+float		g_tree_dither			= 1.0;			// = how far can be the tree placed from its' position in grid
 
 float		g_dither				= 2.0;
+
+int		g_treesamples = 0;
 
 float	g_leaves_MultiplyAmbient			= 1.0;
 float	g_leaves_MultiplyDiffuse			= 0.7;

@@ -95,7 +95,7 @@
 #define HUMAN_ACTIVITY_INCR	    0.5f
 #define HUMAN_MIN_ACTIVITY	    0.5f
 #define HUMAN_MAX_ACTIVITY	    1.3f
-#define HUMAN_POSITION          v3(-10.0, 5.0, 0.0)
+#define HUMAN_POSITION          v3(-10.0, 11.0, 0.0)
 #define HUMAN_DIRECTION			v3(1.0, 0.0, 0.0)
 
 //#define MODEL1_FILENAME		"models/Walls&Towers/watch2.pgr2"
@@ -284,6 +284,7 @@ namespace DYN_TREE
 	const static char	*SEASON_MAP				= "textures/dynamic_tree/seasonMap2.png";
 
 	const static char*  DATA_TEXTURE_NAME		= "data_tex";
+	const static char*	LOD_DATA_TEXTURE_NAME	= "lod_data_tex";
 	const static string OBJT_FILENAME			= "models/OBJT/JavorListy.objt";
 	enum VERTEX_ATTRIBUTES{
 		POSITION,

@@ -17,6 +17,7 @@ using namespace std;
 class Matrix4x4
 {
 	public:
+
 		Matrix4x4()
 		{
 			setIdentity();
@@ -57,7 +58,7 @@ class Matrix4x4
 				m[i] = copy.m[i];
 			}
 		}
-		inline void printOut()
+		inline const void printOut()
 		{
 			printf("MATRIX:\n");
 				printf("\t %f %f %f %f\n", m[0], m[4], m[8] , m[12]);
@@ -122,6 +123,7 @@ class Matrix4x4
 
 		Matrix4x4 operator * (const Matrix4x4& mat) const
 		{
+
 			return Matrix4x4(
 				// 1st row
 				m[ 0] * mat.m[ 0] + m[ 4] * mat.m[ 1] +	m[ 8] * mat.m[ 2] + m[12] * mat.m[ 3],
@@ -156,6 +158,15 @@ class Matrix4x4
 				m[ 1]*vertex.x + m[ 5]*vertex.y + m[ 9]*vertex.z + m[13]*vertex.w,
 				m[ 2]*vertex.x + m[ 6]*vertex.y + m[10]*vertex.z + m[14]*vertex.w,
 				m[ 3]*vertex.x + m[ 7]*vertex.y + m[11]*vertex.z + m[15]*vertex.w);
+		}
+
+		Vector4 operator * (const Vector3& vertex) const
+		{
+			return Vector4(
+				m[ 0]*vertex.x + m[ 4]*vertex.y + m[ 8]*vertex.z + m[12],
+				m[ 1]*vertex.x + m[ 5]*vertex.y + m[ 9]*vertex.z + m[13],
+				m[ 2]*vertex.x + m[ 6]*vertex.y + m[10]*vertex.z + m[14],
+				m[ 3]*vertex.x + m[ 7]*vertex.y + m[11]*vertex.z + m[15]);
 		}
 
 		bool operator == (const Matrix4x4& mat) const

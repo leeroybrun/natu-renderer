@@ -60,6 +60,7 @@ varying vec4	lightSpacePosition;
 vec4 lpos;
 
 const float infinity = 999999999;
+
 float getDepth(vec2 coords){
 	if (clamp(coords.xy, 0.0, 1.0)!= coords.xy){
 		return infinity; // infinity
@@ -215,9 +216,7 @@ void	main()
 	color.a = alpha;
 	// fade LOD
 	color.a *= gl_Color.a;
-	
-	
-	
+
 	if (shadowMappingEnabled>0){
 		// SHADOW MAPPING //
 		float depth_tex = getDepth(lookUpPos);

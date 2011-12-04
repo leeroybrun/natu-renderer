@@ -337,6 +337,7 @@ void World::init()
 {
 	printf("INITIALIZING WORLD:\n");
 	shaderManager.init();
+
 	/*
 	// create LOD buffers
 	glGenTextures(1, &db_LOD_ID );
@@ -441,7 +442,7 @@ void World::init()
 	
 	
 	printf("---- DYNAMIC TREE INIT BEGIN");
-	p_dtree = new DTree(&textureManager, &shaderManager);\
+	p_dtree = new DTree(&textureManager, &shaderManager);
 		p_dtree->loadOBJT( DYN_TREE::OBJT_FILENAME );
 		//p_dtree->init();
 		p_dtree->viewer_direction = &p_activeCamera->direction;
@@ -458,10 +459,19 @@ void World::init()
 	float x,y,xt,yt,z,r;
 	float diff = g_tree_dither;
 	int instance_index = 0;
+	//float centerOffsetX = g_tree_gridSize/2;
+	float centerOffsetY = g_tree_gridSize/2;
+
+	float centerOffsetX = 0.0;
+	//float centerOffsetY = 0.0;
+
 	for (int i=0; i<g_tree_gridSize; i++){
 		for (int j=0; j<g_tree_gridSize; j++){
-			x = (i - g_tree_gridSize/2)*g_tree_mean_distance + randomf(-diff, diff);
-			z = (j - g_tree_gridSize/2)*g_tree_mean_distance + randomf(-diff, diff);
+
+
+
+			x = (i - centerOffsetX)*g_tree_mean_distance + randomf(-diff, diff);
+			z = (j - centerOffsetY)*g_tree_mean_distance + randomf(-diff, diff);
 			r = randomf(-180, 180);
 			xt = x + p_terrain->sz_x/2.0;
 			yt = z + p_terrain->sz_y/2.0;
@@ -476,7 +486,8 @@ void World::init()
 			//p_dtree->tree_instances.push_back( idata );
 		}
 	}
-	p_dtree->init2(tree_positions,g_tree_gridSize*g_tree_gridSize); 
+	p_dtree->setInstances(tree_positions,g_tree_gridSize*g_tree_gridSize);
+	p_dtree->init(); 
 	/*
 	
 	p_test_model = new TestModel();

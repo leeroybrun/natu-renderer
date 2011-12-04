@@ -39,10 +39,12 @@ vec4 texture2DMS(sampler2DMS sampler, ivec2 coord, int sampleCount){
 
 void main(void)
 {
-	texCoord = ivec2(gl_TexCoord[0].st * textureSize(otex));
+	
 	ivec2 texSize = textureSize(otex).xy;
+	texCoord = ivec2(gl_TexCoord[0].st * texSize);
 	vec4  origColor;
-	origColor = texture2DMS(otex, texCoord, sampleCount);
+	origColor = texelFetch(otex, texCoord, 0);
+	origColor.a = 1.0;
 	//gl_FragColor = origColor;
 	//return;
 	//vec4  origColor = texture2D(otex, gl_TexCoord[0].st);
@@ -50,10 +52,11 @@ void main(void)
 	
 	//origColor.rgb *= (tintColor*tintFactor);
 	origColor.rgb = pow(origColor.rgb,vec3(1.0/1.2));
-
+	
+	
 	
 	//origColor = vec4(0.1)+origColor;
-	vec4  raysColor = texture2DMS(rtex, texCoord, sampleCount);
+	
 	//vec4  raysColor = texture2D(rtex, gl_TexCoord[0].st);
 	//float bcolor   = texture2D(btex,  gl_TexCoord[0].st).x;
 	
@@ -91,6 +94,8 @@ void main(void)
 	//}
 	//return;
 	//--------------------------------------------------------------------
+	vec3  raysColor = vec3(0.0);
+	vec3  godColor = vec3(0.0);
 	float illumDec =illuminationDecay;
 	if (lightDirDOTviewDir>0.0){
 		float exposure	= expo/NUM_SAMPLES;
@@ -105,7 +110,9 @@ void main(void)
 		for(int i=0; i < NUM_SAMPLES ; i++)
 		{
 			textCoo -= deltaTextCoord;
-			vec4 tsample = texelFetch(rtex, ivec2(textCoo*texSize) , 0);
+			vec3 tsample = texelFetch(rtex, ivec2(textCoo*texSize) , 0).rgb;
+			//vec3 tsample = texture2DMS(rtex, ivec2( textCoo*texSize ), 1).rgb;// texelFetch(rtex, ivec2(textCoo*texSize) , 0);
+			
 			//vec4 tsample = texture2D(rtex, textCoo );
 			//if (length(tsample.rgb)<0.5){
 				tsample *= illumDec * weight;
@@ -114,11 +121,9 @@ void main(void)
 			//}
 		}
 		raysColor *= exposure * lightDirDOTviewDir;
-		origColor += raysColor;
+		godColor += raysColor.rgb;
 	}
-	
-	
-	gl_FragColor = origColor;
+	gl_FragColor = vec4(godColor.rgb + origColor.rgb, 1.0);
 	
 }
 
