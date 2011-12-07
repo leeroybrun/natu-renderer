@@ -104,6 +104,7 @@ void	main()
 	vec2 mv_1 = mv.zw;
 	vec3 corr_s;
 	vec3 corr_r;
+	float x_val = 0.0;
 	color = vec4(branchID*50.0, 0.0, 0.0, 1.0);
 	//branchID = (branchID+0.5)/496.0;
 	if (branchID>0.0){
@@ -124,15 +125,12 @@ void	main()
 		// - what about branches pointing to the observer? - projected length is near 0
 		// - even pixels close to projected origin can be very far in terms of x
 		vec2 distVector = position-branch_origin.rg;
-		float x_val = length(distVector)/l;
+		x_val = min(1.0, length(distVector)/l);
 		//color = vec4(x_val);
-
-		// mark-up origins
-		if (x_val<0.05){
-			color = vec4(1.0, 1.0, 1.0, 1.0);
-		}
 		vec2 amp1 = wood_amplitudes.y * ( texture2D(branch_noise_tex, mv_1 * mv_time * wood_frequencies.y).rg  * 2.0 - ONE2);
 		float xval2 = x_val*x_val;
+
+
 		float fx = 0.374570*xval2 + 0.129428*xval2*xval2;
 		float dx = 0.749141*x_val + 0.517713*xval2*x_val;
 
@@ -144,7 +142,7 @@ void	main()
 		vec2 ud = fu / fu_deriv * (us - ONE2);
 		corr_s = (t.xyz + s.xyz*fu_deriv.x)/us.x * ud.x;
 		corr_r = (t.xyz + r.xyz*fu_deriv.y)/us.y * ud.y;
-		position = position + fu.x * s.xy + fu.y * r.xy - (corr_s.xy+corr_r.xy);
+		position = position + fu.x * s.xy + fu.y * r.xy + (corr_s.xy+corr_r.xy);
 
 	}
 	vec2 newPos = position;
@@ -152,9 +150,10 @@ void	main()
 	newPos = (newPos + sliceDesc) / vec2(sliceCnt,sliceSetsCnt);
 	
 	
-	//color = texture2D(colorMap, newPos);
-	//if (color.a<0.00001){discard;}
+	color = texture2D(colorMap, newPos);
+	if (color.a<0.5){discard;}
 	//color  = texture2D(lod_data_tex, position);
+	//color.rgb = color.rgb*x_val;
 	color.a = 1.0;
 	gl_FragData[0] = color;
 	gl_FragData[1] = color * vec4(0.1, 0.1, 0.1, 1.0);
