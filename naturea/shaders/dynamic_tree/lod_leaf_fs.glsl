@@ -36,12 +36,13 @@ varying vec3			ts_viewDir_v;
 varying vec3			ts_lightDir_v;
 
 varying vec2			b0_origin;
-varying vec2			b1_origin;
+varying vec3			b1_origin;
 varying vec2			b2_origin;
 varying vec3			b_lengths;
 varying vec2			mv_v;
 
 varying float			leafSpecificNumber;
+varying float			branchID;
 
 uniform vec3			cam_dir;
 uniform vec3			cam_right;
@@ -50,6 +51,8 @@ vec3					cam_up = cross(cam_dir, cam_right);
 varying vec3			normal_vs;
 varying vec3			tangent_vs;
 vec3					ts_normal;
+
+
 								  
 vec3			ts_viewDir		= normalize(ts_viewDir_v);
 vec3			ts_lightDir		= normalize(ts_lightDir_v);
@@ -279,6 +282,6 @@ void main()
 	//vec3 normal;
 	gl_FragData[1] = vec4(normal_v*0.5 + vec3(0.5) , 0.004+leafSpecificNumber);
 	//gl_FragData[2] = vec4(b0_origin*0.5+vec2(0.5),b1_origin*0.5+vec2(0.5));
-	gl_FragData[2] = vec4(normalize(mv_v)*0.5+0.5,b1_origin*0.5+vec2(0.5));
+	gl_FragData[2] = vec4(branchID);
 	
 }

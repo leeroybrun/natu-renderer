@@ -44,6 +44,7 @@ public:
 	v3				tVectors		[DYN_TREE::MAX_HIERARCHY_DEPTH];
 	v3				origins			[DYN_TREE::MAX_HIERARCHY_DEPTH];
 	v4				lengths;
+	int				parentIDs		[DYN_TREE::MAX_HIERARCHY_DEPTH];
 
 	float			phase;
 	v3				upVector;

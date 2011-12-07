@@ -39,14 +39,14 @@ bool Shader::loadShader(string vs_filename, string fs_filename)
 		delete [] pVSsource;
 
 		glGetShaderiv(vertexShID, GL_COMPILE_STATUS, &bCompiled);
-		printShaderInfoLog(vertexShID, false);
 		if (bCompiled  == false)
 		{
-			printf(" - Vertex shader compilation failed...\n\n");
+			printShaderInfoLog(vertexShID, false);
+			printf(" - VS, ");
 			pauseAndExit();
 			return false;
 		}
-		printf(" + Vertex shader compiled...\n");
+		printf(" + VS, ");
 	}
 
 	// Create the fragment shader_______________________________________________
@@ -60,14 +60,15 @@ bool Shader::loadShader(string vs_filename, string fs_filename)
 		delete [] pFSsource;
 
 		glGetShaderiv(fragmentShID, GL_COMPILE_STATUS, &bCompiled);
-		printShaderInfoLog(fragmentShID, false);
+		
 		if (bCompiled  == false)
 		{
-			printf(" - Fragment shader compilation failed...\n\n");
+			printShaderInfoLog(fragmentShID, false);
+			printf(" - FS, ");
 			pauseAndExit();
 			return false;
 		}
-		printf(" + Fragment shader compiled...\n");
+		printf(" + FS, ");
 	}
 
     // Create a program object and attach the two compiled shaders______________
@@ -86,15 +87,16 @@ bool Shader::loadShader(string vs_filename, string fs_filename)
 	// Link the program object and print out the info log_______________________
 	glLinkProgram(programID);
 	glGetProgramiv(programID, GL_LINK_STATUS, &bLinked);
-	printShaderInfoLog(programID, true);
+	
 	if (bLinked == false)
 	{
+		printShaderInfoLog(programID, true);
 		printf("- Shader program linking failed...\n\n");
 		pauseAndExit();
 		return false;
 	}
 	timeLocation = glGetUniformLocation(programID, "time");
-	printf(" (time location: %i)\n", timeLocation);
+	//printf(" (time location: %i)\n", timeLocation);
 	printf("+ SUCCESS [%s] (shader ID= %i)\n",this->name.c_str(), this->programID);
 
 	return true;
@@ -133,14 +135,14 @@ bool Shader::loadShader(
 		delete [] pVSsource;
 
 		glGetShaderiv(vertexShID, GL_COMPILE_STATUS, &bCompiled);
-		printShaderInfoLog(vertexShID, false);
 		if (bCompiled  == false)
 		{
-			printf(" - Vertex shader compilation failed...\n\n");
+			printShaderInfoLog(vertexShID, false);		
+			printf(" - VS, ");
 			pauseAndExit();
 			return false;
 		}
-		printf(" + Vertex shader compiled...\n");
+		printf(" + VS, ");
 	}
 
 	if (bAddGeometryShader)
@@ -154,14 +156,14 @@ bool Shader::loadShader(
 		delete [] pGSsource;
 
 		glGetShaderiv(geometryShID, GL_COMPILE_STATUS, &bCompiled);
-		printShaderInfoLog(geometryShID, false);
 		if (bCompiled  == false)
 		{
-			printf(" - Geometry shader compilation failed...\n\n");
+			printShaderInfoLog(geometryShID, false);
+			printf(" - GS, ");
 			pauseAndExit();
 			return false;
 		}
-		printf(" + Geometry shader compiled...\n");
+		printf(" + GS, ");
 	}
 
 	// Create the fragment shader_______________________________________________
@@ -175,14 +177,14 @@ bool Shader::loadShader(
 		delete [] pFSsource;
 
 		glGetShaderiv(fragmentShID, GL_COMPILE_STATUS, &bCompiled);
-		printShaderInfoLog(fragmentShID, false);
 		if (bCompiled  == false)
 		{
-			printf(" - Fragment shader compilation failed...\n\n");
+			printShaderInfoLog(fragmentShID, false);
+			printf(" - FS, ");
 			pauseAndExit();
 			return false;
 		}
-		printf(" + Fragment shader compiled...\n");
+		printf(" + FS, ");
 	}
 
     // Create a program object and attach the two compiled shaders______________
@@ -214,15 +216,15 @@ bool Shader::loadShader(
 	// Link the program object and print out the info log_______________________
 	glLinkProgram(programID);
 	glGetProgramiv(programID, GL_LINK_STATUS, &bLinked);
-	printShaderInfoLog(programID, true);
 	if (bLinked == false)
 	{
+		printShaderInfoLog(programID, true);
 		printf(" - Shader program linking failed...\n\n");
 		pauseAndExit();
 		return false;
 	}
 	timeLocation = glGetUniformLocation(programID, "time");
-	printf(" (time location: %i)\n", timeLocation);
+	//printf(" (time location: %i)\n", timeLocation);
 	printf("+ SUCCESS (shader ID= %i)\n", this->programID);
 	return true;
 
@@ -257,7 +259,6 @@ void Shader::setTime(float in_time)
 bool Shader::linkTexture(Texture *texture)
 {
 	GLint loc = registerUniform(texture->inShaderName, UniformType::I1, &(texture->textureUnitNumber));
-	
 	if (loc < 0){
 		return false;
 	}

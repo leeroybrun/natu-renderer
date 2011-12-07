@@ -29,6 +29,7 @@ uniform float		time;
 uniform mat4		LightMVPCameraVInverseMatrix;
 varying	vec4		lightSpacePosition;
 
+varying float		mv_time;
 void main()
 {
 	vec4 pos;
@@ -38,8 +39,6 @@ void main()
 	float mv_time;
 	
 	// = wood_amplitudes.y * ( texture2D(branch_noise_tex, mv1 * mv_time * wood_frequencies.y).rg  * 2.0 - vec2(1.0));
-	vec2 mv1 = normalize(vec2(0.33, 0.47));
-	float amplitude = 3.0;
 	if (instancing>0){
 		// drawing instances
 		colorVar		= colorVariance.rgb;

@@ -43,7 +43,7 @@ varying vec3			ts_lightDir_v;
 varying float			level;
 
 varying vec2			b0_origin;
-varying vec2			b1_origin;
+varying vec3			b1_origin;
 varying vec2			b2_origin;
 varying vec3			b_lengths;
 
@@ -52,10 +52,15 @@ varying vec3			normal_vs;
 varying vec3			tangent_vs;
 
 varying float			leafSpecificNumber;
-
+varying float			branchID;	
 vec4					color;	
 vec3					oVec=vec3(1.0, 1.0, 1.0);
 
+vec4 ND2TC(in vec4 position){
+	vec4 o = position * 0.5 + vec4(0.5);
+	o.w = 1.0;
+	return o;
+}
 vec4 OS2ND(in vec4 position){
 	vec4 clipSpacePosition = gl_ModelViewProjectionMatrix * position;
 	//float wI = 1.0/clipSpacePosition.w;
@@ -88,17 +93,20 @@ void animateBranchVertex(inout vec3 position)
 	
 	
 	// get coord systems from branch data texture
-	vec4 sv0_l	= texture2D(data_tex, vec2(2.5/texCols, branch_index/branch_count));
-    vec4 sv1_l	= texture2D(data_tex, vec2(3.5/texCols, branch_index/branch_count));
-    vec4 sv2_l	= texture2D(data_tex, vec2(4.5/texCols, branch_index/branch_count));
-    vec4 sv3_l	= texture2D(data_tex, vec2(5.5/texCols, branch_index/branch_count));
-    vec3 rv0	= texture2D(data_tex, vec2(6.5/texCols, branch_index/branch_count)).xyz;
-    vec3 rv1	= texture2D(data_tex, vec2(7.5/texCols, branch_index/branch_count)).xyz;
-    vec3 rv2	= texture2D(data_tex, vec2(8.5/texCols, branch_index/branch_count)).xyz;
-    vec3 rv3	= texture2D(data_tex, vec2(9.5/texCols, branch_index/branch_count)).xyz;
-    // motion vectors
-	vec4 mv01 = texture2D(data_tex, vec2(0.5/texCols, branch_index/branch_count));
-    vec4 mv23 = texture2D(data_tex, vec2(1.5/texCols, branch_index/branch_count));
+	branchID = branch_index/branch_count;
+	vec4 sv0_l	= texture2D(data_tex, vec2(2.5/texCols, branchID));
+    vec4 sv1_l	= texture2D(data_tex, vec2(3.5/texCols, branchID));
+    vec4 sv2_l	= texture2D(data_tex, vec2(4.5/texCols, branchID));
+    vec4 sv3_l	= texture2D(data_tex, vec2(5.5/texCols, branchID));
+    vec3 rv0	= texture2D(data_tex, vec2(6.5/texCols, branchID)).xyz;
+    vec3 rv1	= texture2D(data_tex, vec2(7.5/texCols, branchID)).xyz;
+    vec3 rv2	= texture2D(data_tex, vec2(8.5/texCols, branchID)).xyz;
+    vec3 rv3	= texture2D(data_tex, vec2(9.5/texCols, branchID)).xyz;
+	vec2 bis    = texture2D(data_tex, vec2(16.5/texCols, branchID)).xy; 
+    branchID = (max(bis.x,bis.y)+ 0.5)/branch_count;
+	// motion vectors
+	vec4 mv01 = texture2D(data_tex, vec2(0.5/texCols, branchID));
+    vec4 mv23 = texture2D(data_tex, vec2(1.5/texCols, branchID));
     vec2 mv0 = mv01.xy;
     vec2 mv1 = mv01.zw;
 	mv_v = mv1;
@@ -129,7 +137,7 @@ void animateBranchVertex(inout vec3 position)
 	vec3 center;
 	vec3 centerB = vec3(0.0, 0.0, 0.0);
 	b0_origin = OS2ND(vec4(centerB,1.0)).xy;
-	b1_origin = vec2(0.0);
+	b1_origin = vec3(0.0);
 	vec3 corr_r, corr_s;
 	vec2 fu, fu_deriv, s,d;
 	bs = sv0;
@@ -156,7 +164,7 @@ void animateBranchVertex(inout vec3 position)
 		
 	}
     if (x_vals.y>0.0){
-		b1_origin = OS2ND(vec4(centerB,1.0)).xy;
+		b1_origin = ND2TC(OS2ND(vec4(centerB,1.0))).xyz;
        
 	    // bend branch system according to the parent branch bending
 		sv1 = sv1.x * bs + sv1.y * br + sv1.z * bt;

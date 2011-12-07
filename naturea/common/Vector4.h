@@ -171,6 +171,13 @@ class Vector4
 		{
 			printf("V4[%f, %f, %f, %f]\n", x,y,z,w);
 		}
+		inline Vector4 ndcoord2texcoord()
+		{
+			Vector4 out = (*this)*0.5 + Vector4(0.5, 0.5, 0.5, 0.5);
+			out.w = 1.0;
+			return out;
+	
+		}
 	public:
 		union
 		{
