@@ -12,6 +12,8 @@ DTree::DTree(TextureManager *texManager, ShaderManager *shManager):Vegetation(te
 	lLODShader				= NULL;
 							
 	dataTexture				= NULL;
+	lod1dataTexture			= NULL;
+	lod2dataTexture			= NULL;
 	lColorTexture			= NULL;
 	frontDecalMap			= NULL;
 	frontNormalMap			= NULL;
@@ -66,6 +68,8 @@ DTree::~DTree(void)
 	SAFE_DELETE_PTR(	lLODShader				);
 
 	SAFE_DELETE_PTR(	dataTexture				);
+	SAFE_DELETE_PTR(	lod1dataTexture			);
+	SAFE_DELETE_PTR(	lod2dataTexture			);
 	SAFE_DELETE_PTR(	lColorTexture			);
 	SAFE_DELETE_PTR(	frontDecalMap			);
 	SAFE_DELETE_PTR(	frontNormalMap			);
@@ -206,7 +210,14 @@ bool DTree::loadOBJT(string filename)
 			}
 		} else {
 			if (parent!=NULL){
-				cs.origin = v3(0.0, 0.0, 1.0) * x * parent->L;
+
+				//printf("ORIG CS t: "); parent->originalCS.t.printOut();
+				//printf("x: %f, L:%f\n", x , parent->L);
+				//system("PAUSE");
+				cs.origin = parent->originalCS.t * x * parent->L;
+
+
+				//cs.origin = v3(0.0, 0.0, 1.0) * x * parent->L;
 			} else {
 				cs.origin = v3(0.f, 0.f, 0.f);
 			}
@@ -223,7 +234,10 @@ bool DTree::loadOBJT(string filename)
 		} else {		
 			r2 = 0.0001;
 		}
-		// add branch...	
+		// add branch...
+
+		//cs.printOut();
+		//system("PAUSE");
 		m_branches[id] = new DTreeBranch(parent, cs, x, length, r1, r2);  
 		m_branches[id]->id = id;
 	} // for each entity in map
@@ -614,6 +628,11 @@ void DTree::createDataTexture()
 {
 	// linearize structure
 	texDimX = linearizeHierarchy();
+	//printf("cs:\n");
+	//branches[0]->cs.printOut();
+	//printf("orig cs:\n");
+	//branches[0]->originalCS.printOut();
+	//system("PAUSE");
 	int branch_count = texDimX;
 	this->branchCountF = branch_count;
 	texDimY = 18; // num of data rows  [4 floats]
@@ -671,10 +690,10 @@ void DTree::createDataTexture()
 		}
 		// center1-center3
 		for (bh = 0;bh < DYN_TREE::MAX_HIERARCHY_DEPTH; bh++){
-			data[i + k*channels + 0] = b->origins[bh].x;
-			data[i + k*channels + 1] = b->origins[bh].y;
-			data[i + k*channels + 2] = b->origins[bh].z;
-			data[i + k*channels + 3] = 1.0f;
+			data[i + k*channels + 0] = b->parentIDs[0];
+			data[i + k*channels + 1] = b->parentIDs[1];
+			data[i + k*channels + 2] = b->parentIDs[2];
+			data[i + k*channels + 3] = b->parentIDs[3];
 			k++;
 		}
 	}
@@ -693,11 +712,11 @@ void DTree::createDataTexture()
 }
 
 
-void DTree::createLODdataTexture(Texture * dataTex, vector<Matrix4x4*> &MVPs)
+Texture* DTree::createLODdataTexture(vector<Matrix4x4*> &MVPs)
 {
 	int branchCount = branches.size();
 	int sliceCount = MVPs.size();
-	int sliceItems = 5;
+	int sliceItems = 7;
 	int x = 0; // row = branch index
 	int y = 0; // item index + slice index
 	int channels = 4;
@@ -712,78 +731,94 @@ void DTree::createLODdataTexture(Texture * dataTex, vector<Matrix4x4*> &MVPs)
 	int item = 0;
 
 	v4 o0 = v4(0.0, 0.0, 0.0, 1.0);
-	v4 t0 = v4(0.0, 0.0, 1.0, 1.0);
+	v4 t0 = v4(0.0, 1.0, 0.0, 1.0);
 	v4 r0 = v4(1.0, 0.0, 0.0, 1.0);
-	v4 s0 = v4(0.0, 1.0, 0.0, 1.0);
+	v4 s0 = v4(0.0, 0.0, 1.0, 1.0);
 
 	// each sliceset
 	for (int si=0; si<sliceCount; si++){
 		// get MVP
 		mvp = MVPs[si];
-		printf("slice %i mvp: \n", si);
-		mvp->printOut();
+		v4 origin = ((*mvp) * v4(0.0, 0.0, 0.0, 1.0)).ndcoord2texcoord();
+		//printf("slice %i mvp: \n", si);
+		//mvp->printOut();
 		// for each branch
 		for (int bi=0; bi<branchCount; bi++){
 			branch = branches[bi];
-			// project original t, original s, original r
-			// v4 o = (*mvp) * branch->originalCS.origin;
-			// v4 t = (o - (*mvp) * branch->originalCS.t)*0.5;
-			// v4 r = (o - (*mvp) * branch->originalCS.r)*0.5;
-			// v4 s = (o - (*mvp) * branch->originalCS.s)*0.5;
+			// express o, t,r,s in terms of texture coordinates:
 
-			v4 o = (*mvp) * o0;
-			v4 t = (o + (*mvp) * t0)*0.5;
-			v4 r = (o + (*mvp) * r0)*0.5;
-			v4 s = (o + (*mvp) * s0)*0.5;
-			
-			//o = o/o.w;
-			//r = r/r.w;
-			//s = s/s.w;
-			//t = t/t.w;
+			// project original t, original s, original r
+			v4 orig = v4( branch->originalCS.origin);
+			v4 o = (*mvp) * ( orig );
+			v4 t = (*mvp) * branch->originalCS.t;
+			v4 r = (*mvp) * branch->originalCS.r;
+			v4 s = (*mvp) * branch->originalCS.s;
+			v4 ot = o.ndcoord2texcoord();
+			v4 tt = t.ndcoord2texcoord() - origin;
+			v4 rt =	r.ndcoord2texcoord() - origin;
+			v4 st =	s.ndcoord2texcoord() - origin;
 
 			// project LENGHT of the branch...
-			v4 be = (*mvp) * (branch->originalCS.origin + branch->originalCS.t * branch->L);
-			be = be/be.w;
-			float lenght = (be-o).lenght() / t.lenght();
+			v4 lenghtVector = tt * branch->L;
+			lenghtVector.w = 0.0;
+			float lenght = lenghtVector.lenght();
 
 			// save data
+
+			// origin
 			item = 0;
-			data[bi*branchOffset + si*sliceOffset + item*channels + 0] = o.x ;
-			data[bi*branchOffset + si*sliceOffset + item*channels + 1] = o.y ;
-			data[bi*branchOffset + si*sliceOffset + item*channels + 2] = o.z ;
-			data[bi*branchOffset + si*sliceOffset + item*channels + 3] = o.w ;
+			data[bi*branchOffset + si*sliceOffset + item*channels + 0] = ot.x ;
+			data[bi*branchOffset + si*sliceOffset + item*channels + 1] = ot.y ;
+			data[bi*branchOffset + si*sliceOffset + item*channels + 2] = ot.z ;
+			data[bi*branchOffset + si*sliceOffset + item*channels + 3] = ot.w ;
 
+			// t vector
 			item = 1;
-			data[bi*branchOffset + si*sliceOffset + item*channels + 0] = t.x ;
-			data[bi*branchOffset + si*sliceOffset + item*channels + 1] = t.y ;
-			data[bi*branchOffset + si*sliceOffset + item*channels + 2] = t.z ;
-			data[bi*branchOffset + si*sliceOffset + item*channels + 3] = t.w ;
+			data[bi*branchOffset + si*sliceOffset + item*channels + 0] = tt.x ;
+			data[bi*branchOffset + si*sliceOffset + item*channels + 1] = tt.y ;
+			data[bi*branchOffset + si*sliceOffset + item*channels + 2] = tt.z ;
+			data[bi*branchOffset + si*sliceOffset + item*channels + 3] = tt.w ;
 
+			// r vector
 			item = 2;
-			data[bi*branchOffset + si*sliceOffset + item*channels + 0] = r.x ;
-			data[bi*branchOffset + si*sliceOffset + item*channels + 1] = r.y ;
-			data[bi*branchOffset + si*sliceOffset + item*channels + 2] = r.z ;
-			data[bi*branchOffset + si*sliceOffset + item*channels + 3] = r.w ;
+			data[bi*branchOffset + si*sliceOffset + item*channels + 0] = rt.x ;
+			data[bi*branchOffset + si*sliceOffset + item*channels + 1] = rt.y ;
+			data[bi*branchOffset + si*sliceOffset + item*channels + 2] = rt.z ;
+			data[bi*branchOffset + si*sliceOffset + item*channels + 3] = rt.w ;
 
+			// s vector
 			item = 3;
-			data[bi*branchOffset + si*sliceOffset + item*channels + 0] = s.x ;
-			data[bi*branchOffset + si*sliceOffset + item*channels + 1] = s.y ;
-			data[bi*branchOffset + si*sliceOffset + item*channels + 2] = s.z ;
-			data[bi*branchOffset + si*sliceOffset + item*channels + 3] = s.w ;
+			data[bi*branchOffset + si*sliceOffset + item*channels + 0] = st.x ;
+			data[bi*branchOffset + si*sliceOffset + item*channels + 1] = st.y ;
+			data[bi*branchOffset + si*sliceOffset + item*channels + 2] = st.z ;
+			data[bi*branchOffset + si*sliceOffset + item*channels + 3] = st.w ;
 
+			// branch lenght
 			item = 4;
 			data[bi*branchOffset + si*sliceOffset + item*channels + 0] = lenght ;
 			data[bi*branchOffset + si*sliceOffset + item*channels + 1] = lenght ;
 			data[bi*branchOffset + si*sliceOffset + item*channels + 2] = lenght ;
 			data[bi*branchOffset + si*sliceOffset + item*channels + 3] = lenght ;
 
-
+			// motion vectors mv0, mv1
+			item = 5;
+			data[bi*branchOffset + si*sliceOffset + item*channels + 0] = branch->motionVectors[0].x ;
+			data[bi*branchOffset + si*sliceOffset + item*channels + 1] = branch->motionVectors[0].y ;
+			data[bi*branchOffset + si*sliceOffset + item*channels + 2] = branch->motionVectors[1].x ;
+			data[bi*branchOffset + si*sliceOffset + item*channels + 3] = branch->motionVectors[1].y ;
+					
+			// motion vectors mv2, mv3
+			item = 6;
+			data[bi*branchOffset + si*sliceOffset + item*channels + 0] = branch->motionVectors[2].x ;
+			data[bi*branchOffset + si*sliceOffset + item*channels + 1] = branch->motionVectors[2].y ;
+			data[bi*branchOffset + si*sliceOffset + item*channels + 2] = branch->motionVectors[3].x ;
+			data[bi*branchOffset + si*sliceOffset + item*channels + 3] = branch->motionVectors[3].y ;
 		} // for each branch
 
 
 	}// for each slice set
 
-	dataTexture = new Texture(  
+	Texture * dataTex = new Texture(  
 		GL_TEXTURE_2D,
 		GL_RGBA32F,
 		GL_RGBA,
@@ -795,7 +830,8 @@ void DTree::createLODdataTexture(Texture * dataTex, vector<Matrix4x4*> &MVPs)
 		);
 	delete [] data;
 	data = NULL;
-
+	printf("data tex created: %i \n", dataTex->id);
+	return dataTex;
 }
 
 bool DTree::loadDataTexture(string filename)
@@ -820,21 +856,20 @@ bool DTree::saveVBO(string filename)
 
 
 int DTree::linearizeHierarchy(){
-
-	stack<DTreeBranch*> bStack;	
-	bStack.push(trunk);
+	queue<DTreeBranch*> bQueue;	
+	bQueue.push(trunk);
 	DTreeBranch * branch, *actBranch;
 	int cnt = 0, i;
-	while( !bStack.empty() ){
-		branch = bStack.top();
+	while( !bQueue.empty() ){
+		branch = bQueue.front();
 		branch->id = cnt;
 		cnt++;
-		bStack.pop();
+		bQueue.pop();
 		branches.push_back(branch);
 		for (i=0; i<branch->children.size(); i++){
 			if (! branch->children[i]->isLeaf()){
 				actBranch = (DTreeBranch*)(branch->children[i]);
-				bStack.push(actBranch);
+				bQueue.push(actBranch);
 			} else {
 				//leaves.push_back((TreeLeaf*) branch->children[i] );
 			}
@@ -869,6 +904,7 @@ void DTree::fillParentDataForEachBranch()
 	// and copy from parent...
 	DTreeBranch* actBranch, *branch;
 	CoordSystem *cSys;
+	
 	int i, size=branches.size();
 	for (i=0; i<size; i++){
 		branch = branches[i];
@@ -877,7 +913,8 @@ void DTree::fillParentDataForEachBranch()
 			cSys = &(actBranch->cs);
 			branch->xvals.data		[actBranch->level] = actBranch->x;
 			branch->lengths.data	[actBranch->level] = actBranch->L;
-			branch->motionVectors[actBranch->level]= actBranch->motionVector;
+			branch->motionVectors	[actBranch->level] = actBranch->motionVector;
+			branch->parentIDs		[actBranch->level] = actBranch->id;
 			if (actBranch->parent!=NULL){
 				branch->origins		[actBranch->level] = cSys->origin;
 				branch->upVectors	[actBranch->level] = cSys->r;
@@ -1034,8 +1071,10 @@ void DTree::draw_instance_LOD1(DTreeInstanceData * instance, float alpha){
 				branchNoiseTexture  ->bind(GL_TEXTURE3);
 				jDataMap			->bind(GL_TEXTURE4);
 				jNormalMap			->bind(GL_TEXTURE5);
-				jDepthMap			->bind(GL_TEXTURE7);
 				seasonMap			->bind(GL_TEXTURE6);
+				jDepthMap			->bind(GL_TEXTURE7);				
+				lod1dataTexture		->bind(GL_TEXTURE8);
+
 				lod1shader_shadow->use(true);
 				lod1vbo2->bind(lod1shader_shadow);
 				// set attribute
@@ -1057,6 +1096,7 @@ void DTree::draw_instance_LOD1(DTreeInstanceData * instance, float alpha){
 				jNormalMap			->unbind();
 				jDepthMap			->unbind();
 				seasonMap			->unbind();
+				lod1dataTexture		->unbind();
 					// turn shader off
 				lod1shader_shadow->use(false);
 				glUseProgram(0);	
@@ -1087,21 +1127,22 @@ void DTree::draw_instance_LOD1(DTreeInstanceData * instance, float alpha){
 				displacement2Texture->bind(GL_TEXTURE3);
 				jDataMap			->bind(GL_TEXTURE4);
 				jNormalMap			->bind(GL_TEXTURE5);
-				jDepthMap			->bind(GL_TEXTURE7);
 				seasonMap			->bind(GL_TEXTURE6);
+				jDepthMap			->bind(GL_TEXTURE7);				
+				lod1dataTexture		->bind(GL_TEXTURE8);
 				lod1shader2->use(true);
-			
-			
-
-				lod1shader2->setTexture(l2_season	, seasonMap				->textureUnitNumber	);
-			
-				lod1shader2->setTexture(l2_color	, jColorMap				->textureUnitNumber	);
-				lod1shader2->setTexture(l2_displ	, displacementTexture	->textureUnitNumber	);			
-				lod1shader2->setTexture(l2_displ2	, displacement2Texture	->textureUnitNumber	);
-				lod1shader2->setTexture(l2_data		, jDataMap				->textureUnitNumber	);
-				lod1shader2->setTexture(l2_normal	, jNormalMap			->textureUnitNumber	);
-				lod1shader2->setTexture(l2_depth	, jDepthMap				->textureUnitNumber	);
-			
+			//
+			//
+			//
+			//lod1shader2->setTexture(l2_season	, seasonMap				->textureUnitNumber	);
+			//
+			//lod1shader2->setTexture(l2_color	, jColorMap				->textureUnitNumber	);
+			//lod1shader2->setTexture(l2_displ	, displacementTexture	->textureUnitNumber	);			
+			//lod1shader2->setTexture(l2_displ2	, displacement2Texture	->textureUnitNumber	);
+			//lod1shader2->setTexture(l2_data		, jDataMap				->textureUnitNumber	);
+			//lod1shader2->setTexture(l2_normal	, jNormalMap			->textureUnitNumber	);
+			//lod1shader2->setTexture(l2_depth	, jDepthMap				->textureUnitNumber	);
+			//
 				lod1shader2->setUniform3f(iu1Loc1, instance->colorVariance.r, instance->colorVariance.g, instance->colorVariance.b);
 				lod1vbo2->bind(lod1shader2);
 				// set attribute
@@ -1116,6 +1157,9 @@ void DTree::draw_instance_LOD1(DTreeInstanceData * instance, float alpha){
 					eboLOD1->unbind();
 					lod1vbo2->unbind(lod1shader2);
 			
+				
+					// turn shader off
+				lod1shader2->use(false);
 				jColorMap			->unbind();
 				displacementTexture	->unbind();
 				displacement2Texture->unbind();
@@ -1124,8 +1168,8 @@ void DTree::draw_instance_LOD1(DTreeInstanceData * instance, float alpha){
 				jDepthMap			->unbind();
 				seasonMap			->unbind();
 				g_shadowmap1		->unbind();
-					// turn shader off
-				lod1shader2->use(false);
+				lod1dataTexture		->unbind();
+
 				glUseProgram(0);	
 				glEnable(GL_CULL_FACE);
 				glEnable(GL_LIGHTING);
@@ -1151,6 +1195,7 @@ void DTree::draw_all_instances_LOD1(){
 				jNormalMap			->bind(GL_TEXTURE5);
 				seasonMap			->bind(GL_TEXTURE6);
 				jDepthMap			->bind(GL_TEXTURE7);
+				lod1dataTexture		->bind(GL_TEXTURE8);
 
 			lod1shader_shadow->use(true);
 			
@@ -1230,6 +1275,7 @@ void DTree::draw_all_instances_LOD1(){
 				jNormalMap			->unbind();
 				jDepthMap			->unbind();
 				seasonMap			->unbind();
+				lod1dataTexture		->unbind();
 				// turn shader off
 			lod1shader_shadow->use(false);
 			glEnable(GL_CULL_FACE);
@@ -1249,16 +1295,17 @@ void DTree::draw_all_instances_LOD1(){
 				jNormalMap			->bind(GL_TEXTURE5);
 				seasonMap			->bind(GL_TEXTURE6);
 				jDepthMap			->bind(GL_TEXTURE7);
+				lod1dataTexture		->bind(GL_TEXTURE8);
 
 			lod1shader2->use(true);
 			
-				lod1shader2->setTexture(l2_color	, jColorMap				->textureUnitNumber	);
-				lod1shader2->setTexture(l2_displ	, leafNoiseTexture		->textureUnitNumber	);			
-				lod1shader2->setTexture(l2_displ2	, branchNoiseTexture	->textureUnitNumber	);
-				lod1shader2->setTexture(l2_data		, jDataMap				->textureUnitNumber	);
-				lod1shader2->setTexture(l2_normal	, jNormalMap			->textureUnitNumber	);
-				lod1shader2->setTexture(l2_season	, seasonMap				->textureUnitNumber	);
-				lod1shader2->setTexture(l2_depth	, jDepthMap				->textureUnitNumber	);
+				//lod1shader2->setTexture(l2_color	, jColorMap				->textureUnitNumber	);
+				//lod1shader2->setTexture(l2_displ	, leafNoiseTexture		->textureUnitNumber	);			
+				//lod1shader2->setTexture(l2_displ2	, branchNoiseTexture	->textureUnitNumber	);
+				//lod1shader2->setTexture(l2_data		, jDataMap				->textureUnitNumber	);
+				//lod1shader2->setTexture(l2_normal	, jNormalMap			->textureUnitNumber	);
+				//lod1shader2->setTexture(l2_season	, seasonMap				->textureUnitNumber	);
+				//lod1shader2->setTexture(l2_depth	, jDepthMap				->textureUnitNumber	);
 			
 				// bind element buffer
 				eboLOD1->bind();
@@ -1317,16 +1364,18 @@ void DTree::draw_all_instances_LOD1(){
 				eboLOD1->unbind();
 				lod1vbo2->unbind(lod1shader2);
 			
-				jColorMap			->unbind();
-				leafNoiseTexture	->unbind();
-				branchNoiseTexture	->unbind();
-				jDataMap			->unbind();
-				jNormalMap			->unbind();
-				jDepthMap			->unbind();
-				seasonMap			->unbind();
-				g_shadowmap1        ->unbind();
+				
 				// turn shader off
 			lod1shader2->use(false);
+			jColorMap			->unbind();
+			leafNoiseTexture	->unbind();
+			branchNoiseTexture	->unbind();
+			jDataMap			->unbind();
+			jNormalMap			->unbind();
+			jDepthMap			->unbind();
+			seasonMap			->unbind();
+			g_shadowmap1        ->unbind();
+			lod1dataTexture		->unbind();
 			glEnable(GL_CULL_FACE);
 			glEnable(GL_LIGHTING);
 		} // if not drawing to shadow map
@@ -1649,7 +1698,7 @@ void DTree::drawLOD0()
 		
 		glDisable(GL_CULL_FACE);
 		glPushMatrix();
-		glScalef( 10.f , -10.f, 10.f);
+		glScalef( 10.f , 10.f, 10.f);
 	
 		// draw bbox
 		//bbox->draw();
@@ -1994,7 +2043,7 @@ void DTree::drawNormals(DTreeInstanceData* instance){
 	glPushMatrix();
 	glTranslatef(instance->position.x, instance->position.y, instance->position.z);
 	glRotatef(instance->rotation_y+180, 0.0, 1.0, 0.0);
-	glScalef( 10.f , -10.f, 10.f);
+	glScalef( 10.f , 10.f, 10.f);
 	
 	// draw bbox
 	//bbox->draw();
@@ -2738,7 +2787,7 @@ void DTree::drawForLOD(){
 	glDisable(GL_CULL_FACE);
 	glPushMatrix();
 	glScalef( 1.f , -1.f, 1.f);
-	
+	glRotatef(180, 0.0, 1.0, 0.0);
 	// draw bbox
 	//bbox->draw();
 
@@ -3082,15 +3131,17 @@ void DTree::initLOD0()
 
 void DTree::initLOD1()
 {
-	
+	eBranchmapInternalFormat = GL_RGBA32F;
+	eBranchmapFormat		 = GL_RGBA;
+	eBranchmapDataType		 = GL_FLOAT;
 	// create place to store MVP matrices of slices...
 	vector<Matrix4x4*> MVPmatrices;
-
+	Matrix4x4 *mvp;
 	// create slices
 
 	// create 2 sliceSets (cross, double sided)
-	v3 dir = v3(-1.0, 0.0, 0.0);
-	v3 right = v3(0.0, 0.0, -1.0);
+	v3 dir = v3(1.0, 0.0, 0.0);
+	v3 right = v3(0.0, 0.0, 1.0);
 	float res = 512;
 	lod1_win_resolution = v2 (res, res);
 	
@@ -3101,7 +3152,8 @@ void DTree::initLOD1()
 	
 	set = new DTreeSliceSet();
 	set->rotation_y = 0.0f;
-	Matrix4x4 *mvp = new Matrix4x4();
+	
+	mvp = new Matrix4x4();
 	this->createSlices(dir, right, mvp, false);
 	MVPmatrices.push_back(mvp);
 	set->setSlices(this->slices);
@@ -3120,10 +3172,8 @@ void DTree::initLOD1()
 	sliceSets2.push_back(set);
 	slices.clear();	
 
-	dir = v3(-1.0, 0.0, 0.0);
-	right = v3(0.0, 0.0, -1.0);
-	dir.rotateY(-60*DEG_TO_RAD);
-	right.rotateY(-60*DEG_TO_RAD);
+	dir.rotateY(-120*DEG_TO_RAD);
+	right.rotateY(-120*DEG_TO_RAD);
 	set = new DTreeSliceSet();	
 	mvp = new Matrix4x4();
 	this->createSlices(dir, right, mvp, false);
@@ -3136,13 +3186,14 @@ void DTree::initLOD1()
 
 
 	// create data texture for slices...
-	createLODdataTexture(lod1dataTexture, MVPmatrices);
+	SAFE_DELETE_PTR(lod1dataTexture);
+	printf("LOD1 datatexture: ");
+	lod1dataTexture = createLODdataTexture(MVPmatrices);
 
 	for (int t=0; t<3; t++){
 		SAFE_DELETE_PTR(MVPmatrices[t]);
 	}
 	MVPmatrices.clear();
-	system("PAUSE");
 	// join textures to one...
 	joinSliceSetsTextures();
 	
@@ -3166,6 +3217,7 @@ void DTree::initLOD1()
 	jDataMap			 ->textureUnitNumber = 0;
 	jDepthMap			 ->textureUnitNumber = 0;
 	seasonMap			 ->textureUnitNumber = 0;
+	lod1dataTexture		 ->textureUnitNumber = 0;
 	lod1shader_shadow->linkTexture(jColorMap);
 	lod1shader_shadow->linkTexture(jNormalMap);
 	lod1shader_shadow->linkTexture(branchNoiseTexture);
@@ -3173,27 +3225,39 @@ void DTree::initLOD1()
 	lod1shader_shadow->linkTexture(jDataMap);
 	lod1shader_shadow->linkTexture(jDepthMap);
 	lod1shader_shadow->linkTexture(seasonMap);
+	lod1shader_shadow->linkTexture(lod1dataTexture);
 	// link textures to shader
 	//shader->linkTexture(colorMap			);
 	//shader->linkTexture(displacementMap	);
 	//shader->linkTexture(dataMap			);
 
-	l2_color	= lod1shader2->getGLLocation("colorMap"			);
-	l2_displ	= lod1shader2->getGLLocation("leaf_noise_tex"	);
-	l2_displ2	= lod1shader2->getGLLocation("branch_noise_tex"	);
-	l2_data		= lod1shader2->getGLLocation("dataMap"			);
-	l2_normal	= lod1shader2->getGLLocation("normalMap"		);
-	l2_depth	= lod1shader2->getGLLocation("depthMap"			);
-	
-	l2_season	= lod1shader2->getGLLocation("seasonMap"		);
-	lod1shader2->linkTexture(g_shadowmap1);
+	//l2_color	= lod1shader2->getGLLocation("colorMap"			);
+	//l2_displ	= lod1shader2->getGLLocation("leaf_noise_tex"	);
+	//l2_displ2	= lod1shader2->getGLLocation("branch_noise_tex"	);
+	//l2_data		= lod1shader2->getGLLocation("dataMap"			);
+	//l2_normal	= lod1shader2->getGLLocation("normalMap"		);
+	//l2_depth	= lod1shader2->getGLLocation("depthMap"			);
+	//
+	//l2_season	= lod1shader2->getGLLocation("seasonMap"		);
 
-	lod1shader2->registerUniform("time"					, UniformType::F1, & g_float_time	);
-	lod1shader2->registerUniform("time_offset"			, UniformType::F1, & time_offset	);
-	lod1shader2->registerUniform("season"				, UniformType::F1, & g_season		);
-	lod1shader2->registerUniform("instancing"			, UniformType::I1, & isInstancingEnabled);
-	lod1shader2->registerUniform("shift"				, UniformType::F1, & g_transitionShift);
-	lod1shader2->registerUniform("transition_control"	, UniformType::F1, & g_transitionControl);
+	lod1shader2->linkTexture(jColorMap);
+	lod1shader2->linkTexture(jNormalMap);
+	lod1shader2->linkTexture(branchNoiseTexture);
+	lod1shader2->linkTexture(leafNoiseTexture);
+	lod1shader2->linkTexture(jDataMap);
+	lod1shader2->linkTexture(jDepthMap);
+	lod1shader2->linkTexture(seasonMap);
+	lod1shader2->linkTexture(g_shadowmap1);
+	lod1shader2->linkTexture(lod1dataTexture);
+
+
+	lod1shader2->registerUniform("branch_count"			, UniformType::F1, & this->branchCountF				);
+	lod1shader2->registerUniform("time"					, UniformType::F1, & g_float_time					);
+	lod1shader2->registerUniform("time_offset"			, UniformType::F1, & time_offset					);
+	lod1shader2->registerUniform("season"				, UniformType::F1, & g_season						);
+	lod1shader2->registerUniform("instancing"			, UniformType::I1, & isInstancingEnabled			);
+	lod1shader2->registerUniform("shift"				, UniformType::F1, & g_transitionShift				);
+	lod1shader2->registerUniform("transition_control"	, UniformType::F1, & g_transitionControl			);
 	lod1shader2->registerUniform("movementVectorA"		, UniformType::F2, & g_tree_movementVectorA			);
 	lod1shader2->registerUniform("movementVectorB"		, UniformType::F2, & g_tree_movementVectorB			);
 	lod1shader2->registerUniform("window_size"			, UniformType::F2, & lod1_win_resolution			);
@@ -3219,6 +3283,7 @@ void DTree::initLOD1()
 	lod1shader2->registerUniform("shadowMappingEnabled",	UniformType::B1,	& g_ShadowMappingEnabled);
 
 	// shadow shader
+	lod1shader_shadow->registerUniform("branch_count"				, UniformType::F1, & this->branchCountF				);
 	lod1shader_shadow->registerUniform("time"						, UniformType::F1, & g_float_time					);
 	lod1shader_shadow->registerUniform("time_offset"				, UniformType::F1, & time_offset					);
 	lod1shader_shadow->registerUniform("season"						, UniformType::F1, & g_season						);
@@ -3305,7 +3370,7 @@ void DTree::initLOD1()
 	tangentArr0.push_back(v3( 0.0,  0.0,  1.0));
 	tangentArr0.push_back(v3( 0.0,  0.0,  1.0));
 	
-	float y_max = 0.97; 
+	float y_max = 1.0;//0.97; 
 
 	texCoordArr0.push_back(v2( 0.0,  0.0	));
 	texCoordArr0.push_back(v2( 1.0,  0.0	));
@@ -3621,6 +3686,10 @@ void DTree::initLOD2()
 {
 	// create slices
 
+	// create place to store MVP matrices of slices...
+	vector<Matrix4x4*> MVPmatrices;
+	Matrix4x4 *mvp;
+
 	// create 2 sliceSets (cross, double sided)
 	v3 dir = v3(-1.0, 0.0, 0.0);
 	v3 right = v3(0.0, 0.0, -1.0);
@@ -3634,7 +3703,10 @@ void DTree::initLOD2()
 	
 	set = new DTreeSliceSet();
 	set->rotation_y = 0.0f;	
-	this->createSlices(dir, right, false);
+
+	mvp = new Matrix4x4();
+	this->createSlices(dir, right, mvp, false);
+	MVPmatrices.push_back(mvp);
 	set->setSlices(this->slices);
 	lod2color1	= set->getSlice(0)->colormap;
 	lod2normal1 = set->getSlice(0)->normalmap;
@@ -3646,7 +3718,9 @@ void DTree::initLOD2()
 	right.rotateY(90*DEG_TO_RAD);
 	set = new DTreeSliceSet();
 	set->rotation_y = 90;
-	this->createSlices(dir, right, false);
+	mvp = new Matrix4x4();
+	this->createSlices(dir, right, mvp, false);
+	MVPmatrices.push_back(mvp);
 	set->setSlices(this->slices);	
 	lod2color2	= set->getSlice(0)->colormap;	
 	lod2normal2 = set->getSlice(0)->normalmap;
@@ -3654,6 +3728,15 @@ void DTree::initLOD2()
 	lod2depth2	= set->getSlice(0)->depthmap;
 	slices.clear();	
 
+	// create data texture for slices...
+	SAFE_DELETE_PTR(lod2dataTexture);
+	printf("LOD2 datatexture: ");
+	lod2dataTexture = createLODdataTexture(MVPmatrices);
+	// clear matrices
+	for (int t=0; t<2; t++){
+		SAFE_DELETE_PTR(MVPmatrices[t]);
+	}
+	MVPmatrices.clear();
 	// join textures to one...
 	//joinSliceSetsTextures();
 	
@@ -3696,6 +3779,7 @@ void DTree::initLOD2()
 	lod2branch2->textureUnitNumber = 0;
 	lod2depth1->textureUnitNumber = 0;
 	lod2depth2->textureUnitNumber = 0;
+	lod2dataTexture->textureUnitNumber =0;
 
 	lod2shader_shadow->linkTexture(seasonMap);
 	lod2shader_shadow->linkTexture(leafNoiseTexture);
@@ -3708,7 +3792,7 @@ void DTree::initLOD2()
 	lod2shader_shadow->linkTexture(lod2branch2);
 	lod2shader_shadow->linkTexture(lod2depth1);
 	lod2shader_shadow->linkTexture(lod2depth2);
-
+	lod2shader_shadow->linkTexture(lod2dataTexture);
 
 	// lod2loc_color_tex_1	 = lod2shader->getGLLocation("color_tex_1"		);
 	// lod2loc_color_tex_2	 = lod2shader->getGLLocation("color_tex_2"		);
@@ -3727,7 +3811,7 @@ void DTree::initLOD2()
 	lod2shader->linkTexture(lod2normal2);
 	lod2shader->linkTexture(lod2branch1);
 	lod2shader->linkTexture(lod2branch2);
-
+	lod2shader->linkTexture(lod2dataTexture);
 
 
 
@@ -4126,7 +4210,6 @@ void DTree::createSlices(v3 & direction, v3 & rightVector, Matrix4x4 *mvp, bool 
 	*/
 	slices.clear();
 	GLuint fbo = 0;
-		
 
 	for ( i = 0; i< slice_count; i++){
 		// create FBO
@@ -4157,7 +4240,9 @@ void DTree::createSlices(v3 & direction, v3 & rightVector, Matrix4x4 *mvp, bool 
 			slice->normalmap->textureUnit = GL_TEXTURE3;
 			slice->normalmap->textureUnitNumber = 3;
 			
-			slice->branchmap = new Texture(GL_TEXTURE_2D, GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE, NULL, resolution_x, resolution_y, "branchMap");
+			slice->branchmap = new Texture(GL_TEXTURE_2D, eBranchmapInternalFormat, eBranchmapFormat, eBranchmapDataType, NULL, resolution_x, resolution_y, "branchMap");
+			
+			//slice->branchmap = new Texture(GL_TEXTURE_2D, GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE, NULL, resolution_x, resolution_y, "branchMap");
 			slice->branchmap->textureUnit = GL_TEXTURE4;
 			slice->branchmap->textureUnitNumber = 4;
 
@@ -4240,7 +4325,7 @@ void DTree::createSlices(v3 & direction, v3 & rightVector, Matrix4x4 *mvp, bool 
 		glGenFramebuffersEXT(1, &fbo);
 		glDisable(GL_DEPTH_TEST);
 			glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fbo);
-			slice->datamap = new Texture(GL_TEXTURE_2D, GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE, NULL, resolution_x, resolution_y, "dataMap");
+			slice->datamap = new Texture(GL_TEXTURE_2D, eBranchmapInternalFormat, eBranchmapFormat, eBranchmapDataType, NULL, resolution_x, resolution_y, "dataMap");
 			slice->datamap->textureUnit = GL_TEXTURE5;
 			slice->datamap->textureUnitNumber = 5;
 			glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_2D, slice->datamap->id , 0);
@@ -4315,7 +4400,11 @@ void DTree::joinSliceSetsTextures(){
 		//jColorMap->setParameterI(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		jColorMap->textureUnit =  GL_TEXTURE1;
 		jColorMap->textureUnitNumber =		1;
-		jDataMap	= new Texture(GL_TEXTURE_2D, GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE, NULL, jResX, jResY, "dataMap");
+		jDataMap	= new Texture(	GL_TEXTURE_2D, 
+									eBranchmapInternalFormat,
+									eBranchmapFormat,
+									eBranchmapDataType,
+									NULL, jResX, jResY, "dataMap");
 		jDataMap->textureUnit =	  GL_TEXTURE2;
 		jDataMap->textureUnitNumber =		2;
 		jDepthMap	= new Texture(GL_TEXTURE_2D, GL_DEPTH_COMPONENT32F, GL_DEPTH_COMPONENT, GL_FLOAT, NULL, jResX, jResY, "depthMap");

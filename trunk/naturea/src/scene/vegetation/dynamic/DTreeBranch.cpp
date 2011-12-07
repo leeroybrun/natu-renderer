@@ -32,6 +32,7 @@ DTreeBranch::DTreeBranch(	tc* _parent,
 		upVectors[i]	= v3(0.f, 0.f, 0.f);
 		rightVectors[i] = v3(0.f, 0.f, 0.f);
 		origins[i]		= v3(0.f, 0.f, 0.f);
+		parentIDs[i]	= 0;
 	}	
 	upVector	= originalCS.r;
 	rightVector = originalCS.s;

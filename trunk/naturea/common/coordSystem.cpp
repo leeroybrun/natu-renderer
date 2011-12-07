@@ -100,10 +100,9 @@ CoordSystem::~CoordSystem(void){
 };
 
 void CoordSystem::repair(){
-	v3 a = r.cross(s);
-	v3 b = r.cross(a);
-	s = -b;
-	t = -a;
+	t = r.cross(s);
+	s = t.cross(r);
+	//t = -t;
 }
 
 bool CoordSystem::check(){

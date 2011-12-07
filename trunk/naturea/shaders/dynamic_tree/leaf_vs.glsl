@@ -13,6 +13,7 @@
 #define ONE3    vec3(1.0,1.0,1.0)
 #define ONE4    vec4(1.0,1.0,1.0,1.0)
 #define EPSILON 0.0001
+#define EPSILONVEC vec2(EPSILON, EPSILON)
 uniform float			branch_count;
 uniform float			time;
 uniform float			time_offset;
@@ -152,8 +153,7 @@ void animateBranchVertex(inout vec3 position)
 		// bend function
 		fu	= xvals_f.x	* amp0;
 		fu_deriv = xvals_deriv.x / length0 * amp0 ;
-		if (abs(fu_deriv.x - 0.0)<EPSILON){ fu_deriv.x = EPSILON;}
-		if (abs(fu_deriv.y - 0.0)<EPSILON){ fu_deriv.y = EPSILON;}
+		fu_deriv = max(fu_deriv, EPSILONVEC) + min(fu_deriv, EPSILONVEC);
 			s = sqrt(ONE2+fu_deriv*fu_deriv);
 			d = fu / fu_deriv * (s - ONE2);
 			corr_s = (tv + sv0*fu_deriv.x)/s.x * d.x;
@@ -181,8 +181,7 @@ void animateBranchVertex(inout vec3 position)
         center		= centerB + x_vals.y * length1 * tv;
         fu			= xvals_f.y	 * amp1;
         fu_deriv	= xvals_deriv.y / length1 * amp1 ;
-		if (abs(fu_deriv.x - 0.0)<EPSILON){ fu_deriv.x = EPSILON;}
-		if (abs(fu_deriv.y - 0.0)<EPSILON){ fu_deriv.y = EPSILON;}
+		fu_deriv = max(fu_deriv, EPSILONVEC) + min(fu_deriv, EPSILONVEC);
 			s = sqrt(ONE2+fu_deriv*fu_deriv);
 			d = fu / fu_deriv * (s - ONE2);
 			corr_s = (tv + sv1*fu_deriv.x)/s.x * d.x;
@@ -210,8 +209,7 @@ void animateBranchVertex(inout vec3 position)
         center		= centerB + x_vals.z * length2 * tv;
         fu			= xvals_f.z * amp2;
         fu_deriv	= xvals_deriv.z / length2 * amp2 ;
-		if (abs(fu_deriv.x - 0.0)<EPSILON){ fu_deriv.x = EPSILON;}
-		if (abs(fu_deriv.y - 0.0)<EPSILON){ fu_deriv.y = EPSILON;}
+		fu_deriv = max(fu_deriv, EPSILONVEC) + min(fu_deriv, EPSILONVEC);
 			s = sqrt(ONE2+fu_deriv*fu_deriv);
 			d = fu / fu_deriv * (s - ONE2);
 			corr_s = (tv + sv2*fu_deriv.x)/s.x * d.x;
@@ -237,8 +235,7 @@ void animateBranchVertex(inout vec3 position)
         center		= centerB + x_vals.w * length3 * tv;
         fu			= xvals_f.w	 * amp3;
         fu_deriv	= xvals_deriv.w/ length3 * amp3 ;
-		if (abs(fu_deriv.x - 0.0)<EPSILON){ fu_deriv.x = EPSILON;}
-		if (abs(fu_deriv.y - 0.0)<EPSILON){ fu_deriv.y = EPSILON;}
+		fu_deriv = max(fu_deriv, EPSILONVEC) + min(fu_deriv, EPSILONVEC);
 			s = sqrt(ONE2+fu_deriv*fu_deriv);
 			d = fu / fu_deriv * (s - ONE2);
 			corr_s = (tv + sv3*fu_deriv.x)/s.x * d.x;

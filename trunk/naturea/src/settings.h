@@ -5,6 +5,7 @@
 #include <cstring>
 #include <vector>
 #include <stack>
+#include <queue>
 #include <map>
 #include "GLEW/glew.h"
 #include "GL/glut.h"

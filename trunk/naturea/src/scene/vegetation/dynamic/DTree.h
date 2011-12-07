@@ -115,7 +115,7 @@ public:
 	void createVBOs();
 	void createDataTexture();
 
-	void createLODdataTexture(Texture * dataTex, vector<Matrix4x4*> &MVPs);
+	Texture* createLODdataTexture(vector<Matrix4x4*> &MVPs);
 	
 	bool loadDataTexture(string filename);
 	bool saveDataTexture(string filename);
@@ -165,6 +165,7 @@ public:
 
 
 	void joinSliceSetsTextures();
+
 	Texture*			jColorMap;
 	Texture*			jDataMap;
 	Texture*			jNormalMap;
@@ -264,6 +265,10 @@ private:
 
 	int						ctr;
 	float					alpha_c;
+
+	GLenum					eBranchmapInternalFormat;
+	GLenum					eBranchmapFormat;
+	GLenum					eBranchmapDataType;
 
 	/***************************************
 	* LOD 1 data

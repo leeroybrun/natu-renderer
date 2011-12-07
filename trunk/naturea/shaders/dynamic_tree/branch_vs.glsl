@@ -13,6 +13,7 @@
 #define ONE3    vec3(1.0,1.0,1.0)
 #define ONE4    vec4(1.0,1.0,1.0,1.0)
 #define EPSILON 0.0001
+#define EPSILONVEC vec2(EPSILON, EPSILON)
 //uniform sampler2D		branch_turbulence_tex;
 uniform float			branch_count;
 uniform float			time;
@@ -76,17 +77,18 @@ void animateBranchVertex(inout vec3 position)
     vec4 xvals_deriv = 0.749141*x_vals + 0.517713*x_vals*x_vals*x_vals;
 
 	// get coord systems from branch data texture
-	vec4 sv0_l	= texture2D(data_tex, vec2(2.5/texCols, branch_index/branch_count));
-    vec4 sv1_l	= texture2D(data_tex, vec2(3.5/texCols, branch_index/branch_count));
-    vec4 sv2_l	= texture2D(data_tex, vec2(4.5/texCols, branch_index/branch_count));
-    vec4 sv3_l	= texture2D(data_tex, vec2(5.5/texCols, branch_index/branch_count));
-    vec3 rv0	= texture2D(data_tex, vec2(6.5/texCols, branch_index/branch_count)).xyz;
-    vec3 rv1	= texture2D(data_tex, vec2(7.5/texCols, branch_index/branch_count)).xyz;
-    vec3 rv2	= texture2D(data_tex, vec2(8.5/texCols, branch_index/branch_count)).xyz;
-    vec3 rv3	= texture2D(data_tex, vec2(9.5/texCols, branch_index/branch_count)).xyz;
+	float branchID = branch_index/branch_count;
+	vec4 sv0_l	= texture2D(data_tex, vec2(2.5/texCols, branchID));
+    vec4 sv1_l	= texture2D(data_tex, vec2(3.5/texCols, branchID));
+    vec4 sv2_l	= texture2D(data_tex, vec2(4.5/texCols, branchID));
+    vec4 sv3_l	= texture2D(data_tex, vec2(5.5/texCols, branchID));
+    vec3 rv0	= texture2D(data_tex, vec2(6.5/texCols, branchID)).xyz;
+    vec3 rv1	= texture2D(data_tex, vec2(7.5/texCols, branchID)).xyz;
+    vec3 rv2	= texture2D(data_tex, vec2(8.5/texCols, branchID)).xyz;
+    vec3 rv3	= texture2D(data_tex, vec2(9.5/texCols, branchID)).xyz;
     // motion vectors
-	vec4 mv01 = texture2D(data_tex, vec2(0.5/texCols, branch_index/branch_count));
-    vec4 mv23 = texture2D(data_tex, vec2(1.5/texCols, branch_index/branch_count));
+	vec4 mv01 = texture2D(data_tex, vec2(0.5/texCols, branchID));
+    vec4 mv23 = texture2D(data_tex, vec2(1.5/texCols, branchID));
     vec2 mv0 = normalize(mv01.xy);
     vec2 mv1 = normalize(mv01.zw);
     vec2 mv2 = normalize(mv23.xy);
@@ -136,8 +138,11 @@ void animateBranchVertex(inout vec3 position)
 		// bend function
 		fu	= xvals_f.x	* amp0;
 		fu_deriv = xvals_deriv.x / length0 * amp0 ;
-		if (abs(fu_deriv.x)<EPSILON){ fu_deriv.x = EPSILON;}
-		if (abs(fu_deriv.y)<EPSILON){ fu_deriv.y = EPSILON;}
+
+		fu_deriv = max(fu_deriv, EPSILONVEC) + min(fu_deriv, EPSILONVEC);
+		//fu_deriv.y = max(abs(fu_deriv.y), EPSILON);
+		//if (abs(fu_deriv.x)<EPSILON){ fu_deriv.x = EPSILON;}
+		//if (abs(fu_deriv.y)<EPSILON){ fu_deriv.y = EPSILON;}
 			s = sqrt(ONE2+fu_deriv*fu_deriv);
 			d = fu / fu_deriv * (s - ONE2);
 			corr_s = (tv + sv0*fu_deriv.x)/s.x * d.x;
@@ -165,8 +170,11 @@ void animateBranchVertex(inout vec3 position)
         center		= centerB + x_vals.y * length1 * tv;
         fu			= xvals_f.y	 * amp1;
         fu_deriv	= xvals_deriv.y / length1 * amp1 ;
-		if (abs(fu_deriv.x)<EPSILON){ fu_deriv.x = EPSILON;}
-		if (abs(fu_deriv.y)<EPSILON){ fu_deriv.y = EPSILON;}
+
+		fu_deriv = max(fu_deriv, EPSILONVEC) + min(fu_deriv, EPSILONVEC);
+		//if (abs(fu_deriv.x)<EPSILON){ fu_deriv.x = EPSILON;}
+		//if (abs(fu_deriv.y)<EPSILON){ fu_deriv.y = EPSILON;}
+
 			s = sqrt(ONE2+fu_deriv*fu_deriv);
 			d = fu / fu_deriv * (s - ONE2);
 			corr_s = (tv + sv1*fu_deriv.x)/s.x * d.x;
@@ -194,8 +202,11 @@ void animateBranchVertex(inout vec3 position)
         center		= centerB + x_vals.z * length2 * tv;
         fu			= xvals_f.z * amp2;
         fu_deriv	= xvals_deriv.z / length2 * amp2 ;
-		if (abs(fu_deriv.x)<EPSILON){ fu_deriv.x = EPSILON;}
-		if (abs(fu_deriv.y)<EPSILON){ fu_deriv.y = EPSILON;}
+		
+		fu_deriv = max(fu_deriv, EPSILONVEC) + min(fu_deriv, EPSILONVEC);
+		//if (abs(fu_deriv.x)<EPSILON){ fu_deriv.x = EPSILON;}
+		//if (abs(fu_deriv.y)<EPSILON){ fu_deriv.y = EPSILON;}
+
 			s = sqrt(ONE2+fu_deriv*fu_deriv);
 			d = fu / fu_deriv * (s - ONE2);
 			corr_s = (tv + sv2*fu_deriv.x)/s.x * d.x;
@@ -221,8 +232,11 @@ void animateBranchVertex(inout vec3 position)
         center		= centerB + x_vals.w * length3 * tv;
         fu			= xvals_f.w	 * amp3;
         fu_deriv	= xvals_deriv.w/ length3 * amp3 ;
-		if (abs(fu_deriv.x - 0.0)<EPSILON){ fu_deriv.x = EPSILON;}
-		if (abs(fu_deriv.y - 0.0)<EPSILON){ fu_deriv.y = EPSILON;}
+		
+		fu_deriv = max(fu_deriv, EPSILONVEC) + min(fu_deriv, EPSILONVEC);
+		//if (abs(fu_deriv.x)<EPSILON){ fu_deriv.x = EPSILON;}
+		//if (abs(fu_deriv.y)<EPSILON){ fu_deriv.y = EPSILON;}
+
 			s = sqrt(ONE2+fu_deriv*fu_deriv);
 			d = fu / fu_deriv * (s - ONE2);
 			corr_s = (tv + sv3*fu_deriv.x)/s.x * d.x;

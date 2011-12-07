@@ -1,6 +1,8 @@
 #version 120
 #define SHADOW_TRESHOLD 0.0001
-
+#define ONE2    vec2(1.0,1.0)
+#define EPSILON 0.0001
+#define EPSILONVEC vec2(EPSILON, EPSILON)
 uniform sampler2D	colorMap;
 uniform sampler2D	branch_noise_tex;
 uniform sampler2D	leaf_noise_tex;
@@ -8,9 +10,9 @@ uniform sampler2D	normalMap;
 uniform	sampler2D   dataMap;
 uniform sampler2D   depthMap;
 uniform sampler2D	seasonMap;
+uniform sampler2D	lod_data_tex;
 uniform float		season;
 uniform float		time;
-
 uniform	vec2		movementVectorA;
 uniform	vec2		movementVectorB;
 uniform vec2		window_size;
@@ -41,6 +43,7 @@ varying vec2		sliceDesc;
 varying mat3		TBN_Matrix;
 
 varying vec3		colorVar;
+varying float		mv_time;
 varying float		time_offset_v;
 
 uniform float		MultiplyAmbient			;
@@ -50,9 +53,10 @@ uniform float		MultiplyTranslucency	;
 
 uniform float		near;
 uniform	float		far;
+
 #define sliceCnt		3
 #define sliceSetsCnt	3
-#define	texCols			18.0
+#define	texCols			7.0
 			 
 float		fogFactor;
 
@@ -74,7 +78,166 @@ float getDepth(vec2 coords){
 	return depth;
 }
 
+void	main()
+{	
+	vec4 color = vec4(0.0, 0.0, 0.0,1.0);
+	if (sliceDesc.x!=1.0 || sliceDesc.y!=0.0){discard;}
 
+	float mv_time = (time+time_offset_v) * 0.01;
+	
+	
+	
+	// get frag position
+	vec2 position = gl_TexCoord[0].st;
+	vec2 tpos	= clamp ( position + sliceDesc , sliceDesc, sliceDesc+vec2(1.0, 1.0) ) / vec2(sliceCnt,sliceSetsCnt);
+	// get Level-1 branch
+	// TODO:
+	// WRONG branchID !!!!
+	float branchID = (texture2D(dataMap, tpos).r);
+
+	float offset = sliceDesc.y*sliceCnt;
+	float texCol = 1.0/(sliceSetsCnt*texCols);
+	
+
+	vec4 mv = texture2D(lod_data_tex, vec2((5.5+offset)*texCol, branchID));
+	vec2 mv_0 = mv.xy;
+	vec2 mv_1 = mv.zw;
+	vec3 corr_s;
+	vec3 corr_r;
+	color = vec4(branchID*50.0, 0.0, 0.0, 1.0);
+	//branchID = (branchID+0.5)/496.0;
+	if (branchID>0.0){
+		// level 1 deformation...
+		//vec4 branch_origin = texture2D(lod_data_tex, vec2((0.5+offset)*texCol, (0.5)/496.0));
+		//float branchID2 = branchID * 500;
+		vec4 branch_origin = texture2D(lod_data_tex, vec2((0.5+offset)*texCol, branchID));
+		vec4 t = texture2D(lod_data_tex, vec2((1.5+offset)*texCol, branchID));
+		vec4 r = texture2D(lod_data_tex, vec2((2.5+offset)*texCol, branchID));
+		vec4 s = texture2D(lod_data_tex, vec2((3.5+offset)*texCol, branchID));
+		float l= texture2D(lod_data_tex, vec2((4.5+offset)*texCol, branchID)).x;
+
+
+		// get x value on the projected branch
+
+		// naive solution = distance to projected origin / branch projected length
+		// PROBLEMS:
+		// - what about branches pointing to the observer? - projected length is near 0
+		// - even pixels close to projected origin can be very far in terms of x
+		vec2 distVector = position-branch_origin.rg;
+		float x_val = length(distVector)/l;
+		//color = vec4(x_val);
+
+		// mark-up origins
+		if (x_val<0.05){
+			color = vec4(1.0, 1.0, 1.0, 1.0);
+		}
+		vec2 amp1 = wood_amplitudes.y * ( texture2D(branch_noise_tex, mv_1 * mv_time * wood_frequencies.y).rg  * 2.0 - ONE2);
+		float xval2 = x_val*x_val;
+		float fx = 0.374570*xval2 + 0.129428*xval2*xval2;
+		float dx = 0.749141*x_val + 0.517713*xval2*x_val;
+
+		vec2 fu			= vec2(fx)		* amp1;
+		vec2 fu_deriv	= vec2( dx / l) * amp1 ;
+
+		fu_deriv = max(fu_deriv, EPSILONVEC) + min(fu_deriv, EPSILONVEC);
+		vec2 us = sqrt(ONE2+fu_deriv*fu_deriv);
+		vec2 ud = fu / fu_deriv * (us - ONE2);
+		corr_s = (t.xyz + s.xyz*fu_deriv.x)/us.x * ud.x;
+		corr_r = (t.xyz + r.xyz*fu_deriv.y)/us.y * ud.y;
+		position = position + fu.x * s.xy + fu.y * r.xy - (corr_s.xy+corr_r.xy);
+
+	}
+	vec2 newPos = position;
+	newPos = clamp ( newPos  , vec2(0.0, 0.0), vec2(1.0, 1.0) );// + sliceDesc ) / vec2(sliceCnt,sliceSetsCnt);
+	newPos = (newPos + sliceDesc) / vec2(sliceCnt,sliceSetsCnt);
+	
+	
+	//color = texture2D(colorMap, newPos);
+	//if (color.a<0.00001){discard;}
+	//color  = texture2D(lod_data_tex, position);
+	color.a = 1.0;
+	gl_FragData[0] = color;
+	gl_FragData[1] = color * vec4(0.1, 0.1, 0.1, 1.0);
+
+	/*
+
+	vec3 eyeDir_ts2 = normalize(eyeDir_ts);
+	float sizeFactor = 1.5/max(window_size.x, window_size.y);
+
+	float dist = gl_FragCoord.z;
+	float inv_dist = 1.0/dist;
+	//float t			= 10.0*(time+time_offset_v)*leaf_frequency*sizeFactor;
+	
+	vec2 movVectorA = movementVectorA;
+	vec2 movVectorB = movementVectorB;
+
+	
+
+	vec2 texC		= gl_TexCoord[0].st;
+	vec2 fpos		= clamp ( texC + sliceDesc , sliceDesc, sliceDesc+vec2(1.0, 1.0) ) / vec2(sliceCnt,sliceSetsCnt);
+	
+	vec2 mv1 = texture2D(dataMap, fpos).xy*2.0 - vec2(1.0);
+	vec2 amp1 = wood_amplitudes.y * ( texture2D(branch_noise_tex, mv1 * mv_time * wood_frequencies.y).rg  * 2.0 - vec2(1.0));
+
+
+	vec2 texCoordA	= fpos+mv_time*movVectorA;
+	vec2 texCoordB	= fpos+mv_time*movVectorB; // gl_TexCoord[0].st+t*movVectorB;
+	
+	vec2 oneV2 = vec2(1.0);
+	vec2 b0 = vec2(0.5,0.0);
+	vec2 b1 = texture2D(dataMap, fpos).zw;
+
+	float dist0 = min (1.0, 2.0 * length(texC - b0)) ; // / branchProjectedLength
+	float dist1 = min (1.0, 5.0 * length(texC - b1)); // / branchProjectedLength
+
+	vec4 color;
+	float angle;
+	float cosA;
+	float sinA;
+	vec2  difVec;
+	mat2 R;
+	vec2 rotatedDifVec;
+	vec2 newPos = texC;
+	*/
+	
+	/*
+	float ti = (time+time_offset_v)*sizeFactor*10.0;
+	vec2 si = sizeFactor* 100.0 * wood_amplitudes.xy;
+	float d = length(b1-vec2(0.5));
+
+	if ((d>0.01)){
+		//angle = dist1 * (amp1.x+amp1.y) * sizeFactor * 200;
+		angle = dist1*(texture2D(branch_noise_tex, (ti * b1 * wood_frequencies.y)).s*2.0 - 1.0)  * si.y * 2.0;
+		//angle = (texture2D(branch_noise_tex, (ti * b1 * wood_frequencies.y)).s*2.0 - 1.0) * si.y;
+		
+		cosA = cos (angle); 
+		sinA = sin (angle);
+		difVec = (newPos - b1);
+		R = mat2(	 cosA	, sinA,
+ 					-sinA	, cosA );
+		rotatedDifVec = R*difVec;
+		newPos = b1 + rotatedDifVec;
+	}
+	
+	angle = dist0 * (texture2D(branch_noise_tex, (ti * b0 * wood_frequencies.x)).s*2.0-1.0) * si.x * 0.5;
+	cosA = cos (angle); 
+	sinA = sin (angle);
+	difVec = (newPos - b0);
+	R = mat2(	 cosA	, sinA,
+ 				-sinA	, cosA );
+	rotatedDifVec = R*difVec;
+	newPos = b0 + rotatedDifVec;
+	*/
+	
+
+
+	// bending done...
+
+	
+}
+
+
+/*
 void	main()
 {	
 	vec3 eyeDir_ts2 = normalize(eyeDir_ts);
@@ -141,6 +304,9 @@ void	main()
 	rotatedDifVec = R*difVec;
 	newPos = b0 + rotatedDifVec;
 	
+	// bending done...
+
+
 	newPos = clamp ( newPos  , vec2(0.0, 0.0), vec2(1.0, 1.0) );// + sliceDesc ) / vec2(sliceCnt,sliceSetsCnt);
 	newPos = (newPos + sliceDesc) / vec2(sliceCnt,sliceSetsCnt);
 	texCoordA = (texture2D(leaf_noise_tex, texCoordA).st*2.0 - vec2(1.0));
@@ -161,7 +327,7 @@ void	main()
 		leaf = 0.0;
 		fragmentNormal = fragmentNormalBranch;
 		fragmentNormal.xyz = fragmentNormal.xyz*2.0 - vec3(1.0);
-		/* pseudo-parallax mapping */
+		// pseudo-parallax mapping //
 		//float height = fragmentNormal.z;			
 		//float hsb = height * scale + bias;    
 		//vec2 normalLookUp = newPos + (hsb * eyeDir_ts.xy);
@@ -280,3 +446,5 @@ void	main()
 	//float sig = (1.0-transition_control);
 	//gl_FragDepth = gl_FragCoord.z + 0.01*sig*sig;
 }
+
+*/
