@@ -68,7 +68,7 @@ void main()
 	// END SHADOW MAPPING //
 	}
 	//gl_FragData[0] = vec4(vec3(shade), 1.0);
-	gl_FragData[0] = vec4(color, gl_Color.a);
+	gl_FragData[0] = gl_Color;//vec4(color, gl_Color.a);
 	//gl_FragData[1] = color * vec4(0.5, 0.5, 0.5, 1.0);
 	gl_FragData[1] =vec4(0.0, 0.0, 0.0, 1.0);
 	//gl_FragColor = vec4(1.0/level * texture2D(color_texture, gl_TexCoord[0].xy).xyz, 1.0);

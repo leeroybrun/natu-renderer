@@ -167,8 +167,8 @@ void animateBranchVertex(inout vec3 position)
 		b1_origin = ND2TC(OS2ND(vec4(centerB,1.0))).xyz;
        
 	    // bend branch system according to the parent branch bending
-		sv1 = sv1.x * bs + sv1.y * br + sv1.z * bt;
-        rv1 = rv1.x * bs + rv1.y * br + rv1.z * bt;
+		sv1 = sv1.x * br + sv1.y * bs + sv1.z * bt;
+        rv1 = rv1.x * br + rv1.y * bs + rv1.z * bt;
         //...
 		tv	= cross(rv1,sv1);
 
@@ -184,8 +184,8 @@ void animateBranchVertex(inout vec3 position)
 	if (x_vals.z>0.0){
 		b2_origin = OS2ND(vec4(centerB,1.0)).xy;
 	    // bend branch system according to the parent branch bending
-		sv2 = sv2.x * bs + sv2.y * br + sv2.z * bt;
-        rv2 = rv2.x * bs + rv2.y * br + rv2.z * bt;
+		sv2 = sv2.x * br + sv2.y * bs + sv2.z * bt;
+        rv2 = rv2.x * br + rv2.y * bs + rv2.z * bt;
         //...
 		tv	= cross(rv2,sv2);
 		// calc wind prebend offset
@@ -198,8 +198,8 @@ void animateBranchVertex(inout vec3 position)
     }
 
 	if (x_vals.w>0.0){
-		sv3 = sv3.x * bs + sv3.y * br + sv3.z * bt;
-        rv3 = rv3.x * bs + rv3.y * br + rv3.z * bt;
+		sv3 = sv3.x * br + sv3.y * bs + sv3.z * bt;
+        rv3 = rv3.x * br + rv3.y * bs + rv3.z * bt;
         tv	= cross(rv3,sv3);
 		// calc wind prebend offset
 		centerB		= centerB + x_vals.w * length3 * tv;

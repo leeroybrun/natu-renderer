@@ -51,6 +51,7 @@ uniform float		MultiplyDiffuse			;
 uniform float		MultiplySpecular		;
 uniform float		MultiplyTranslucency	;
 
+uniform float		branch_count;
 uniform float		near;
 uniform	float		far;
 
@@ -106,18 +107,18 @@ void	main()
 	vec3 corr_r;
 	float x_val = 0.0;
 	color = vec4(branchID*50.0, 0.0, 0.0, 1.0);
-	//branchID = (branchID+0.5)/496.0;
-	if (branchID>0.0){
+	vec2 amp1;
+	if (branchID>(0.5)/branch_count){
 		// level 1 deformation...
 		//vec4 branch_origin = texture2D(lod_data_tex, vec2((0.5+offset)*texCol, (0.5)/496.0));
 		//float branchID2 = branchID * 500;
 		vec4 branch_origin = texture2D(lod_data_tex, vec2((0.5+offset)*texCol, branchID));
-		vec4 t = texture2D(lod_data_tex, vec2((1.5+offset)*texCol, branchID));
+		//vec4 t = texture2D(lod_data_tex, vec2((1.5+offset)*texCol, branchID));
 		vec4 r = texture2D(lod_data_tex, vec2((2.5+offset)*texCol, branchID));
 		vec4 s = texture2D(lod_data_tex, vec2((3.5+offset)*texCol, branchID));
 		float l= texture2D(lod_data_tex, vec2((4.5+offset)*texCol, branchID)).x;
 
-
+		vec3 t = cross(r.xyz,s.xyz);
 		// get x value on the projected branch
 
 		// naive solution = distance to projected origin / branch projected length
@@ -127,9 +128,9 @@ void	main()
 		vec2 distVector = position-branch_origin.rg;
 		x_val = min(1.0, length(distVector)/l);
 		//color = vec4(x_val);
-		vec2 amp1 = wood_amplitudes.y * ( texture2D(branch_noise_tex, mv_1 * mv_time * wood_frequencies.y).rg  * 2.0 - ONE2);
+		amp1 = wood_amplitudes.y * ( texture2D(branch_noise_tex, mv_1 * mv_time * wood_frequencies.y).rg  * 2.0 - ONE2);
 		float xval2 = x_val*x_val;
-
+		amp1.x = 0;
 
 		float fx = 0.374570*xval2 + 0.129428*xval2*xval2;
 		float dx = 0.749141*x_val + 0.517713*xval2*x_val;
@@ -140,9 +141,11 @@ void	main()
 		fu_deriv = max(fu_deriv, EPSILONVEC) + min(fu_deriv, EPSILONVEC);
 		vec2 us = sqrt(ONE2+fu_deriv*fu_deriv);
 		vec2 ud = fu / fu_deriv * (us - ONE2);
-		corr_s = (t.xyz + s.xyz*fu_deriv.x)/us.x * ud.x;
-		corr_r = (t.xyz + r.xyz*fu_deriv.y)/us.y * ud.y;
-		position = position + fu.x * s.xy + fu.y * r.xy + (corr_s.xy+corr_r.xy);
+		corr_r = (t + r.xyz*fu_deriv.x)/us.x * ud.x;
+		corr_s = (t + s.xyz*fu_deriv.y)/us.y * ud.y;
+
+		// inverse deformation - must be aplyed in oposite direction
+		position = position - ( fu.x * r.xy + fu.y * s.xy - (corr_r.xy+corr_s.xy) );
 
 	}
 	vec2 newPos = position;
@@ -152,6 +155,7 @@ void	main()
 	
 	color = texture2D(colorMap, newPos);
 	if (color.a<0.5){discard;}
+	color = vec4(abs(amp1), 0.0, 1.0);
 	//color  = texture2D(lod_data_tex, position);
 	//color.rgb = color.rgb*x_val;
 	color.a = 1.0;

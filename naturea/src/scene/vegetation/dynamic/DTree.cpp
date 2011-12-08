@@ -664,19 +664,21 @@ void DTree::createDataTexture()
 		data[i + k*channels + 3] = b->motionVectors[3].y;
 
 		// up0_l0 - up2_l2
+		// s
 		k = 2;
-		for (bh = 0;bh < DYN_TREE::MAX_HIERARCHY_DEPTH; bh++){
-			data[i + k*channels + 0] = b->upVectors[bh].x;
-			data[i + k*channels + 1] = b->upVectors[bh].y;
-			data[i + k*channels + 2] = b->upVectors[bh].z;
-			data[i + k*channels + 3] = b->lengths[bh];
-			k++;
-		}
-		// right0_x0 - right2_x2
 		for (bh = 0;bh < DYN_TREE::MAX_HIERARCHY_DEPTH; bh++){
 			data[i + k*channels + 0] = b->rightVectors[bh].x;
 			data[i + k*channels + 1] = b->rightVectors[bh].y;
 			data[i + k*channels + 2] = b->rightVectors[bh].z;
+			data[i + k*channels + 3] = b->lengths[bh];
+			k++;
+		}
+		// right0_x0 - right2_x2
+		// r
+		for (bh = 0;bh < DYN_TREE::MAX_HIERARCHY_DEPTH; bh++){
+			data[i + k*channels + 0] = b->upVectors[bh].x;
+			data[i + k*channels + 1] = b->upVectors[bh].y;
+			data[i + k*channels + 2] = b->upVectors[bh].z;
 			data[i + k*channels + 3] = b->xvals[bh];
 			k++;
 		}
@@ -748,6 +750,9 @@ Texture* DTree::createLODdataTexture(vector<Matrix4x4*> &MVPs)
 			// express o, t,r,s in terms of texture coordinates:
 
 			// project original t, original s, original r
+			//
+
+
 			v4 orig = v4( branch->originalCS.origin);
 			v4 o = (*mvp) * ( orig );
 			v4 t = (*mvp) * branch->originalCS.t;
@@ -757,6 +762,20 @@ Texture* DTree::createLODdataTexture(vector<Matrix4x4*> &MVPs)
 			v4 tt = t.ndcoord2texcoord() - origin;
 			v4 rt =	r.ndcoord2texcoord() - origin;
 			v4 st =	s.ndcoord2texcoord() - origin;
+
+			//printf("t: ");
+			//t.printOut();
+			//printf("r: ");
+			//r.printOut();
+			//printf("s: ");
+			//s.printOut();
+			//printf("tt: ");
+			//tt.printOut();
+			//printf("rt: ");
+			//rt.printOut();
+			//printf("st: ");
+			//st.printOut();
+			//system("PAUSE");
 
 			// project LENGHT of the branch...
 			v4 lenghtVector = tt * branch->L;
@@ -942,7 +961,6 @@ void DTree::draw_instance_LOD0(DTreeInstanceData * instance, float alpha){
 	//drawNormals(instance);
 	
 	if (g_draw_lod0){
-		if (g_Draw2Shadowmap){
 			time_offset = instance->time_offset;
 			glColor4f(1.0,1.0,1.0, alpha);
 		
@@ -950,7 +968,9 @@ void DTree::draw_instance_LOD0(DTreeInstanceData * instance, float alpha){
 			glPushMatrix();
 			glTranslatef(instance->position.x, instance->position.y, instance->position.z);
 			glRotatef(instance->rotation_y+180, 0.0, 1.0, 0.0);
-			glScalef( 10.f , -10.f, 10.f);
+			glScalef( 10.f , 10.f, 10.f);
+		if (g_Draw2Shadowmap){
+			
 	
 			// draw bbox
 			//bbox->draw();
@@ -984,18 +1004,9 @@ void DTree::draw_instance_LOD0(DTreeInstanceData * instance, float alpha){
 			dataTexture			->unbind();
 			seasonMap			->unbind();
 
-			glPopMatrix();
-			glEnable(GL_CULL_FACE);
+			
 		
 		} else {
-			time_offset = instance->time_offset;
-			glColor4f(1.0,1.0,1.0, alpha);
-		
-			glDisable(GL_CULL_FACE);
-			glPushMatrix();
-			glTranslatef(instance->position.x, instance->position.y, instance->position.z);
-			glRotatef(instance->rotation_y+180, 0.0, 1.0, 0.0);
-			glScalef( 10.f , -10.f, 10.f);
 	
 			// draw bbox
 			//bbox->draw();
@@ -1047,10 +1058,10 @@ void DTree::draw_instance_LOD0(DTreeInstanceData * instance, float alpha){
 			seasonMap			->unbind();
 			g_shadowmap1		->unbind();
 			leafShader->use(false);
-			glPopMatrix();
-			glEnable(GL_CULL_FACE);
 			
 		}
+		glPopMatrix();
+		glEnable(GL_CULL_FACE);
 	}
 }
 
@@ -2786,7 +2797,7 @@ void DTree::drawForLOD(){
 	// TODO: optimize rendering for LOD slice generation...
 	glDisable(GL_CULL_FACE);
 	glPushMatrix();
-	glScalef( 1.f , -1.f, 1.f);
+	glScalef( 1.f , 1.f, 1.f);
 	glRotatef(180, 0.0, 1.0, 0.0);
 	// draw bbox
 	//bbox->draw();
@@ -3275,6 +3286,7 @@ void DTree::initLOD1()
 	lod1shader2->registerUniform("ReduceTranslucencyInShadow",	UniformType::F1,	& g_leaves_ReduceTranslucencyInShadow);
 	lod1shader2->registerUniform("shadow_intensity",			UniformType::F1,	& g_leaves_shadow_intensity);
 	lod1shader2->registerUniform("LightDiffuseColor",			UniformType::F3,	& g_leaves_LightDiffuseColor.data);
+	lod1shader2->registerUniform("branch_count",			UniformType::F1,	& this->branchCountF);
 	
 	lod1shader2->registerUniform("near",	UniformType::F1,	& g_ShadowNear);
 	lod1shader2->registerUniform("far",		UniformType::F1,	& g_ShadowFar);
@@ -3298,9 +3310,10 @@ void DTree::initLOD1()
 	lod1shader_shadow->registerUniform("leaf_amplitude"				, UniformType::F1, & g_tree_leaf_amplitude			);
 	lod1shader_shadow->registerUniform("leaf_frequency"				, UniformType::F1, & g_tree_leaf_frequency			);
 	lod1shader_shadow->registerUniform("dither"						, UniformType::F1, & g_dither						);
-	lod1shader_shadow->registerUniform("near"						, UniformType::F1, & g_ShadowNear);
-	lod1shader_shadow->registerUniform("far"						, UniformType::F1, & g_ShadowFar);
-
+	lod1shader_shadow->registerUniform("near"						, UniformType::F1, & g_ShadowNear					);
+	lod1shader_shadow->registerUniform("far"						, UniformType::F1, & g_ShadowFar					);
+	lod1shader_shadow->registerUniform("branch_count"				, UniformType::F1, & this->branchCountF				);
+	
 	iu1Loc1 = lod1shader2->getLocation("u_colorVariance");
 	
 	tmLoc0 = lod1shader2->getAttributeLocation("transformMatrix");
