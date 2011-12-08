@@ -102,7 +102,6 @@ CoordSystem::~CoordSystem(void){
 void CoordSystem::repair(){
 	t = r.cross(s);
 	s = t.cross(r);
-	//t = -t;
 }
 
 bool CoordSystem::check(){
