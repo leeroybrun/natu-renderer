@@ -139,6 +139,8 @@ void animateBranchVertex(inout vec3 position)
 	vec2 fu, fu_deriv, s,d;
 	bs = sv0;
 	br = rv0;
+
+	bt = cross(br, bs);
 	if (x_vals.x>0.0){
 		corr_r = vec3(0.0);
 		corr_s = vec3(0.0);
@@ -183,7 +185,6 @@ void animateBranchVertex(inout vec3 position)
 
 		amp1.x += dot(rv1, wind_direction) * wind_strength;
 		amp1.y += dot(sv1, wind_direction) * wind_strength;
-
 		amp1.x = 0.0;
 
         center		= centerB + x_vals.y * length1 * tv;

@@ -168,7 +168,6 @@ void animateBranchVertex(inout vec3 position)
 
 		amp1.x += dot(rv1, wind_direction) * wind_strength;
 		amp1.y += dot(sv1, wind_direction) * wind_strength;
-
 		amp1.x = 0.0;
 
         center		= centerB + x_vals.y * length1 * tv;
@@ -266,7 +265,7 @@ void animateBranchVertex(inout vec3 position)
 	 // br normal
 	 // bs bitangent on the circle around branch
 	 //oVec = vec3(abs(dot(br, bs)), abs(dot(bs,bt)), abs(dot(bt,br)));
-	vec3	offset = position.x*bs + position.y*br;
+	vec3	offset = position.x*br + position.y*bs;
 	position = centerB + offset;
 	normal_vs = normalize(offset);
     tangent_vs	 = bt;
@@ -285,7 +284,7 @@ void main()
 	gl_TexCoord[0] = vec4(texCoords0, 0.0, 0.0);
 	
 
-	gl_FrontColor = color;
+	gl_FrontColor = gl_Color;
 	normal_vs  = gl_NormalMatrix * normal_vs;
 	tangent_vs = gl_NormalMatrix * tangent_vs;
 	
