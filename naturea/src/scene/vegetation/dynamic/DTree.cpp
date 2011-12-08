@@ -741,6 +741,7 @@ Texture* DTree::createLODdataTexture(vector<Matrix4x4*> &MVPs)
 	for (int si=0; si<sliceCount; si++){
 		// get MVP
 		mvp = MVPs[si];
+		mvp->printOut();
 		v4 origin = ((*mvp) * v4(0.0, 0.0, 0.0, 1.0)).ndcoord2texcoord();
 		//printf("slice %i mvp: \n", si);
 		//mvp->printOut();
@@ -751,8 +752,6 @@ Texture* DTree::createLODdataTexture(vector<Matrix4x4*> &MVPs)
 
 			// project original t, original s, original r
 			//
-
-
 			v4 orig = v4( branch->originalCS.origin);
 			v4 o = (*mvp) * ( orig );
 			v4 t = (*mvp) * branch->originalCS.t;
@@ -763,12 +762,21 @@ Texture* DTree::createLODdataTexture(vector<Matrix4x4*> &MVPs)
 			v4 rt =	r.ndcoord2texcoord() - origin;
 			v4 st =	s.ndcoord2texcoord() - origin;
 
+			//printf("INPUT: \n");
+			//printf("t: ");
+			//branch->originalCS.t.printOut();
+			//printf("r: ");
+			//branch->originalCS.r.printOut();
+			//printf("s: ");
+			//branch->originalCS.s.printOut();
+			//printf("NORMALIZED DEVICE: \n");
 			//printf("t: ");
 			//t.printOut();
 			//printf("r: ");
 			//r.printOut();
 			//printf("s: ");
 			//s.printOut();
+			//printf("TEXTURE: \n");
 			//printf("tt: ");
 			//tt.printOut();
 			//printf("rt: ");
@@ -780,6 +788,7 @@ Texture* DTree::createLODdataTexture(vector<Matrix4x4*> &MVPs)
 			// project LENGHT of the branch...
 			v4 lenghtVector = tt * branch->L;
 			lenghtVector.w = 0.0;
+			lenghtVector.z = 0.0;
 			float lenght = lenghtVector.lenght();
 
 			// save data
@@ -967,7 +976,7 @@ void DTree::draw_instance_LOD0(DTreeInstanceData * instance, float alpha){
 			glDisable(GL_CULL_FACE);
 			glPushMatrix();
 			glTranslatef(instance->position.x, instance->position.y, instance->position.z);
-			glRotatef(instance->rotation_y+180, 0.0, 1.0, 0.0);
+			glRotatef(instance->rotation_y, 0.0, 1.0, 0.0);
 			glScalef( 10.f , 10.f, 10.f);
 		if (g_Draw2Shadowmap){
 			
@@ -2627,6 +2636,9 @@ void DTree::makeTransition(float control, bool maskOld, DTreeInstanceData* insta
 
 
 void DTree::render(){
+
+
+
 	int i;
 	DTreeInstanceData* instance;
 	// render LOD2 instances
@@ -2657,6 +2669,7 @@ void DTree::render(){
 		instance = instancesInRenderQueues[0][i];
 		// show LOD 0
 		g_transitionControl = 0.0;
+		//drawForLOD();
 		draw_instance_LOD0(instance, 1.0);	
 	}
 
@@ -2796,9 +2809,6 @@ void DTree::enqueueInRenderList(DTreeInstanceData * instance){
 void DTree::drawForLOD(){
 	// TODO: optimize rendering for LOD slice generation...
 	glDisable(GL_CULL_FACE);
-	glPushMatrix();
-	glScalef( 1.f , 1.f, 1.f);
-	glRotatef(180, 0.0, 1.0, 0.0);
 	// draw bbox
 	//bbox->draw();
 
@@ -2841,7 +2851,6 @@ void DTree::drawForLOD(){
 	backHalfLife2Map	->unbind();
 	branchNoiseTexture->unbind();
 	dataTexture->unbind();
-	glPopMatrix();
 	glEnable(GL_LIGHTING);
 	glEnable(GL_CULL_FACE);
 
@@ -3151,8 +3160,8 @@ void DTree::initLOD1()
 	// create slices
 
 	// create 2 sliceSets (cross, double sided)
-	v3 dir = v3(1.0, 0.0, 0.0);
-	v3 right = v3(0.0, 0.0, 1.0);
+	v3 dir = v3(-1.0, 0.0, 0.0);
+	v3 right = v3(0.0, 0.0, -1.0);
 	float res = 512;
 	lod1_win_resolution = v2 (res, res);
 	
@@ -3171,10 +3180,12 @@ void DTree::initLOD1()
 	sliceSets2.push_back(set);
 	slices.clear();	
 	
-	dir.rotateY(60*DEG_TO_RAD);
-	right.rotateY(60*DEG_TO_RAD);
+	float angle = 45;
+
+	dir.rotateY(angle*DEG_TO_RAD);
+	right.rotateY(angle*DEG_TO_RAD);
 	set = new DTreeSliceSet();
-	set->rotation_y = 60;
+	set->rotation_y = angle;
 	mvp = new Matrix4x4();
 	this->createSlices(dir, right, mvp, false);
 	MVPmatrices.push_back(mvp);
@@ -3183,13 +3194,13 @@ void DTree::initLOD1()
 	sliceSets2.push_back(set);
 	slices.clear();	
 
-	dir.rotateY(-120*DEG_TO_RAD);
-	right.rotateY(-120*DEG_TO_RAD);
+	dir.rotateY(-2*angle*DEG_TO_RAD);
+	right.rotateY(-2*angle*DEG_TO_RAD);
 	set = new DTreeSliceSet();	
 	mvp = new Matrix4x4();
 	this->createSlices(dir, right, mvp, false);
 	MVPmatrices.push_back(mvp);
-	set->rotation_y = -60;
+	set->rotation_y = -angle;
 	set->setSlices(this->slices);
 	//set->createFromDir(this, dir);
 	sliceSets2.push_back(set);
@@ -3287,6 +3298,10 @@ void DTree::initLOD1()
 	lod1shader2->registerUniform("shadow_intensity",			UniformType::F1,	& g_leaves_shadow_intensity);
 	lod1shader2->registerUniform("LightDiffuseColor",			UniformType::F3,	& g_leaves_LightDiffuseColor.data);
 	lod1shader2->registerUniform("branch_count",			UniformType::F1,	& this->branchCountF);
+	lod1shader2->registerUniform("show_sliceSet",			UniformType::I1,	& g_tree_show_sliceSet);
+	lod1shader2->registerUniform("show_slice",			UniformType::I1,		& g_tree_show_slice);
+	
+
 	
 	lod1shader2->registerUniform("near",	UniformType::F1,	& g_ShadowNear);
 	lod1shader2->registerUniform("far",		UniformType::F1,	& g_ShadowFar);
@@ -3385,18 +3400,18 @@ void DTree::initLOD1()
 	
 	float y_max = 1.0;//0.97; 
 
-	texCoordArr0.push_back(v2( 0.0,  0.0	));
 	texCoordArr0.push_back(v2( 1.0,  0.0	));
-	texCoordArr0.push_back(v2( 1.0,  y_max	));
-	texCoordArr0.push_back(v2( 0.0,  y_max	));
 	texCoordArr0.push_back(v2( 0.0,  0.0	));
-	texCoordArr0.push_back(v2( 1.0,  0.0	));
-	texCoordArr0.push_back(v2( 1.0,  y_max	));
 	texCoordArr0.push_back(v2( 0.0,  y_max	));
+	texCoordArr0.push_back(v2( 1.0,  y_max	));
+	texCoordArr0.push_back(v2( 1.0,  0.0	));
 	texCoordArr0.push_back(v2( 0.0,  0.0	));
-	texCoordArr0.push_back(v2( 1.0,  0.0	));
-	texCoordArr0.push_back(v2( 1.0,  y_max	));
 	texCoordArr0.push_back(v2( 0.0,  y_max	));
+	texCoordArr0.push_back(v2( 1.0,  y_max	));
+	texCoordArr0.push_back(v2( 1.0,  0.0	));
+	texCoordArr0.push_back(v2( 0.0,  0.0	));
+	texCoordArr0.push_back(v2( 0.0,  y_max	));
+	texCoordArr0.push_back(v2( 1.0,  y_max	));
 
 	// first slice number, second sliceSet number
 	sliceAtrArr0.push_back(v2( 1.0,  0.0));
@@ -3417,20 +3432,20 @@ void DTree::initLOD1()
 	int sliceCount = 3;
 	v3 axisY = v3(0.0, 1.0, 0.0);
 	// B
-	float angle= 60.0;
+	float angleR= angle;
 	for (i=0; i<(sliceCount*4); i++){
-		vertexArr0.push_back(vertexArr0[i].getRotated(angle*DEG_TO_RAD, axisY));
-		normalArr0.push_back(normalArr0[i].getRotated(angle*DEG_TO_RAD, axisY));
-		tangentArr0.push_back(tangentArr0[i].getRotated(angle*DEG_TO_RAD, axisY));
+		vertexArr0.push_back(vertexArr0[i].getRotated(angleR*DEG_TO_RAD, axisY));
+		normalArr0.push_back(normalArr0[i].getRotated(angleR*DEG_TO_RAD, axisY));
+		tangentArr0.push_back(tangentArr0[i].getRotated(angleR*DEG_TO_RAD, axisY));
 		texCoordArr0.push_back(texCoordArr0[i]);
 		sliceAtrArr0.push_back(v2(sliceAtrArr0[i].x, 1.0));
 	}
 	// C
-	angle= -60.0;
+	angleR= -angle;
 	for (i=0; i<(sliceCount*4); i++){
-		vertexArr0.push_back(vertexArr0[i].getRotated(angle*DEG_TO_RAD, axisY));
-		normalArr0.push_back(normalArr0[i].getRotated(angle*DEG_TO_RAD, axisY));
-		tangentArr0.push_back(tangentArr0[i].getRotated(angle*DEG_TO_RAD, axisY));
+		vertexArr0.push_back(vertexArr0[i].getRotated(angleR*DEG_TO_RAD, axisY));
+		normalArr0.push_back(normalArr0[i].getRotated(angleR*DEG_TO_RAD, axisY));
+		tangentArr0.push_back(tangentArr0[i].getRotated(angleR*DEG_TO_RAD, axisY));
 		texCoordArr0.push_back(texCoordArr0[i]);
 		sliceAtrArr0.push_back(v2(sliceAtrArr0[i].x, 2.0));
 	}
@@ -4158,12 +4173,12 @@ void DTree::createSlices(v3 & direction, v3 & rightVector, Matrix4x4 *mvp, bool 
 	GLint	gl_location		= dataProcessShader->getGLLocation("branchMap");
 	int		loc_win_size	= dataProcessShader->getLocation("window_size");
 	//int		loc_cam_dir		= dataProcessShader->getLocation("cam_dir");
-	v3 d = direction.getRotated(90*DEG_TO_RAD, v3(0.0, 1.0, 0.0));
-	v3 r = rightVector.getRotated(90*DEG_TO_RAD, v3(0.0, 1.0, 0.0));
-	bLODShader->registerUniform("cam_dir",   UniformType::F3, & d);
-	lLODShader->registerUniform("cam_dir",   UniformType::F3, & d);
-	bLODShader->registerUniform("cam_right", UniformType::F3, & r);
-	lLODShader->registerUniform("cam_right", UniformType::F3, & r);
+	//v3 d = direction.getRotated(90*DEG_TO_RAD, v3(0.0, 1.0, 0.0));
+	//v3 r = rightVector.getRotated(90*DEG_TO_RAD, v3(0.0, 1.0, 0.0));
+	//bLODShader->registerUniform("cam_dir",   UniformType::F3, & d);
+	//lLODShader->registerUniform("cam_dir",   UniformType::F3, & d);
+	//bLODShader->registerUniform("cam_right", UniformType::F3, & r);
+	//lLODShader->registerUniform("cam_right", UniformType::F3, & r);
 	// dummy depth map
 	Texture * depthmap = new Texture(GL_TEXTURE_2D, GL_DEPTH_COMPONENT32F, GL_DEPTH_COMPONENT, GL_FLOAT, NULL, resolution_x, resolution_y, "dummy_depthMap");
 	depthmap->textureUnit = GL_TEXTURE7;
@@ -4198,7 +4213,7 @@ void DTree::createSlices(v3 & direction, v3 & rightVector, Matrix4x4 *mvp, bool 
 		Matrix4x4 P;
 		
 		glGetFloatv(GL_PROJECTION_MATRIX, (P.m) );
-		P.printOut();
+		//P.printOut();
 		glPopMatrix();
 	glMatrixMode(GL_MODELVIEW);
 		glPushMatrix();
@@ -4207,7 +4222,7 @@ void DTree::createSlices(v3 & direction, v3 & rightVector, Matrix4x4 *mvp, bool 
 		// get MV matrix:
 		Matrix4x4 MV;
 		glGetFloatv(GL_MODELVIEW_MATRIX, (MV.m));
-		MV.printOut();
+		//MV.printOut();
 		glPopMatrix();
 	/// compute ModelViewProjection matrix
 		Matrix4x4 LocMVP = P*MV;

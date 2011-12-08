@@ -44,9 +44,9 @@ varying vec2			mv_v;
 varying float			leafSpecificNumber;
 varying float			branchID;
 
-uniform vec3			cam_dir;
-uniform vec3			cam_right;
-vec3					cam_up = cross(cam_dir, cam_right);
+//uniform vec3			cam_dir;
+//uniform vec3			cam_right;
+//vec3					cam_up = cross(cam_dir, cam_right);
 
 varying vec3			normal_vs;
 varying vec3			tangent_vs;

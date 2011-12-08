@@ -145,6 +145,8 @@ v4		g_tree_wood_frequencies	= v4(0.0, 0.0, 0.0, 0.0);//v4(0.4, 1.2, 0.0, 0.0);
 float	g_tree_leaf_amplitude	= 2.4;
 float	g_tree_leaf_frequency	= 5.0;
 int		g_tree_slice_count		= 3;
+int		g_tree_show_slice		= 1;
+int		g_tree_show_sliceSet	= 0;
 float	g_tree_wave_amplitude	= 0.005;
 float	g_tree_wave_frequency	= 0.5;
 v3		g_tree_movementVectorA	= v3(0.0, 1.0, 0.0);
@@ -735,7 +737,8 @@ void initGUI()
 
 	TwAddVarRW(controlBar, "leaf_frequency", TW_TYPE_FLOAT, & g_tree_leaf_frequency, " group='Tree' min=0 max=100 step=0.1 ");
 	TwAddVarRW(controlBar, "leaf_amplitude", TW_TYPE_FLOAT, & g_tree_leaf_amplitude, " group='Tree' min=0 max=10 step=0.01 ");
-	TwAddVarRW(controlBar, "slice_count", TW_TYPE_INT32, & g_tree_slice_count, " group='Tree' min=0 max=10 step=1 ");
+	TwAddVarRW(controlBar, "visible_slice", TW_TYPE_INT32, & g_tree_show_slice, " group='Tree' min=0 max=3 step=1 ");
+	TwAddVarRW(controlBar, "visible_sliceSet", TW_TYPE_INT32, & g_tree_show_sliceSet, " group='Tree' min=0 max=3 step=1 ");
 
 
 

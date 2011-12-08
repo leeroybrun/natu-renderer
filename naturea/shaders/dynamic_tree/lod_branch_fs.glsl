@@ -13,9 +13,9 @@ varying float			branchID;
 uniform sampler2D		color_texture;
 uniform vec2			window_size;
 
-uniform vec3			cam_dir;
-uniform vec3			cam_right;
-vec3					cam_up = cross(cam_dir, cam_right);
+//uniform vec3			cam_dir;
+//uniform vec3			cam_right;
+//vec3					cam_up = cross(cam_dir, cam_right);
 varying vec2			mv_v;
 
 void main()
