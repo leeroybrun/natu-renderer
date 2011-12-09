@@ -976,44 +976,34 @@ void DTree::draw_instance_LOD0(DTreeInstanceData * instance, float alpha){
 			glDisable(GL_CULL_FACE);
 			glPushMatrix();
 			glTranslatef(instance->position.x, instance->position.y, instance->position.z);
-			glRotatef(instance->rotation_y, 0.0, 1.0, 0.0);
+			//glRotatef(instance->rotation_y, 0.0, 1.0, 0.0);
 			glScalef( 10.f , 10.f, 10.f);
+		
+			
 		if (g_Draw2Shadowmap){
-			
-	
-			// draw bbox
-			//bbox->draw();
-
-
-			// bind textures
-			
+		
+			// bind textures			
 			dataTexture->bind(GL_TEXTURE1);
 			branchNoiseTexture->bind(GL_TEXTURE2);
-			bColorTexture->bind(GL_TEXTURE4);
-
-			// TODO: use positions
 			// draw branches
 			branchesEBO->draw(branchShader_sh);
 
-			bColorTexture->unbind();
-
 			// bind textures
+			
 			leafNoiseTexture	->bind(GL_TEXTURE3);
 			frontDecalMap		->bind(GL_TEXTURE4);
 			seasonMap			->bind(GL_TEXTURE12);
 		
-			// TODO: send instance attributes
-			leafShader_sh->use(true);
 			// draw leaves
 			leavesVBO->draw(leafShader_sh, GL_QUADS, 0);
 			leafShader_sh->use(false);
 			leafNoiseTexture	->unbind();
 			frontDecalMap		->unbind();
+			seasonMap			->unbind();
+			
 			branchNoiseTexture	->unbind();
 			dataTexture			->unbind();
-			seasonMap			->unbind();
-
-			
+		
 		
 		} else {
 	
@@ -1069,6 +1059,7 @@ void DTree::draw_instance_LOD0(DTreeInstanceData * instance, float alpha){
 			leafShader->use(false);
 			
 		}
+		
 		glPopMatrix();
 		glEnable(GL_CULL_FACE);
 	}
@@ -1201,7 +1192,7 @@ void DTree::draw_instance_LOD1(DTreeInstanceData * instance, float alpha){
 
 void DTree::draw_all_instances_LOD1(){
 	g_transitionControl = 1.0;
-	if (g_draw_lod1){
+	if (g_draw_lod1 && g_tree_lod1_count>0){
 		if (g_Draw2Shadowmap){			
 			glColor4f(1.0, 1.0, 1.0, 1.0);	
 			int i, j, sliceCount, setCount=sliceSets2.size();
@@ -1513,7 +1504,9 @@ void DTree::draw_instance_LOD2(DTreeInstanceData * instance, float alpha){
 }
 
 void DTree::draw_all_instances_LOD2(){
-	if (g_draw_lod2){		
+
+	
+	if (g_draw_lod2 && g_tree_lod2_count>0){		
 		if (g_Draw2Shadowmap){
 			glColor4f(1.0, 1.0, 1.0, 1.0);	
 			glDisable(GL_CULL_FACE);
@@ -1571,7 +1564,9 @@ void DTree::draw_all_instances_LOD2(){
 				glVertexAttribDivisor(tm2Loc0_shadow + 2, 1);
 				glVertexAttribDivisor(tm2Loc0_shadow + 3, 1);
 				glVertexAttribDivisor(ia2Loc1_shadow, 1);
-				for (int i=0; i<lod2_instanceMatrices.size(); i++){
+				int size = lod2_instanceMatrices.size();
+
+				for (int i=0; i<size; i++){
 					// transfer data to buffer
 					glBufferData(GL_ARRAY_BUFFER, lod2_typeIndices[i] * instanceFloatCount * sizeof(float), lod2_instanceMatrices[i], GL_STREAM_DRAW);
 					int off = i*(2*4*sizeof(unsigned int));
@@ -1668,7 +1663,8 @@ void DTree::draw_all_instances_LOD2(){
 				glVertexAttribDivisor(tm2Loc0 + 2, 1);
 				glVertexAttribDivisor(tm2Loc0 + 3, 1);
 				glVertexAttribDivisor(ia2Loc1, 1);
-				for (int i=0; i<lod2_instanceMatrices.size(); i++){
+				int size = lod2_instanceMatrices.size();
+				for (int i=0; i<size; i++){
 					// transfer data to buffer
 					glBufferData(GL_ARRAY_BUFFER, lod2_typeIndices[i] * instanceFloatCount * sizeof(float), lod2_instanceMatrices[i], GL_STREAM_DRAW);
 					int off = i*(2*4*sizeof(unsigned int));
@@ -2909,9 +2905,9 @@ void DTree::initLOD0()
 	leafShader = new Shader("leaf");
 	leafShader->loadShader(DYN_TREE::SHADER_LEAF_V,DYN_TREE::SHADER_LEAF_F); 
 	// shadow shaders
-	branchShader_sh = new Shader("branch");
-	branchShader_sh->loadShader(DYN_TREE::SHADER_BRANCH_SH_V,DYN_TREE::SHADER_BRANCH_SH_F); 
-	leafShader_sh = new Shader("leaf");
+	branchShader_sh = new Shader("branch_shadow");
+	branchShader_sh->loadShader(DYN_TREE::SHADER_BRANCH_SH_V,DYN_TREE::SHADER_BRANCH_SH_F);
+	leafShader_sh = new Shader("leaf_shadow");
 	leafShader_sh->loadShader(DYN_TREE::SHADER_LEAF_SH_V,DYN_TREE::SHADER_LEAF_SH_F); 
 		
 	
@@ -3134,12 +3130,11 @@ void DTree::initLOD0()
 
 	// link vbos & shaders
 	branchesVBO	->compileWithShader(branchShader);
-	branchesVBO	->compileWithShader(branchShader_sh);
-	branchesVBO ->compileWithShader(n_branchShader);
 	leavesVBO	->compileWithShader(leafShader);
+	branchesVBO	->compileWithShader(branchShader_sh);
 	leavesVBO	->compileWithShader(leafShader_sh);
+	branchesVBO ->compileWithShader(n_branchShader);
 	leavesVBO	->compileWithShader(n_leafShader);
-
 	branchesVBO	->compileWithShader(bLODShader);
 	leavesVBO	->compileWithShader(lLODShader);
 

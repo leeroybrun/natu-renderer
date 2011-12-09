@@ -128,7 +128,8 @@ void	VBO::bind(Shader * shader){
 			if ( ds->positionFlag){
 				glVertexPointer(3, ds->type, 0,  BUFFER_OFFSET(ds->offset));
 			} else if (shader!=NULL){
-				if (shader->attributeLocations[i]<=0){
+				//  if attribute not found in shader
+				if (shader->attributeLocations[i]<0){
 					continue;
 				}
 				glEnableVertexAttribArray(GLuint(shader->attributeLocations[i]));

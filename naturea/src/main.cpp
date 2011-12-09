@@ -792,9 +792,9 @@ void initGUI()
 	//   " label='wire mode' group=Render help='Toggle wire mode.' ");
 	//TwAddVarRW(controlBar, "face_culling", TW_TYPE_BOOLCPP, &g_FaceCulling,
 	//   " label='face culling' group=Render  help='Toggle face culling.' ");
-	//TwAddVarRW(controlBar, "alpha_threshold", TW_TYPE_FLOAT, &g_AlphaThreshold,
-	//   " label='alpha threshold' group=Render min=0 max=1 step=0.01 \
-	//    help='Alpha test threshold.' ");
+	TwAddVarRW(controlBar, "alpha_threshold", TW_TYPE_FLOAT, &g_AlphaThreshold,
+	   " label='alpha threshold' group=Render min=0 max=1 step=0.01 \
+	    help='Alpha test threshold.' ");
 	//TwAddVarRW(controlBar, "Translate", TW_TYPE_FLOAT, &g_SceneTraZ, 
 	//   " group='Scene' label='translate Z' min=1 max=1000 step=0.5 \
 	//    help='Scene translation.' ");

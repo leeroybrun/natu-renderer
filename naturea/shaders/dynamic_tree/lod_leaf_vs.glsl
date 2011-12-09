@@ -209,8 +209,8 @@ void animateBranchVertex(inout vec3 position)
     }
 	
 	position = centerB;// + position.x*bs + position.y*br;
-	tangent_vs	 = tangent.x * bt + tangent.y * bs + tangent.z * br;
-	normal_vs	 = normal.x  * bt + normal.y  * bs + normal.z  * br;
+	tangent_vs	 = tangent.x * bt + tangent.y * br + tangent.z * bs;
+	normal_vs	 = normal.x  * bt + normal.y  * br + normal.z  * bs;
 }
 
 

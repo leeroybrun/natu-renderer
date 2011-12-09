@@ -72,7 +72,7 @@ void main()
 	//gl_FragData[1] = color * vec4(0.5, 0.5, 0.5, 1.0);
 	gl_FragData[1] =vec4(0.0, 0.0, 0.0, 1.0);
 	//gl_FragColor = vec4(1.0/level * texture2D(color_texture, gl_TexCoord[0].xy).xyz, 1.0);
-	gl_FragData[2] = vec4(normal_vs, 1.0);
+	//gl_FragData[2] = vec4(normal_vs, 1.0);
 
 
 	// calc frag distance from its branch origin... 
@@ -81,6 +81,6 @@ void main()
 	vec2 b0 = b0_origin * 0.5 + 0.5;
 	float dist = length(fpos - b0);
 	*/
-	gl_FragData[3] = vec4(b0_origin*0.5+vec2(0.5),b1_origin*0.5+vec2(0.5));
+	//gl_FragData[3] = vec4(b0_origin*0.5+vec2(0.5),b1_origin*0.5+vec2(0.5));
 	//gl_FragColor = gl_Color;
 }

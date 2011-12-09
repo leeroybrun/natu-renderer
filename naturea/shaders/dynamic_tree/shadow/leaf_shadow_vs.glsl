@@ -13,6 +13,7 @@
 #define ONE3    vec3(1.0,1.0,1.0)
 #define ONE4    vec4(1.0,1.0,1.0,1.0)
 #define EPSILON 0.0001
+#define EPSILONVEC vec2(EPSILON, EPSILON)
 uniform float			branch_count;
 uniform float			time;
 uniform float			time_offset;
@@ -120,69 +121,78 @@ void animateBranchVertex(inout vec3 position)
 	vec2 fu, fu_deriv, s,d;
 	bs = sv0;
 	br = rv0;
+	bt = cross(br,bs);
 	if (x_vals.x>0.0){
 		corr_r = vec3(0.0);
 		corr_s = vec3(0.0);
 		// find t vector
-		tv	= cross(rv0,sv0);
+		tv	= bt;
 		// calc wind prebend offset
 		amp0.x += dot(rv0, wind_direction) * wind_strength;
 		amp0.y += dot(sv0, wind_direction) * wind_strength;
-
+		
 		// find branch origin
 		center = centerB + x_vals.x * length0 * tv;
 		// bend function
 		fu	= xvals_f.x	* amp0;
 		fu_deriv = xvals_deriv.x / length0 * amp0 ;
-		if (abs(fu_deriv.x - 0.0)<EPSILON){ fu_deriv.x = EPSILON;}
-		if (abs(fu_deriv.y - 0.0)<EPSILON){ fu_deriv.y = EPSILON;}
+
+		fu_deriv = max(fu_deriv, EPSILONVEC) + min(fu_deriv, EPSILONVEC);
+		//fu_deriv.y = max(abs(fu_deriv.y), EPSILON);
+		//if (abs(fu_deriv.x)<EPSILON){ fu_deriv.x = EPSILON;}
+		//if (abs(fu_deriv.y)<EPSILON){ fu_deriv.y = EPSILON;}
 			s = sqrt(ONE2+fu_deriv*fu_deriv);
 			d = fu / fu_deriv * (s - ONE2);
-			corr_s = (tv + sv0*fu_deriv.x)/s.x * d.x;
-			corr_r = (tv + rv0*fu_deriv.y)/s.y * d.y;
+			corr_r = (tv + rv0*fu_deriv.x)/s.x * d.x;
+			corr_s = (tv + sv0*fu_deriv.y)/s.y * d.y;
 		
 		//recalculate coord system of actual branch 
-		bt  = normalize(tv + rv0*fu_deriv.y + sv0*fu_deriv.x);
-		br	= normalize(rv0 - tv*fu_deriv.y);
-		bs	= normalize(sv0 - tv*fu_deriv.x);
+		bt  = normalize(tv + rv0*fu_deriv.x + sv0*fu_deriv.y);
+		br	= normalize(rv0 - tv*fu_deriv.x);
+		bs	= normalize(sv0 - tv*fu_deriv.y);
 		// bend the center point
-		centerB =  center + fu.x * sv0 + fu.y * rv0 - (corr_s+corr_r);
+		centerB =  center + fu.x * rv0 + fu.y * sv0 - (corr_s+corr_r);
 	}
     if (x_vals.y>0.0){
 		corr_r = vec3(0.0);
 		corr_s = vec3(0.0);
 	    // bend branch system according to the parent branch bending
-		sv1 = sv1.x * bs + sv1.y * br + sv1.z * bt;
-        rv1 = rv1.x * bs + rv1.y * br + rv1.z * bt;
+		sv1 = sv1.x * br + sv1.y * bs + sv1.z * bt;
+        rv1 = rv1.x * br + rv1.y * bs + rv1.z * bt;
         //...
 		tv	= cross(rv1,sv1);
 		// calc wind prebend offset
+
+
 		amp1.x += dot(rv1, wind_direction) * wind_strength;
 		amp1.y += dot(sv1, wind_direction) * wind_strength;
-
+		
         center		= centerB + x_vals.y * length1 * tv;
         fu			= xvals_f.y	 * amp1;
         fu_deriv	= xvals_deriv.y / length1 * amp1 ;
-		if (abs(fu_deriv.x - 0.0)<EPSILON){ fu_deriv.x = EPSILON;}
-		if (abs(fu_deriv.y - 0.0)<EPSILON){ fu_deriv.y = EPSILON;}
+
+		fu_deriv = max(fu_deriv, EPSILONVEC) + min(fu_deriv, EPSILONVEC);
+		//if (abs(fu_deriv.x)<EPSILON){ fu_deriv.x = EPSILON;}
+		//if (abs(fu_deriv.y)<EPSILON){ fu_deriv.y = EPSILON;}
+
 			s = sqrt(ONE2+fu_deriv*fu_deriv);
 			d = fu / fu_deriv * (s - ONE2);
-			corr_s = (tv + sv1*fu_deriv.x)/s.x * d.x;
-			corr_r = (tv + rv1*fu_deriv.y)/s.y * d.y;
+			corr_r = (tv + rv1*fu_deriv.x)/s.x * d.x;
+			corr_s = (tv + sv1*fu_deriv.y)/s.y * d.y;
 		
-        bt  = normalize(tv + rv1*fu_deriv.y + sv1*fu_deriv.x);
-        br	= normalize(rv1 - tv*fu_deriv.y);
-        bs	= normalize(sv1 - tv*fu_deriv.x);
+        bt  = normalize(tv + rv1*fu_deriv.x + sv1*fu_deriv.y);
+        br	= normalize(rv1 - tv*fu_deriv.x);
+        bs	= normalize(sv1 - tv*fu_deriv.y);
 
-		centerB =  center + fu.x * sv1 + fu.y * rv1 - (corr_s+corr_r);
+		centerB =  center + fu.x * rv1 + fu.y * sv1 - (corr_s+corr_r);
 	}
 
 	if (x_vals.z>0.0){
 		corr_r = vec3(0.0);
 		corr_s = vec3(0.0);
 	    // bend branch system according to the parent branch bending
-		sv2 = sv2.x * bs + sv2.y * br + sv2.z * bt;
-        rv2 = rv2.x * bs + rv2.y * br + rv2.z * bt;
+		sv2 = sv2.x * br + sv2.y * bs + sv2.z * bt;
+        rv2 = rv2.x * br + rv2.y * bs + rv2.z * bt;
         //...
 		tv	= cross(rv2,sv2);
 		// calc wind prebend offset
@@ -192,25 +202,28 @@ void animateBranchVertex(inout vec3 position)
         center		= centerB + x_vals.z * length2 * tv;
         fu			= xvals_f.z * amp2;
         fu_deriv	= xvals_deriv.z / length2 * amp2 ;
-		if (abs(fu_deriv.x - 0.0)<EPSILON){ fu_deriv.x = EPSILON;}
-		if (abs(fu_deriv.y - 0.0)<EPSILON){ fu_deriv.y = EPSILON;}
+		
+		fu_deriv = max(fu_deriv, EPSILONVEC) + min(fu_deriv, EPSILONVEC);
+		//if (abs(fu_deriv.x)<EPSILON){ fu_deriv.x = EPSILON;}
+		//if (abs(fu_deriv.y)<EPSILON){ fu_deriv.y = EPSILON;}
+
 			s = sqrt(ONE2+fu_deriv*fu_deriv);
 			d = fu / fu_deriv * (s - ONE2);
-			corr_s = (tv + sv2*fu_deriv.x)/s.x * d.x;
-			corr_r = (tv + rv2*fu_deriv.y)/s.y * d.y;
+			corr_r = (tv + rv2*fu_deriv.x)/s.x * d.x;
+			corr_s = (tv + sv2*fu_deriv.y)/s.y * d.y;
 		
-        bt  = normalize(tv + rv2*fu_deriv.y + sv2*fu_deriv.x);
-        br	= normalize(rv2 - tv*fu_deriv.y);
-        bs	= normalize(sv2 - tv*fu_deriv.x);
-        centerB =  center + fu.x * sv2 + fu.y * rv2 - (corr_s+corr_r);
+        bt  = normalize(tv + rv2*fu_deriv.x + sv2*fu_deriv.y);
+        br	= normalize(rv2 - tv*fu_deriv.x);
+        bs	= normalize(sv2 - tv*fu_deriv.y);
+        centerB =  center + fu.x * rv2 + fu.y * sv2 - (corr_s+corr_r);
     }
 
 	if (x_vals.w>0.0){
 		corr_r = vec3(0.0);
 		corr_s = vec3(0.0);
 
-		sv3 = sv3.x * bs + sv3.y * br + sv3.z * bt;
-        rv3 = rv3.x * bs + rv3.y * br + rv3.z * bt;
+		sv3 = sv3.x * br + sv3.y * bs + sv3.z * bt;
+        rv3 = rv3.x * br + rv3.y * bs + rv3.z * bt;
         tv	= cross(rv3,sv3);
 		// calc wind prebend offset
 		amp3.x += dot(rv3, wind_direction) * wind_strength;
@@ -219,24 +232,27 @@ void animateBranchVertex(inout vec3 position)
         center		= centerB + x_vals.w * length3 * tv;
         fu			= xvals_f.w	 * amp3;
         fu_deriv	= xvals_deriv.w/ length3 * amp3 ;
-		if (abs(fu_deriv.x - 0.0)<EPSILON){ fu_deriv.x = EPSILON;}
-		if (abs(fu_deriv.y - 0.0)<EPSILON){ fu_deriv.y = EPSILON;}
+		
+		fu_deriv = max(fu_deriv, EPSILONVEC) + min(fu_deriv, EPSILONVEC);
+		//if (abs(fu_deriv.x)<EPSILON){ fu_deriv.x = EPSILON;}
+		//if (abs(fu_deriv.y)<EPSILON){ fu_deriv.y = EPSILON;}
+
 			s = sqrt(ONE2+fu_deriv*fu_deriv);
 			d = fu / fu_deriv * (s - ONE2);
-			corr_s = (tv + sv3*fu_deriv.x)/s.x * d.x;
-			corr_r = (tv + rv3*fu_deriv.y)/s.y * d.y;
+			corr_r = (tv + rv3*fu_deriv.x)/s.x * d.x;
+			corr_s = (tv + sv3*fu_deriv.y)/s.y * d.y;
 		
-        bt  = normalize(tv + rv3*fu_deriv.y + sv3*fu_deriv.x);
-        br	= normalize(rv3 - tv*fu_deriv.y);
-        bs	= normalize(sv3 - tv*fu_deriv.x);
-        centerB =  center + fu.x * sv3 + fu.y * rv3 - (corr_s+corr_r);
+        bt  = normalize(tv + rv3*fu_deriv.x + sv3*fu_deriv.y);
+        br	= normalize(rv3 - tv*fu_deriv.x);
+        bs	= normalize(sv3 - tv*fu_deriv.y);
+        centerB =  center + fu.x * rv3 + fu.y * sv3 - (corr_s+corr_r);
     }
 	
 	
 	//normal_vs	= bs;
 	//tangent_vs	= bt;
-	tangent_vs	 = tangent.x * bt + tangent.y * bs + tangent.z * br;
-	normal_vs	 = normal.x  * bt + normal.y  * bs + normal.z  * br;
+	tangent_vs	 = tangent.x * bt + tangent.y * br + tangent.z * bs;
+	normal_vs	 = normal.x  * bt + normal.y  * br + normal.z  * bs;
 	//tangent_vs	 = tangent_vs.x * bt + tangent_vs.y * bs + tangent_vs.z * br;
 	//normal_vs	 = normal_vs.x  * bt + normal_vs.y  * bs + normal_vs.z  * br;
 	//tangent_vs = normalize(tangent_vs);
