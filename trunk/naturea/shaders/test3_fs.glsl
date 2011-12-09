@@ -95,10 +95,7 @@ void	main()
 	vec2 position = gl_TexCoord[0].st;
 	vec2 tpos	= clamp ( position + sliceDesc , sliceDesc, sliceDesc+vec2(1.0, 1.0) ) / vec2(sliceCnt,sliceSetsCnt);
 	// get Level-1 branch
-	// TODO:
-	// WRONG branchID !!!!
 	float branchID = (texture2D(dataMap, tpos).r);
-
 	float offset = sliceDesc.y*texCols;
 	float texCol = 1.0/(sliceSetsCnt*texCols);
 	
@@ -138,8 +135,7 @@ void	main()
 		//color = vec4(x_val);
 		amp1 = wood_amplitudes.y * ( texture2D(branch_noise_tex, mv_1 * mv_time * wood_frequencies.y).rg  * 2.0 - ONE2);
 		float xval2 = x_val*x_val;
-		amp1.x = 0;
-
+		
 		float fx = 0.374570*xval2 + 0.129428*xval2*xval2;
 		float dx = 0.749141*x_val + 0.517713*xval2*x_val;
 
@@ -149,13 +145,10 @@ void	main()
 		fu_deriv = max(fu_deriv, EPSILONVEC) + min(fu_deriv, EPSILONVEC);
 		vec2 us = sqrt(ONE2+fu_deriv*fu_deriv);
 		vec2 ud = fu / fu_deriv * (us - ONE2);
-		//corr_r = (t + r.xyz*fu_deriv.x)/us.x * ud.x;
-		//corr_s = (t + s.xyz*fu_deriv.y)/us.y * ud.y;
+		corr_r = (t + r.xyz*fu_deriv.x)/us.x * ud.x;
+		corr_s = (t + s.xyz*fu_deriv.y)/us.y * ud.y;
 		// inverse deformation - must be aplyed in oposite direction
-		//position = position + ( fu.x * r.xy + fu.y * s.xy - (corr_r.xy+corr_s.xy) );
-
-		position = position - (fu.y * s.xy - corr_s.xy);
-		//position = position - (fu.y * s.xy);
+		position = position - ( fu.x * r.xy + fu.y * s.xy - (corr_r.xy+corr_s.xy) );
 	}
 	vec2 newPos = position;
 	newPos = clamp ( newPos  , vec2(0.0, 0.0), vec2(1.0, 1.0) );// + sliceDesc ) / vec2(sliceCnt,sliceSetsCnt);

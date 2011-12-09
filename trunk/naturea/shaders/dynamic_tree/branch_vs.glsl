@@ -164,12 +164,9 @@ void animateBranchVertex(inout vec3 position)
         //...
 		tv	= cross(rv1,sv1);
 		// calc wind prebend offset
-
-
 		amp1.x += dot(rv1, wind_direction) * wind_strength;
 		amp1.y += dot(sv1, wind_direction) * wind_strength;
-		amp1.x = 0.0;
-
+		
         center		= centerB + x_vals.y * length1 * tv;
         fu			= xvals_f.y	 * amp1;
         fu_deriv	= xvals_deriv.y / length1 * amp1 ;
@@ -276,8 +273,6 @@ void main()
 {
 	color		= WHITE;
     vec3 vertex = gl_Vertex.xyz;
-
-	
 
     animateBranchVertex(vertex);
 	

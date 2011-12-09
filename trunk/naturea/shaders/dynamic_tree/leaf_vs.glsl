@@ -185,7 +185,6 @@ void animateBranchVertex(inout vec3 position)
 
 		amp1.x += dot(rv1, wind_direction) * wind_strength;
 		amp1.y += dot(sv1, wind_direction) * wind_strength;
-		amp1.x = 0.0;
 
         center		= centerB + x_vals.y * length1 * tv;
         fu			= xvals_f.y	 * amp1;
@@ -271,8 +270,8 @@ void animateBranchVertex(inout vec3 position)
 	
 	//normal_vs	= bs;
 	//tangent_vs	= bt;
-	tangent_vs	 = tangent.x * bt + tangent.y * bs + tangent.z * br;
-	normal_vs	 = normal.x  * bt + normal.y  * bs + normal.z  * br;
+	tangent_vs	 = tangent.x * bt + tangent.y * br + tangent.z * bs;
+	normal_vs	 = normal.x  * bt + normal.y  * br + normal.z  * bs;
 	//tangent_vs	 = tangent_vs.x * bt + tangent_vs.y * bs + tangent_vs.z * br;
 	//normal_vs	 = normal_vs.x  * bt + normal_vs.y  * bs + normal_vs.z  * br;
 	//tangent_vs = normalize(tangent_vs);
