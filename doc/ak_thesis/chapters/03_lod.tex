@@ -126,7 +126,21 @@ S opačným postupem tvorby hierarchické deformace v image-based modelu souvis�
 Popsaná metoda má předpoklad dobře fungovat pro větve tvořící siluetu stromu v daném řezu. U takových větví se předpokládá, že jejich podélný vektor je zhruba rovnoběžný s rovinou řezu. Současně je třeba si uvědomit, že i fáze propagace dat má určitá omezení a funguje lépe pro siluetové větve. Jak se však ukazuje, právě tyto větve hrají největší roli při pozorování stromu s nižší percepční vahou. Hrají i podstatnou roli při přechodu mezi úrovněmi LOD.
 
 Zbývá vyřešit pohyb jednotlivých listů. Pohybem větví nižších úrovní hierarchie a listů vzniká vysokofrekvenční šum v prostoru obrazu. Tento šum pozorovatel vnímá, ale nerozeznává již, jestli je způsoben pohybem větví, či samotných listů. Lze ho tedy napodobit použitím jediné deformace. Pro šum vyšších frekvencí je zároveň těžké rozlišit, zda jde čistě o pohyb, či jen změny barvy. Představíme-li si například, že list je zobrazen do jediného pixelu, pak pouhým natáčením listu zjevně měníme barvu zmíněného pixelu (barevný šum). Nerotační pohyb listu může způsobit obarvení jiného pixelu (pohybový šum). Pohyb listů může pak ústit v určité nepravidelné chvění elementárních fragmentů obrazu (případně větších oblastí – podle toho, kolik fragmentů zobrazuje stejný list).
-Pohybovou složku šumu lze vcelku dobře napodobit metodou zvanou {\bf displacement-mapping}. V základní verzi získává z řídící textury informace o posunutí v prostoru deformovaného obrazu – v tomto případě barevné textury. Vhodnými změnami řídící textury (posun souřadnic, kombinace různých textur) lze plynule deformovat výsledný obraz. Šumový displacement-mapping je možné zapsat například takto:
+Pohybovou složku šumu lze vcelku dobře napodobit metodou zvanou {\bf displacement-mapping}. V základní verzi získává z řídící textury informace o posunutí v prostoru deformovaného obrazu – v tomto případě barevné textury. Vhodnými změnami řídící textury (posun souřadnic, kombinace různých textur) lze plynule deformovat výsledný obraz. 
+\begin{figure}[!hbt]
+\begin{center}
+$\begin{array}{cc}
+\includegraphics[width=0.35\textwidth]{./figures/distortion_before.png}&
+\includegraphics[width=0.35\textwidth]{./figures/distortion_after.png}
+\end{array}$
+\caption[Postup zpětné transformace]
+{Postup zpětné transformace: (vlevo) – postup určení deformace: Bod $P_p$ (1), pro který určujeme deformaci je ve vzdálenosti $x_0$ od počátku (2). Zjistíme hodnotu ohybové funkce v bodě $x_0$ (3). Provedeme korekci délky (4).
+(vpravo) – určíme vektor posunutí $\vec{d}$ mezi body $x_0$ a (4) (v obrázku vlevo) odečtením od bodu $P_p$ se dostáváme na pozici předobrazu $P_0$. Šedivě je naznačen bod $P_r$, jež je skutečným předobrazem respektujeme-li myšlenkový model. \label{fig:backwardTransformationProcess}}
+\end{center}
+\end{figure}
+
+
+Šumový displacement-mapping je možné zapsat například takto:
 
 \begin{align} 
 color &= T_{color}(T_{def}(\vec{o}_t + t \cdot \vec{d}_1)+T_{def}(\vec{o}_t + t \cdot \vec{d}_2)),
