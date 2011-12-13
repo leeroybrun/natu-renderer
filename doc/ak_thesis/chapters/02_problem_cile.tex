@@ -145,3 +145,8 @@ Další možností je tzv. \emph{point-based} renderování. Základním primiti
 \end{figure}
  
 Vzdálenější koruny stromů jsou tak reprezentovány malým počtem velkých bodových primitiv, protože platí předpoklad, že tyto primitiva se zobrazí do jednoho (maximálně několika málo) výsledných pixelů. Bodová reprezentace v tomto podání funguje velmi dobře jen pro korunu stromu. Použití i pro samotný kmen a větve stromu je problematické. 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\pagebreak
+\subsection{Zhodnocení stávajících řešení}
+Jak se ukazuje, všechna řešení pracující až na úrovni jednotlivých listů pracují s geometrickým trojrozměrným modelem stromu (povrchová trojúhelníková reprezentace). Každá z metod zobrazující současně strom na úrovni listů i rozsáhlý les využívá nějakou formu řízení úrovně detailu. Tím dosahují snížení složitosti scény a vyšší efektivity. Zatímco metod zaměřujících se pouze na statické zobrazení je celá řada, postupů, jak jednotlivé stromy realisticky rozhýbat je málo a omezují se na geometrické modely. Některé techniky LOD by bylo obtížné přizpůsobit, aby efektivně fungovaly i pro pohybující se stromy (volumetrické reprezentace). Jiné by bylo možné s relativně rozumným úsilím rozšířit i o tuto možnost (billboard-clouds). Metody dynamického řízení úrovně detailu většinou představují elegantní řešení, které netrpí problémy LOD-poppingu, ale vyžaduje zvýšené prostředky na neustálé udržování aktuální úrovně detailu modelů. Naproti tomu diskrétní LOD systémy se musí vypořádávat s přepínáním jednotlivých úrovní, ale představují jen malou výkonostní zátěž. Ať už dynamické či diskrétní LOD systémy, nejčastěji se využívá převedení složitosti geometrie do obrazu, který je pak namapován na zjednodušenou geometrii.
+
