@@ -8,7 +8,8 @@ Z průzkumu stávajících řešení vyplývá, že realistického zobrazení na
 \begin{center}
 \includegraphics[width=0.85\textwidth]{./figures/GPUpipeline.png}
 \end{center}
-\caption{Grafická pipeline. Oranžově zvýrazněné bloky lze přeprogramovat a využít k vlastnímu zpracování grafiky.
+\caption[Grafická pipeline]%
+{Grafická pipeline. Oranžově zvýrazněné bloky lze přeprogramovat a využít k vlastnímu zpracování grafiky.
 \label{fig:gpupipeline}
 }
 \end{figure}
@@ -19,6 +20,7 @@ Nížší úrovně následně vytvořeného LOD-systému budou z této nejpodrob
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Animace geometrického 3D modelu}
+\label{sec-animation3D}
 
 Jelikož je model tvořen množinou trojúhelníků a ty mají přímou vazbu na části stromu (list, konkrétní větev), lze tedy vhodnou změnou jejich polohy animovat celý strom. Požadavek na provádění animace v reálném čase prakticky implikuje i potřebu využití GPU pro tyto účely. Grafická primitiva tvořící model jsou zpracovávána na GPU po vrcholech (vertexech) ve vertex shaderu, který může měnit jejich pozici. 
 Metoda, jíž lze s výhodou použít, je popsaná v již zmíněném článku \cite{Habel_09_PGT} a využívá myšlenky tzv. hierarchical vertex displacement. Důležitý je zde fakt, že skutečné větve stromů tvoří hierarchickou strukturu a transformaci nadřazené větve v bodě napojení přejímá celá skupina větví podřízených, což tvoří netriviální řetěz transformací. Tato skutečnost svazuje do určité míry výpočet polohy nadřazené a z ní vycházející větve. Poskytneme-li však vhodná data každému vrcholu, může být celý řetěz transformací určen právě pro každý jednotlivý vrchol korektně a výpočet animace se tak provádí na GPU ve vetrex shaderu.
@@ -43,14 +45,14 @@ Aby byla animace pohybu větví co nejvěrnější, je využita deformace vychá
 Euler-Bernoulliho rovnice pak popisuje ohyb takového tělesa:
 
 \begin{equation}
-\frac{\partial^2 }{\partial x^2}(EI(x)\frac{\partial^2 \dot{u} (x))}{\partial x^2} ) = F
+\frac{\mathrm{d}^2 }{\mathrm{d} x^2}(EI(x)\frac{\mathrm{d}^2 \dot{u} (x))}{\mathrm{d} x^2} ) = F
 \end{equation}
 
 V tomto vztahu představuje $I$ plošný moment setrvačnosti a $E$ je modul pružnosti, který je uvažován jako konstantní. Okrajové podmínky na počátku (pevný konec) jsou :
 
 \begin{equation}
 \begin{array}{cc}
-\dot{u} \mid _{x=0} = 0 & \frac{\partial \dot{u} }{\partial x}\mid _{x=0} = 0 \\
+\dot{u} \mid _{x=0} = 0 & \frac{\mathrm{d} \dot{u} }{\mathrm{d} x}\mid _{x=0} = 0 \\
 \end{array}
 \end{equation}
 
@@ -58,7 +60,7 @@ a na konci jsou:
 
 \begin{equation}
 \begin{array}{cc}
-\frac{\partial^2 \dot{u} }{\partial x^2} \mid _{x=L} = 0 & \frac{\partial^3 \dot{u} }{\partial x^3}\mid _{x=L} = 0 \\
+\frac{\mathrm{d}^2 \dot{u} }{\mathrm{d} x^2} \mid _{x=L} = 0 & \frac{\mathrm{d}^3 \dot{u} }{\mathrm{d} x^3}\mid _{x=L} = 0 \\
 \end{array}
 \end{equation}
 
@@ -93,7 +95,7 @@ Tento vztah je však příliš složitý pro efektivní a rychlé vyhodnocení. 
 u(x) = c_2 x^2 + c_4 x^4}
 \end{equation}
 
-Koeficienty $c_2$ a $c_4$ reprezentují hodnoty ${E}'$, $\alpha$ a $r_1$. Ohybová funkce $u(x)$ tedy určuje, jaká bude výchylka bodu kolmo na podélnou osu prutu ve vzdálenosti $x$ od počátku větve (předchozí normování zajišťuje, že větev zde má vždy jednotkovou délku). Vytváří tak ohybovou křivku.
+Koeficienty $c_2$ a $c_4$ reprezentují hodnoty ${E}'$, $\alpha$ a $r_1$. Ohybová funkce $u(x)$ tedy určuje, jaká bude výchylka bodu kolmo na podélnou osu prutu ve vzdálenosti $x$ od počátku větve (předchozí normování zajišťuje, že větev zde má vždy jednotkovou délku). Vytváří tak ohybovou křivku. Derivaci ohybové funkce v bodě $x$ označíme ${u}'(x)$.
 
 Ovšem bod na ohýbaném prutu se ve skutečnosti nepohybuje po přímce kolmé k podélné ose, nýbrž opisuje složitou křivku danou i faktem, že délka prutu se při deformaci nemění. Pokud by však byl použit přímo tento vztah pro deformaci, docházelo by k viditelnému efektu prodlužování prutu (větve) s většími výchylkami. Z toho důvodu je nutné zavést určitou korekci, jež bude ve výsledku zachovávat stejnou délku prutu pro libovolnou výchylku. Pokud bychom chtěli zachovat přesnou délku, bylo by nutné vždy vyřešit křivkový integrál, což je příliš časově náročné, a proto se spokojíme s nepřesnou, avšak dostačující a především rychlou metodou.
 Vyjdeme z předpokladu, že pro korekci délky stačí posunout bod $P_0$ o určitou vzdálenost $d$ po přímce tečné v tomto bodě s ohybovou křivkou. Získáme tak výsledný bod $P$. 
@@ -102,7 +104,8 @@ Vyjdeme z předpokladu, že pro korekci délky stačí posunout bod $P_0$ o urč
 \begin{center}
 \includegraphics[width=0.5\textwidth]{./figures/lengthCorrection3.png}
 \end{center}
-\caption{Korekce délky ohybové funkce $u(x)$.
+\caption[Korekce délky ohybové funkce]%
+{Korekce délky ohybové funkce $u(x)$. Pro přehlednost byl ze zápisu vypušten parametr $x_t$. Místo $u(x_t)$ je zapsáno pouze $u$ a obdobně pro další.
 \label{fig:bendCorrection}
 }
 \end{figure}
@@ -125,7 +128,8 @@ d(x) &= \frac{u(x)}{u'(x)}(s(x)-1)\nonumber
 \begin{center}
 \includegraphics[width=0.60\textwidth]{./figures/lengthCorrectionErrorGraph2.png}
 \end{center}
-\caption{Původní ohybová funkce $u(x)$ pro různé výchylky (tečkovaně) a ohybová funkce po provedení korekce (plná čára). Kolečka vyznačují koncové body korigované křivky.
+\caption[Původní ohybová funkce]%
+{Původní ohybová funkce $u(x)$ pro různé výchylky (tečkovaně) a ohybová funkce po provedení korekce (plná čára). Kolečka vyznačují koncové body korigované křivky.
 \label{fig:bendCorrectionGraph}
 }
 \end{figure}
@@ -139,7 +143,8 @@ Výše popsaným způsobem získáme však ohybovou funkci pracující ve 2D. V�
 \begin{center}
 \includegraphics[width=0.2\textwidth]{./figures/branchCoords.png}
 \end{center}
-\caption{ Souřadný systém větve tvořený orthonormálními bázovými vektory $\vec{r}$, $\vec{s}$ a $\vec{t}$.
+\caption[Souřadný systém větve]%
+{Souřadný systém větve tvořený orthonormálními bázovými vektory $\vec{r}$, $\vec{s}$ a $\vec{t}$.
 \label{fig:branchCoords}
 }
 \end{figure}
@@ -150,7 +155,7 @@ Jak vyplývá z Euler-Bernoulliho rovnice, síla ohýbající prut má lineárn�
 f(x) = |\vec{F}| \cdot u(x)
 \end{equation}
 
-Pokud připustíme, že síla určující výchylku je určitým řídícím signálem $A$, pak bude celková deformace řízena vztahem (ndexy udávají, k jaké ose se daná funkce vztahuje):
+Pokud připustíme, že síla určující výchylku je určitým řídícím signálem $A$, pak bude celková deformace řízena vztahem (indexy udávají, k jaké ose se daná funkce vztahuje):
 \begin{equation}
 \begin{array}{cc}
 u_{r,s}(x) = A_{r,s}u(x) & {u}'_{r,s}(x) = A_{r,s}\frac{{u}'(x)}{L}
@@ -186,7 +191,8 @@ Předchozí kapitola popisuje, jak lze dosáhnout vcelku realistického ohybu os
 \begin{center}
 \includegraphics[width=0.5\textwidth]{./figures/branchHierarchy.png}
 \end{center}
-\caption{ Vyjádření hierarchie pomocí vektoru s hodnotami $x$.
+\caption[Vyjádření hierarchie]%
+{ Vyjádření hierarchie pomocí vektoru s hodnotami $x$.
 \label{fig:hierarchyCoords}
 }
 \end{figure}
@@ -207,7 +213,8 @@ Aby se při ohýbání větev nezplošťovala, je nutné provádět transformaci
 \begin{center}
 \includegraphics[width=0.5\textwidth]{./figures/branchBend.png}
 \end{center}
-\caption{  Transformace souřadných systémů při ohybu.
+\caption[Transformace souřadných systémů při ohybu]%
+{Transformace souřadných systémů při ohybu.
 (a) výchozí poloha, (b) ohyb bez transformace souřadného systému, (c) ohyb se správnou transformací
 \label{fig:bendCoordSys}
 }
@@ -216,18 +223,18 @@ Aby se při ohýbání větev nezplošťovala, je nutné provádět transformaci
 Jak je patrné z obrázku ~\ref{fig:bendCoordSys}, při malých deformacích je chyba v podstatě zanedbatelná. Při výpočtu polohy bodu $p_i$ na středovém paprsku větve je vhodné použít následujících iterativních vztahů:
 
 \begin{align} 
-\overrightarrow{p_{i}} &= \overrightarrow{p_{0}} - \frac{\overrightarrow{t}d_{r}(x)-\overrightarrow{r}u_{r}(x)}{s_{r}(x)}-\frac{\overrightarrow{t}d_{s}(x)-\overrightarrow{s}u_{s}(x)}{s_{s}(x)}\nonumber\\
+\vec{p}_{i} &= \vec{p}_{0} - \frac{\vec{t}d_{r}(x)-\vec{r}u_{r}(x)}{s_{r}(x)}-\frac{\vec{t}d_{s}(x)-\vec{s}u_{s}(x)}{s_{s}(x)}\nonumber\\
 x_{i,r,s} &= x - \frac{d_{r,s}(x)}{s_{r,s}(x)}\nonumber\\
-\overrightarrow{t_{i}} &=  \overrightarrow{t_{0}} + (u'_{r}(x_{i,r})\overrightarrow{r} + u'_{s}(x_{i,s})\overrightarrow{s})(\overrightarrow{t}\cdot\overrightarrow{t_{0}})\\
-\overrightarrow{n_{i}} &=  \overrightarrow{n_{0}} + (u'_{r}(x_{i,r})(\overrightarrow{r} \cdot \overrightarrow{n_{0}}) + u'_{s}(x_{i,s})(\overrightarrow{s} \cdot \overrightarrow{n_{0}})\overrightarrow{t}
+\vec{t}_{i} &=  \vec{t}_{0} + (u'_{r}(x_{i,r})\vec{r} + u'_{s}(x_{i,s})\vec{s})(\vec{t}\cdot\vec{t}_{0})\\
+\vec{n}_{i} &=  \vec{n}_{0} + (u'_{r}(x_{i,r})(\vec{r} \cdot \vec{n}_{0}) + u'_{s}(x_{i,s})(\vec{s} \cdot \vec{n}_{0})\vec{t}
 \end{align}
 
 Pokud výpočet transformace polohy bodu bude probíhat od kořene hierarchie, dokud v ní není dosaženo úrovně, na které se daný vrchol nachází, pak budou postupně aplikovány všechny relevantní deformace. Na počátku je p0 původní poloha bodu v souřadném systému objektu (obdobně i tečna t0  a normála n0). V každé další iteraci (postupu o úroveň výš v hierarchii) je třeba počáteční vektory p0, t0 a n0 nastavit na výsledek z předchozí iterace. Hodnota xD,r a xD,s představuje hodnotu parametru x po provedení korekce délky.  Transformace souřadného systému v rámci jedné větve vyžaduje přepočet nového bázového vektoru t podle vzorce pro výpočet tečny a nových bázových vektorů r a s podle vzorce pro výpočet normály. 
 
 Následující tabulka shrnuje, jaká data jsou potřeba pro výpočet deformace:
 \newline
-\begin{table}[center]
-\caption{Data potřebná k výpočtu hierarchické deformace větve}
+\begin{table}
+\centering
 \begin{tabular}{| l | l | }
   \hline                       
   pro vrchol & pro celou větev  \\
@@ -238,7 +245,9 @@ hodnota x na větvi & řídící signály ohybu \\
 odkaz na větevi & odkaz na nadřazenou větev \\
   \hline  
 \end{tabular}
+\caption{Data potřebná k výpočtu hierarchické deformace větve}
 \end{table}
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Deformace listů}
@@ -247,7 +256,8 @@ Listy jsou součástí hierarchie stromu a musí proto respektovat i příslušn
 \begin{center}
 \includegraphics[width=0.45\textwidth]{./figures/leafCoordSystem2.png}
 \end{center}
-\caption{  Souřadný systém listu.
+\caption[Souřadný systém listu]%
+{ Souřadný systém listu.
 \label{fig:bendLeaf}
 }
 
@@ -286,14 +296,16 @@ Vyjdeme-li ze vztahu \eqref{forceEq} a rozvineme sílu $\vec{F}$ do tvaru:
 F_{d} = \left | \vec{W}_{turb} \right | + \vec{d}\cdot \vec{W}_{lin}
 \end{equation}
 bude možné promítnout sílu směrové složky větru $\vec{W}_{lin}$ a turbulentní složky $\vec{W}_{turb}$ do směru $\vec{d}$ resp. do směrů $\vec{r}$, $\vec{s}$. Aby bylo možné dosáhnout kýženého efektu způsobeného turbulentní složkou, je třeba v čase měnit příslušným způsobem sílu $\vec{W}_{turb}$. Obě složky lze chápat jako řídící signály animace (směrová složka může zůstávat konstantní). Jsou-li tyto signály měněny plynule, je plynulá i výsledná animace.
+
 Jednotlivé větve je však třeba řídit vzájemně nezávislými signály. Proto je nutné generovat pro každou větev dvousložkový šum, který bude ideálně aperiodický a pro větev unikátní. S přihlédnutím k možnostem grafického hardwaru se jako velmi výhodná jeví strategie využívající jedinou šumovou texturu pro generování celé třídy řídících šumových funkcí. Vyhodnocením vzorku dat na určité pozici získáváme vlastně funkční hodnotu. Bude-li se pozice v textuře plynutím času posouvat po přímce definované směrovým vektorem $\vec{mv}$ (popřípadě i počátečním bodem $o$), získáme postupně funkční hodnoty průběhu požadované šumové funkce. Vzorek dat pak může obsahovat více kanálů (např. RGB, jak je u obrázků běžné) a získáme takto i více různých šumových funkcí současně, jak je patrné na obrázku \ref{fig:noiseFunctions} .
  \begin{figure}[here]
 \begin{center}
 \includegraphics[width=0.85\textwidth]{./figures/noiseCut1.png}
 \end{center}
-\caption{ Dvě generované šumové funkce pro červený a zelený kanál (vlevo) získané odečítáním hodnot na bílé úsečce v šumové textuře (vpravo)
+\caption[Dvě generované šumové funkce]%
+{ Dvě generované šumové funkce pro červený a zelený kanál (vlevo) získané odečítáním hodnot na bílé úsečce v šumové textuře (vpravo) \label{fig:noiseFunctions}
 }
-\label{fig:noiseFunctions}
+
 \end{figure}
 
 \pagebreak
@@ -301,7 +313,8 @@ Pro pozorovatele jsou jednotlivé řídící funkce větví nezávislé – turb
 \begin{figure}[!hbt]
 \begin{center}
 \includegraphics[width=0.5\textwidth]{./figures/turbulentField.png}
-\caption{Model 3D turbulentního pole pro animaci listů\label{fig:TurbulentFieldModel}}
+\caption[Model 3D turbulentního pole]%
+{Model 3D turbulentního pole pro animaci listů\label{fig:TurbulentFieldModel}}
 \end{center}
 
 \end{figure}

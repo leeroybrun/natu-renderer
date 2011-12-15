@@ -1,2 +1,49 @@
 \chapter{Realizace}
 \label{chap:realizace}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Analýza modelu a předgenerování dat}
+\label{sec-modelAnalysis}
+\begin{itemize}
+ \item jak z modelu získat potřebná data pro animaci - rekonstrukce topologie stromu
+ \item generování dat potřebných pro nižší LOD
+ \item offscreen rendering z různýh směrů a v různých intervalech near-far plane - orthogonální projekce
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Architektura LOD}
+\label{sec-LODarchitecture}
+
+\begin{itemize}
+ \item skupiny instancí - instance v přechodu ošetřovat individuálně (není jich tolik), instance bez přechodu  vykreslovat po skupinách - 
+\item renderqueues
+\item instancování
+\item průhlednost
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Řízení LOD}
+\label{sec-LODcontrol}
+
+\begin{itemize}
+\item skrývání - řízení průhlednosti
+\item pořadí vykreslování primitiv \& instancování
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Zobrazení geometrického modelu}
+\label{sec-3Ddisplay}
+
+\begin{itemize}
+\item animace
+\item listy
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Zobrazení nižších LOD}
+\label{sec-LODdisplay}
+
+\begin{itemize}
+\item skrývání - řízení průhlednosti
+\item pořadí vykreslování primitiv \& instancování
+\end{itemize}

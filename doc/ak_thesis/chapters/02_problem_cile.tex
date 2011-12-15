@@ -35,12 +35,50 @@ Zajímavé metody a přístupy, jak zobrazovat kvalitně a efektivně i detailn�
 \begin{figure}[here]
 \includegraphics[width=0.5\textwidth]{./figures/HABEL_tree.jpg}
 \includegraphics[width=0.5\textwidth]{./figures/HABEL_leaves.jpg}
-\caption{Možnosti realistického zobrazování vegetace, převzato z \cite{Habel_2007_RTT} }
+\caption[Možnosti realistického zobrazování vegetace]%
+{Možnosti realistického zobrazování vegetace, převzato z \cite{Habel_2007_RTT} }
 \label{fig:HABEL_leaves}
 \end{figure}
 Jsou navrženy postupy, které berou v potaz rozdílné vlastnosti různých stran listů i jejich průsvitnost. Animace stromu je optimalizována pro zpracování na GPU ve vertex shaderu a pracuje na principu hierarchické deformace geometrie na úrovni jednotlivých hierarchických úrovní větví. Avšak zobrazení většího počtu stromů je i tak příliš náročné na výkon a není zde řešeno.
 
 Existuje však i možnost, jak zobrazení optimalizovat. K tomu účelu se hojně využívá technik zjednodušování geometrie 3D objektu. Složitost geometrie přechází ve složitost materiálu. Pokud zůstaneme u tématu vegetace, pak si lze představit, že původní 3D reprezentace např. stromu obsahuje geometrický popis i nejmenších detailů křivosti jednotlivých listů. V tom případě by stačila jen informace o barvě geometrických primitiv a výsledný obrázek po vykreslení by mohl být velmi kvalitní. Učiňme myšlenkový krok zjednodušení geometrie tak, že jednotlivý list reprezentuje pouze jeden trojúhelník. Křivost samotného listu pak musí obsáhnout složitější informace o materiálu listu. Pokud bychom reprezentovali např. celou větev se všemi listy jedním trojúhelníkem, složitost materiálu musí zákonitě narůst příslušným způsobem, pokud požadujeme alespoň přibližně stejný výsledek zobrazení.
+
+\begin{figure}[!htb]
+\begin{center}
+$\begin{array}{ccc}
+\includegraphics[width=0.2\textwidth]{./figures/bunny_lod_0.png}&
+\includegraphics[width=0.2\textwidth]{./figures/bunny_lod_3.png}&
+\includegraphics[width=0.2\textwidth]{./figures/bunny_lod_diff.png}
+\\
+(a)&(b)&(c)
+\end{array}$
+\end{center}
+\caption[Obrazy různých stupňů detailu téhož modelu]%
+{Obrazy různých stupňů detailu téhož modelu $(a)$ a $(b)$ a jejich rozdíl červeně $(c)$}
+\label{fig:BUNNY_lod}
+\end{figure}
+Pokud metoda zobrazování a řízení úrovně detailu nepracuje dynamicky (což většinou zajišťuje takřka nepostřehnutelný přechod mezi úrovněmi), vyvstává vždy problém, jak provádět přechod mezi jednotlivými úrovněmi, který při naivním přepnutí úrovní může vést k nevítanému efektu zvanému \emph{LOD-popping}. Jde o to, že pokud se skokově změní velká část obrazu, vnímá tuto změnu pozorovatel velmi rušivě.
+Klasická metoda snížení LOD-poppingu pracuje s prolínáním obrazů a řízením jejich průhlednosti. Zatímco jedna úroveň je postupně zprůhledňována a mizí, druhá se naopak stává neprůhlednou a objevuje se. Během tohoto přechodu se ovšem může stát, že se model stane průhledným, jak ukazuje obrázek  ~\ref{fig:BUNNY_lod_trans}.
+\begin{figure}[!htb]
+\begin{center}
+$\begin{array}{ccc}
+\includegraphics[width=0.2\textwidth]{./figures/bunny_lod_trans_01.png}&
+\includegraphics[width=0.2\textwidth]{./figures/bunny_lod_trans_02.png}&
+\includegraphics[width=0.2\textwidth]{./figures/bunny_lod_trans_03.png}
+\\
+(a)&(b)&(c)
+\end{array}$
+\end{center}
+\caption[Znázornění problémů měkkého přechodu mezi diskrétními úrovněmi detailu]%
+{Znázornění problémů měkkého přechodu mezi diskrétními úrovněmi detailu.
+\newline
+$(a)$ LOD0 100\% , LOD1 0\% \newline
+$(b)$ LOD0 50\% , LOD1 50\%, objekt se stal průhledným, ačkoliv by neměl. \newline
+$(c)$ LOD0 0\% , LOD1 100\% 
+}
+\label{fig:BUNNY_lod_trans}
+\end{figure}
+Eliminací tohoto nežádoucího efektu se zabývá článek \cite{GIEGL-2007-UNP}. Jde o postup, kdy je vždy jedna úroveň detailu zobrazena plně a neprůhledně. Tím je zaručeno, že nemůže dojít k celkovému zprůhlednění. 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \pagebreak
 \subsection{Reprezentace založené na obrázcích}
@@ -55,7 +93,8 @@ Existuje však i možnost, jak zobrazení optimalizovat. K tomu účelu se hojn�
 Způsob, jak optimalizovat proces zobrazování pomocí seskupení podobně orientovaných listů z celé koruny stromu do billboardů je popsán v článku \cite{GIPGSMSL07}. Vegetace je pak reprezentována tzv. billboardcloudem. Bohužel, ačkoliv je tento přístup velmi slibný pro statické modely, pokud požadujeme věrohodnou animaci vegetace, pak nelze předpokládat, že všechny obdobně orientované listy na různých větvích se budou chovat stejným způsobem.
 \begin{figure}[here]
 \includegraphics[width=1.0\textwidth]{./figures/umlauf_lod.png}
-\caption{Různé úrovně detailu tvořené billboardy a jejich porovnání při použití (zcela vpravo), převzato z \cite{Umlauf05} }
+\caption[Různé úrovně detailu tvořené billboardy a jejich porovnání]%
+{Různé úrovně detailu tvořené billboardy a jejich porovnání při použití (zcela vpravo), převzato z \cite{Umlauf05} }
 \label{fig:UMLAUF_lod}
 \end{figure}
 Myšlenka seskupení blízkých listů za účelem zjednodušení geometrické složitosti modelu je vyjádřena v článku \cite{Rebollo_07_FRL}, kde jsou listy dynamicky slučovány na základě jejich prostorové blízkosti a podobnosti. Ačkoliv jsou navrhované postupy daleko vhodnější pro přidání možnosti animace, jde v zásadě o dynamické řízení úrovně detailu a jako takové vyžadují relativně výrazné prostředky pro správu zjednodušovaného modelu. 
@@ -65,7 +104,8 @@ Existuje i několik přístupů založených čistě na billboardingu. Metoda ř
 \begin{center}
 \includegraphics[width=0.3\textwidth]{./figures/slicingJakulin.jpg}
 \end{center}
-\caption{Reprezentace korum stromů pomocí řezů, převzato z \cite{Jakulin00} }
+\caption[Reprezentace korum stromů pomocí řezů]%
+{Reprezentace korum stromů pomocí řezů, převzato z \cite{Jakulin00} }
 \label{fig:JAKULIN_slices}
 \end{figure}
  Trs billboardů je v tomto případě vůči scéně nehybný a řezy, které jsou souběžné se směrem pohledu, jsou skrývány. Výhoda použití více souběžných billboardů spočívá v tom, že lze tímto způsobem navodit dojem určité prostorové hloubky (efekt paralaxy).
@@ -82,45 +122,13 @@ Díky vlastnostem lidského vnímání a zobrazovací technoliogii je možné na
 (a)&(b)
 \end{array}$
 \end{center}
-\caption{Různé přístupy k billboardům. Jediný plochý obraz, který se natáčí k pozorovateli $(a)$ , křížová konstrukce dvou billboardů, které zachovávají orientaci vůči scéně $(b)$, převzato z \cite{Umplauf_MT} }
+\caption[Různé přístupy k billboardům]%
+{Různé přístupy k billboardům. Jediný plochý obraz, který se natáčí k pozorovateli $(a)$ , křížová konstrukce dvou billboardů, které zachovávají orientaci vůči scéně $(b)$, převzato z \cite{Umplauf_MT} }
 \label{fig:UMLAUF_billboards}
 \end{figure}
 Zatímco zpracování geometrických primitiv je relativně pomalý proces, uplatnění informací o materiálu v daném bodě může být velmi efektivní. Nutno ovšem dodat, že běžné reprezentace materiálu (obrázkové textury) trpí omezeními plynoucími z jejich principu – např. omezené rozlišení. Tedy jakési plnohodnotné nahrazení původní 3D geometrie funguje obstojně jen pro objekty ležící za určitou rozlišovací hranicí, která je dána zejména faktory jako rozlišení textur, rozlišení obrazovky, detailnost pohledu, geometrická podobnost obou reprezentací a podobně. 
 
-\begin{figure}[!htb]
-\begin{center}
-$\begin{array}{ccc}
-\includegraphics[width=0.2\textwidth]{./figures/bunny_lod_0.png}&
-\includegraphics[width=0.2\textwidth]{./figures/bunny_lod_3.png}&
-\includegraphics[width=0.2\textwidth]{./figures/bunny_lod_diff.png}
-\\
-(a)&(b)&(c)
-\end{array}$
-\end{center}
-\caption{Obrazy různých stupňů detailu téhož modelu $(a)$ a $(b)$ a jejich rozdíl červeně $(c)$}
-\label{fig:BUNNY_lod}
-\end{figure}
-Pokud metoda zobrazování a řízení úrovně detailu nepracuje dynamicky (což většinou zajišťuje takřka nepostřehnutelný přechod mezi úrovněmi), vyvstává vždy problém, jak provádět přechod mezi jednotlivými úrovněmi, který při naivním přepnutí úrovní může vést k nevítanému efektu zvanému \emph{LOD-popping}. Jde o to, že pokud se skokově změní velká část obrazu, vnímá tuto změnu pozorovatel velmi rušivě.
-Klasická metoda snížení LOD-poppingu pracuje s prolínáním obrazů a řízením jejich průhlednosti. Zatímco jedna úroveň je postupně zprůhledňována a mizí, druhá se naopak stává neprůhlednou a objevuje se. Během tohoto přechodu se ovšem může stát, že se model stane průhledným, jak ukazuje obrázek  ~\ref{fig:BUNNY_lod_trans}.
-\begin{figure}[!htb]
-\begin{center}
-$\begin{array}{ccc}
-\includegraphics[width=0.2\textwidth]{./figures/bunny_lod_trans_01.png}&
-\includegraphics[width=0.2\textwidth]{./figures/bunny_lod_trans_02.png}&
-\includegraphics[width=0.2\textwidth]{./figures/bunny_lod_trans_03.png}
-\\
-(a)&(b)&(c)
-\end{array}$
-\end{center}
-\caption{Znázornění problémů měkkého přechodu mezi diskrétními úrovněmi detailu.
-\newline
-$(a)$ LOD0 100\% , LOD1 0\% \newline
-$(b)$ LOD0 50\% , LOD1 50\%, objekt se stal průhledným, ačkoliv by neměl. \newline
-$(c)$ LOD0 0\% , LOD1 100\% 
-}
-\label{fig:BUNNY_lod_trans}
-\end{figure}
-Eliminací tohoto nežádoucího efektu se zabývá článek \cite{GIEGL-2007-UNP}. Jde o postup, kdy je vždy jedna úroveň detailu zobrazena plně a neprůhledně. Tím je zaručeno, že nemůže dojít k celkovému zprůhlednění. 
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Volumetrické renderování a pointcloudy}
@@ -129,7 +137,8 @@ Existují však ještě další možnosti, jak reprezentovat a zobrazovat vegeta
 \begin{center}
 \includegraphics[width=1.0\textwidth]{./figures/a1_slicing.png}
 \end{center}
-\caption{Volumetrické renderování využívající rovnoběžných textur, převzato z \cite{DN04}
+\caption[Volumetrické renderování využívající rovnoběžných textur]%
+{Volumetrické renderování využívající rovnoběžných textur, převzato z \cite{DN04}
 }
 \label{fig:VOLUME_texcells}
 \end{figure}
@@ -139,7 +148,8 @@ Další možností je tzv. \emph{point-based} renderování. Základním primiti
 \begin{center}
 \includegraphics[width=1.0\textwidth]{./figures/point-based.png}
 \end{center}
-\caption{Reprezentace listů jednotlivými body. Čím je zobrazovaný bod dále od kamery, tím je větší a reprezentuje více listů. Převzato z \cite{GMN05}
+\caption[Reprezentace listů jednotlivými body]%
+{Reprezentace listů jednotlivými body. Čím je zobrazovaný bod dále od kamery, tím je větší a reprezentuje více listů. Převzato z \cite{GMN05}
 }
 \label{fig:PB}
 \end{figure}
