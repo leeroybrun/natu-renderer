@@ -129,203 +129,115 @@ year = {2005},
   year =       "2008",
   URL =        "http://image.diku.dk/projects/media/truelsen.bonding.08.pdf",
 }
+@article\{GIEGL-2007-UNP,
+  title =      "Unpopping: Solving the Image-Space Blend Problem for Smooth
+               Discrete LOD Transitions",
+  author =     "Markus Giegl and Michael Wimmer",
+  year =       "2007",
+  abstract =   "This paper presents a new, simple and practical algorithm to
+               avoid artifacts when switching between discrete levels of
+               detail (LOD) by smoothly blending LOD representations in
+               image space. We analyze the alternatives of conventional
+               alpha-blending and so-called late-switching (the switching
+               of LODs markusquote{far enough} from the eye-point), widely
+               thought to solve the LOD switching discontinuity problem,
+               and conclude that they either do not work in practice, or
+               defeat the concept of LODs. In contrast we show that our
+               algorithm produces visually pleasing blends for static and
+               animated discrete LODs, for discrete LODs with different
+               types of LOD representations (e.g. billboards and meshes)
+               and even to some extent totally different objects with
+               similar spatial extent, with a very small runtime overhead.",
+  pages =      "46--49",
+  month =      mar,
+  number =     "1",
+  issn =       "0167-7055",
+  journal =    "Computer Graphics Forum",
+  volume =     "26",
+  keywords =   "popping, LOD switching, levels of detail, real-time
+               rendering",
+  URL =        "http://www.cg.tuwien.ac.at/research/publications/2007/GIEGL-2007-UNP/",
+}
+@inproceedings{DN04,
+author = {Philippe Decaudin and Fabrice Neyret},
+title = {Rendering Forest Scenes in Real-Time},
+booktitle = {15th Eurographics Workshop on Rendering, Rendering Techniques'04, June, 2004},
+editor = {Alexander Keller and Henrik Wann Jensen},
+address = {Nork\"oping, Su\`ede},
+publisher = {Eurographics Association},
+pages = {93--102},
+keywords = {real-time rendering, natural scenes, 3D textures, aperiodic tiling, volumetric, slicing, texcells},
+year = 2004
+}
+@inproceedings{GMN05,
+author = {Guillaume Gilet and Alexandre Meyer and Fabrice Neyret},
+title = {Point-based rendering of trees},
+booktitle = {Eurographics Workshop on Natural Phenomena 2000, August, 2005},
+editor = {\'Eric Galin and Pierre Poulin},
+organization = {ACM/SIGGRAPH},
+address = {Dublin, Irlande},
+publisher = {A.K. Peters},
+pages = {67--72},
+month = aou,
+year = 2005
+}
+
+@Misc{TLW,
+  key = "web:t_leaves",
+  author =       "{Přispěvatelé desktopwallpaper-s.com}",
+  title =        "",
+  note =         "\\ \verb|http://desktopwallpaper-s.com/19-Computers/~/Green_leaves_HD_wallpaper/|, stav z 14.\,12.\,2011",
+}
+
+@article{Bousquet2005201,
+title = "Leaf BRDF measurements and model for specular and diffuse components differentiation",
+journal = "Remote Sensing of Environment",
+volume = "98",
+number = "2-3",
+pages = "201 - 211",
+year = "2005",
+note = "",
+issn = "0034-4257",
+doi = "10.1016/j.rse.2005.07.005",
+url = "http://www.sciencedirect.com/science/article/pii/S0034425705002324",
+author = "Laurent Bousquet and Sophie Lachérade and Stéphane Jacquemoud and Ismaël Moya",
+keywords = "Leaf optics",
+keywords = "BRDF",
+keywords = "Photogoniometer",
+keywords = "Model"
+}
+
+@article{Cook:1981:RMC:965161.806819,
+ author = {Cook, Robert L. and Torrance, Kenneth E.},
+ title = {A reflectance model for computer graphics},
+ journal = {SIGGRAPH Comput. Graph.},
+ volume = {15},
+ issue = {3},
+ month = {August},
+ year = {1981},
+ issn = {0097-8930},
+ pages = {307--316},
+ numpages = {10},
+ url = {http://doi.acm.org/10.1145/965161.806819},
+ doi = {http://doi.acm.org/10.1145/965161.806819},
+ acmid = {806819},
+ publisher = {ACM},
+ address = {New York, NY, USA},
+ keywords = {Computer graphics, Image synthesis, Reflectance, Shading},
+} 
+%%
+% obrazek podzimnich listu: http://www.theoutdoorparent.com/?p=474 15.12.2011
+
+
+
 
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%
-@Article{Chen01,
-  author = "Yong-Sheng Chen and Yi-Ping Hung and Chiou-Shann Fuh",
-  title  = "Fast Block Matching Algorithm Based on the Winner-Update Strategy",
-  journal= "IEEE Transactions On Image Processing",
-  pages  = "1212--1222",
-  volume =   10,
-  number =    8,
-  year   = 2001,
-}
-
-@Book{Serra93,
-  author    = "Jean Serra",
-  title     = "Image Analysis and Mathematical Morphology",
-  publisher = "Academic Press",
-  volume    =  1,
-  address   = "Oval Road, London, UK",
-  edition   = "4th",
-  year      =  1993,
-}
 
 % Pokud potrebujeme BibTeXu napovedet, kde je nutne zachovat velka a mala 
 % pismena, je potreba pouzit slozene zavorky {}. 
 % Vetsinou jde o zkratky a vlastnich jmena, ktera nejsou na zacatku nazvu 
 % publikace, pripadne o nazvy maker (viz napr. makro \LaTeX).
-
-@Misc{Weber04,
-  author = "Martin Weber",
-  title  = "Auto{T}race: {A} utility for converting bitmap into vector graphics",
-  note   = "\verb|http://autotrace.sourceforge.net|",
-  year   = 2004,
-}
-
-@InProceedings{Weiss99,
-  author    = "Yair Weiss",
-  title     = "Segmentation using eigenvectors: {A} unifying view",
-  booktitle = "Processings of IEEE International Conference on Computer Vision",
-  editor    = "Kim Zheng",
-  pages     = "975--982",
-  year      =  1999,
-}
-
-@InProceedings{Nam04,
-  author = 	  {Young Jin Nam and Chanik Park},
-  title = 	  {An efficient fair queuing algorithm for guaranteed disk bandwidth},
-  booktitle =     {Euro-Par 2004 Parallel Processing},
-  year =	  {2004},
-  editor =	  {M. Danelutto and D. Laforenza and M. Vanneschi},
-  month =	  {august},
-  series =	  {Lecture Notes in Computer Science},
-  number =	  3149,
-  pages =	  {799-802},
-  publisher =     {Springer Verlag, 2004},
-}
-
-
-% Nekdy musime dlouhe URL odkazy zalamovat rucne, jak je ukazano nize.
-% Vzdy ale uvedeme, kdy byla stranka naposledy aktualizovana, resp. pokud neni
-% uvedeno, datum, kdy jsme udaje z ni nacerpali.
-
-@Misc{CSTUG,
-  key    = "web:cstug",
-  author = "",
-  title  = "{CSTUG} --- {\CS}{\TeX} {U}sers {G}roup --- hlavní stránka",
-  note   = "\\ \verb|http://www.cstug.cz/|, stav z 2.\,3.\,2009",
-}
-
-@Misc{latexdocweb,
-  key    = "web:latexdocweb",
-  author = "",
-  title  = "{\LaTeX} --- online manuál",
-  note   = "\\ \verb|http://www.cstug.cz/latex/lm/frames.html|, stav ze 4.\,5.\,2009",
-}
-
-
-@Misc{infodp,
-  key    = "web:infodp",
-  author = "",
-  title  = "K336 {I}nfo --- pokyny pro psaní diplomových prací",
-  note   = "\\ \verb|https://info336.felk.cvut.cz/clanek.php?id=400|, stav ze 4.\,5.\,2009",
-}
-
-@Misc{infobp,
-  key    = "web:infobp",
-  author = "",
-  title  = "K336 {I}nfo --- pokyny pro psaní bakalářských prací",
-  note   = "\\ \verb|https://info336.felk.cvut.cz/clanek.php?id=504|, stav ze 4.\,5.\,2009",
-}
-
-%
-@Misc{ipe,
-  key    = "web:ipe",
-  author = "",
-  title  = "Grafický vektorový editor pro práce vhodný pro práci {\LaTeX}em",
-  note   = "\\ \verb|http://tclab.kaist.ac.kr/ipe/|, stav z 4.\,5.\,2009",
-}
-
-@Misc{info,
-  key    = "web:info",
-  author = "",
-  title  = "K336 {I}nfo",
-  note   = "\\ \verb|  http://info336.felk.cvut.cz|, stav ze 4.\,5.\,2009",
-}
-
-@Misc{latexutf,
-  key = "web:latexutf",
-  author = "",
-  title =  "Wiki Books {\LaTeX}/{I}nternationalization",
-  note =   "\\ \verb|http://en.wikibooks.org/wiki/LaTeX/Internationalization|, stav z 1.\,5.\,2009",
-}
-
-
-@Misc{latexwiki,
-  key    = "web:latexwiki",
-  author = "",
-  title  = "Wiki Books {\LaTeX}",
-  note   = "\\ \verb|http://en.wikibooks.org/wiki/LaTeX/|, stav z 3.\,4.\,2009",
-}
-
-
-@Misc{dp_jcu,
-  key = "web:dpjcu",
-  author =       "",
-  title =        "Pokyny pro psaní {DP} na {JČU}",
-  note =         "\\ \verb|http://home.pf.jcu.cz/~edpo/pravidla/pravidla.html|, stav z 8.\,12.\,2008",
-}
-
-@Misc{dp_mendel,
-  key = "web:dpmendel",
-  author =       "",
-  title =        "Pokyny pro psaní {DP} na {M}endelově univerzitě v {B}rně",
-  note =         "\\ \verb|http://old.mendelu.cz/~rybicka/zpract/#diplomky|, stav z 1.\,2.\,2008",
-}
-
-@COMMENT( The references below have first names abridged. Do not follow this,
-use full names whenever possible, BibTeX style will do the appropriate unifications. )
-
-@Book{kniha,
-  author =       "J. Žára and B. Beneš and P. Felkel",
-  title =        "Moderní počítačová grafika",
-  publisher =    "Computer Press s.r.o, Brno",
-  edition =      "1st",
-  year   = 1998,
-  note =	"In Czech",
-}
-
-@Article{clanek,
-  author =       "P. Slavík",
-  title =        "Grammars and Rewriting Systems as Models for Graphical User Interfaces",
-  journal =      "Cognitive Systems",
-  pages =        "381--399",
-  volume =       4,
-  number =       "3/4",
-  year =         1997,
-}
-
-@COMMENT( It is always better to use TeX diacritical escape sequences, 
-e.g. {\'{L}}, in the bibliography database, making it encoding independent 
-and thus compilable under different document encoding settings. 
-Do not follow these examples! )
-
-@InProceedings{sbornik,
-  author = 	  "M. Haindl and {\'{L}}. Kment and  P. Slavík",
-  title = 	  "Virtual Information Systems",
-  booktitle =     "WSCG'2000 --- Short communication papers",
-  year =	  2000,
-  pages =	  "22--27",
-  publisher =     "University of West Bohemia, Pilsen",
-}
-
-@Misc{www,
-  key = "web:infogs",
-  author =       "",
-  title =        "Knihovna {G}rafické skupiny",
-  note =         "\\ \verb|http://www.cgg.cvut.cz/Bib/library/|, stav z 30.\,8.\,2001",
-}
-
-
-@COMMENT(Another example of www sources referencing, posted by Petr Dlouhy April 2010)
-
-@ONLINE{wiki:framework,
-  author = "{Přispěvatelé Wikipedie}",
-  title = "Framework",
-  cited = "10.\,9.\,2009",
-  year =         2009,
-  url = "http://cs.wikipedia.org/wiki/Framework"
-  }
-
-@ONLINE{wiki:orm,
-  author = "{Přispěvatelé Wikipedie}",
-  title = "Object-relational mapping",
-  cited = "6.\,12.\,2009",
-  year =         2009,
-  url = "http://en.wikipedia.org/wiki/Object-relational_mapping"
-  }
 
 
