@@ -56,9 +56,11 @@ uniform float		near;
 uniform	float		far;
 uniform int			show_slice;
 uniform int			show_sliceSet;
+varying vec3		v_wind_dir_ts;
+uniform float		wind_strength;
 #define sliceCnt		3
 #define sliceSetsCnt	3
-#define	texCols			7.0
+#define	texCols			3.0
 			 
 float		fogFactor;
 
@@ -80,87 +82,114 @@ float getDepth(vec2 coords){
 	return depth;
 }
 
+void animateBranch(inout vec2 position, in float bid, in float time, in float offset, in float texCol, in float wood_a, in float wood_f, in vec3 wind_d, in float wind_s){
+	vec2 mv;
+	vec2 corr_s;
+	vec2 corr_r;
+	float x_val;
+	vec2 amp;
+	vec4 b_data0;
+	vec4 b_data1;
+	vec4 b_data2;
+	vec4 b_data3;
+	vec2 o;
+	vec2 t; 
+	vec3 r; 
+	vec3 s; 
+	float l;
+	b_data0 = texture2D(lod_data_tex, vec2((0.5+offset)*texCol, bid));
+	b_data1 = texture2D(lod_data_tex, vec2((1.5+offset)*texCol, bid));
+	b_data2 = texture2D(lod_data_tex, vec2((2.5+offset)*texCol, bid));
+	//b_data3 = texture2D(lod_data_tex, vec2((3.5+offset)*texCol, branchID));
+	o = b_data0.xy;
+	mv = b_data0.zw;
+	r = b_data1.xyz;
+	s = b_data2.xyz;
+	t = cross(s,r).xy;
+	l = b_data1.w;
+		
+	// get x value on the projected branch
+
+	// naive solution = distance to projected origin / branch projected length
+	// PROBLEMS:
+	// - what about branches pointing to the observer? - projected length is near 0
+	// - even pixels close to projected origin can be very far in terms of x
+	vec2 distVector = abs(position-o);
+	//offset = 0.0; //1.0 - length(t.xy);
+	//x_val = min(1.0, offset + length(distVector)/l);
+	x_val = min(1.0, length(distVector)/l);
+	//color = vec4(x_val);
+	vec2 w = vec2(dot(r, wind_d) * wind_s, dot(s, wind_d) * wind_s);
+	amp = w + wood_a * ( texture2D(branch_noise_tex, mv * time * wood_f).rg  * 2.0 - ONE2);
+	float xval2 = x_val*x_val;
+	
+	float fx = 0.374570*xval2 + 0.129428*xval2*xval2;
+	float dx = 0.749141*x_val + 0.517713*xval2*x_val;
+
+	vec2 fu			= vec2(fx)		* amp;
+	vec2 fu_deriv	= vec2( dx / l) * amp ;
+	// restrict fu_deriv != 0.0
+	fu_deriv = max(fu_deriv, EPSILONVEC) + min(fu_deriv, EPSILONVEC);
+	vec2 us = sqrt(ONE2+fu_deriv*fu_deriv);
+	vec2 ud = fu / fu_deriv * (us - ONE2);
+	corr_r = (t + r.xy*fu_deriv.x)/us.x * ud.x;
+	corr_s = (t + s.xy*fu_deriv.y)/us.y * ud.y;
+	// inverse deformation - must be aplyed in oposite direction
+	position = position - ( fu.x * r.xy + fu.y * s.xy - (corr_r+corr_s) );
+}
+
 void	main()
 {	
-	vec4 color = vec4(0.0, 0.0, 0.0,1.0);
+
+	if (gl_Color.a<=0.01){discard;}
+
+
+	vec4 color = vec4(0.0, 0.0, 0.0, 0.0);
 	float sls = show_sliceSet;
 	float sl = show_slice;
-	if (sliceDesc.x!=sl || sliceDesc.y!=sls){discard;}
+	//if (sliceDesc.x!=sl || sliceDesc.y!=sls){discard;}
 
 	float mv_time = (time+time_offset_v) * 0.01;
-	
-	
-	
 	// get frag position
 	vec2 position = gl_TexCoord[0].st;
 	vec2 tpos	= clamp ( position + sliceDesc , sliceDesc, sliceDesc+vec2(1.0, 1.0) ) / vec2(sliceCnt,sliceSetsCnt);
 	// get Level-1 branch
 	float branchID = (texture2D(dataMap, tpos).r);
+	float branchFlag = sign(branchID);
+	branchID = abs(branchID);
 	float offset = sliceDesc.y*texCols;
 	float texCol = 1.0/(sliceSetsCnt*texCols);
 	
-
-	vec4 mv = texture2D(lod_data_tex, vec2((5.5+offset)*texCol, branchID));
-	vec2 mv_0 = mv.xy;
-	vec2 mv_1 = mv.zw;
-	vec3 corr_s = vec3(0.0);
-	vec3 corr_r = vec3(0.0);
-	float x_val = 0.0;
-	color = vec4(branchID*50.0, 0.0, 0.0, 1.0);
-	vec2 amp1;
-	vec4 c = vec4(0.0);
-
+	// level 1 deformation...
 	if (branchID>(0.5)/branch_count){
-		// level 1 deformation...
-		//vec4 branch_origin = texture2D(lod_data_tex, vec2((0.5+offset)*texCol, (0.5)/496.0));
-		//float branchID2 = branchID * 500;
-		vec4 branch_origin = texture2D(lod_data_tex, vec2((0.5+offset)*texCol, branchID));
-		vec3 t = texture2D(lod_data_tex, vec2((1.5+offset)*texCol, branchID)).xyz;
-		vec3 r = texture2D(lod_data_tex, vec2((2.5+offset)*texCol, branchID)).xyz;
-		vec3 s = texture2D(lod_data_tex, vec2((3.5+offset)*texCol, branchID)).xyz;
-		float l= texture2D(lod_data_tex, vec2((4.5+offset)*texCol, branchID)).x;
-		//vec3 t = cross(r.xyz,s.xyz);
-		// get x value on the projected branch
-
-		// naive solution = distance to projected origin / branch projected length
-		// PROBLEMS:
-		// - what about branches pointing to the observer? - projected length is near 0
-		// - even pixels close to projected origin can be very far in terms of x
-		vec2 distVector = position-branch_origin.xy;
-		offset = 0.0; //1.0 - length(t.xy);
-		x_val = min(1.0, offset + length(distVector)/l);
-
-
-
-		//color = vec4(x_val);
-		amp1 = wood_amplitudes.y * ( texture2D(branch_noise_tex, mv_1 * mv_time * wood_frequencies.y).rg  * 2.0 - ONE2);
-		float xval2 = x_val*x_val;
-		
-		float fx = 0.374570*xval2 + 0.129428*xval2*xval2;
-		float dx = 0.749141*x_val + 0.517713*xval2*x_val;
-
-		vec2 fu			= vec2(fx)		* amp1;
-		vec2 fu_deriv	= vec2( dx / l) * amp1 ;
-
-		fu_deriv = max(fu_deriv, EPSILONVEC) + min(fu_deriv, EPSILONVEC);
-		vec2 us = sqrt(ONE2+fu_deriv*fu_deriv);
-		vec2 ud = fu / fu_deriv * (us - ONE2);
-		corr_r = (t + r.xyz*fu_deriv.x)/us.x * ud.x;
-		corr_s = (t + s.xyz*fu_deriv.y)/us.y * ud.y;
-		// inverse deformation - must be aplyed in oposite direction
-		position = position - ( fu.x * r.xy + fu.y * s.xy - (corr_r.xy+corr_s.xy) );
+		animateBranch(position, branchID, mv_time, offset, texCol, wood_amplitudes.y, wood_frequencies.y, v_wind_dir_ts, wind_strength);
 	}
-	vec2 newPos = position;
-	newPos = clamp ( newPos  , vec2(0.0, 0.0), vec2(1.0, 1.0) );// + sliceDesc ) / vec2(sliceCnt,sliceSetsCnt);
-	newPos = (newPos + sliceDesc) / vec2(sliceCnt,sliceSetsCnt);
+	// animate trunk
+	animateBranch(position, 0.0, mv_time, offset, texCol, wood_amplitudes.x, wood_frequencies.x, v_wind_dir_ts, wind_strength);
 	
-	
-	color = texture2D(colorMap, newPos);
+	vec2 newPos;
+	if (position.y>1.0){
+		discard;
+	}
+	vec2 p = clamp ( position  , vec2(0.0, 0.0), vec2(1.0, 1.0) );// + sliceDesc ) / vec2(sliceCnt,sliceSetsCnt);
+	newPos = (p + sliceDesc) / vec2(sliceCnt,sliceSetsCnt);
+
+	color += texture2D(colorMap, newPos);
 	if (color.a<0.5){discard;}
-	color = vec4(0.5, 0.0, 0.0, 1.0);
+	float newBranchFlag = sign(texture2D(dataMap, newPos).r);
+	if (newBranchFlag>=0.0){
+		// leaf
+		vec2 seasonCoord = vec2(0.5, season - 0.0001*time_offset_v);
+		vec4 seasonColor = texture2D(seasonMap, seasonCoord);
+		if (seasonColor.a<0.5){
+			discard;
+		}
+		color.rgb += seasonColor.rgb;
+		color.rgb *= colorVar;
+	}
 	//color  = texture2D(lod_data_tex, position);
 	//color.rgb = color.rgb*x_val;
-	color.a = 1.0;
+	color.a *= gl_Color.a;
 	gl_FragData[0] = color;
 	gl_FragData[1] = color * vec4(0.1, 0.1, 0.1, 1.0);
 

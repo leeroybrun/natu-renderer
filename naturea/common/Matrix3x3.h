@@ -44,7 +44,18 @@ class Matrix3x3
 			m[ 7] =  m7;
 			m[ 8] =  m8;
 		}
-	
+		Matrix3x3(const Matrix4x4& copy)
+		{
+			m[ 0] =  copy.m[0];
+			m[ 1] =  copy.m[1];
+			m[ 2] =  copy.m[2];
+			m[ 3] =  copy.m[4];
+			m[ 4] =  copy.m[5];
+			m[ 5] =  copy.m[6];
+			m[ 6] =  copy.m[8];
+			m[ 7] =  copy.m[9];
+			m[ 8] =  copy.m[10];
+		}
 		explicit Matrix3x3(const Matrix3x3& copy)
 		{
 			for (int i = 0; i < 9; i++)

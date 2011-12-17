@@ -85,6 +85,7 @@ struct DTreeInstanceData
 	v3		position;
 	float	rotation_y;
 	m4		transformMatrix;
+	v3		wind_dir;
 	v3		dirA;
 	v3		dirB;
 	float	distance;
@@ -185,6 +186,9 @@ private:
 	v4**				positions_rotations;
 	int					count;
 	// INSTANCES END
+
+	v3					wind_relative_direction;
+
 
 	int					instanceFloatCount;
 	DTreeBranch			*trunk;

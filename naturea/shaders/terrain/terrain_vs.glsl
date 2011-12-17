@@ -23,7 +23,7 @@ void main()
 {
 
 	vec4 pos = gl_ModelViewMatrix * gl_Vertex;
-	lightSpacePosition = LightMVPCameraVInverseMatrix * pos;
+	lightSpacePosition = (LightMVPCameraVInverseMatrix * pos)*0.5 + vec4(0.5);
 
 	eye = pos.xyz;
 	//lightProjSpacePosition	= LightMVPCameraVInverseMatrix*(pos);

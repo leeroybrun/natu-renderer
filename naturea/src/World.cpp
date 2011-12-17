@@ -468,13 +468,11 @@ void World::init()
 	for (int i=0; i<g_tree_gridSize; i++){
 		for (int j=0; j<g_tree_gridSize; j++){
 
-
-
 			x = (i - centerOffsetX)*g_tree_mean_distance + randomf(-diff, diff);
 			z = (j - centerOffsetY)*g_tree_mean_distance + randomf(-diff, diff);
 			
-			r = 0.0;
-			//r = randomf(-180, 180);
+			//r = 0.0;
+			r = randomf(-180, 180);
 			xt = x + p_terrain->sz_x/2.0;
 			yt = z + p_terrain->sz_y/2.0;
 			y = p_terrain->getHeightAt(xt,yt);

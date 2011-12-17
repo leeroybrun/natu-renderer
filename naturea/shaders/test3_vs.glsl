@@ -30,14 +30,23 @@ uniform mat4		LightMVPCameraVInverseMatrix;
 varying	vec4		lightSpacePosition;
 
 varying float		mv_time;
+varying vec3		v_wind_dir_ts;
+uniform vec3		wind_direction;
+
+mat3	w_matrix = mat3(
+  transformMatrix[0][0], 0.0, -transformMatrix[0][2],    //first column
+  0.0, 1.0, 0.0,    //second column
+  -transformMatrix[2][0], 0.0, transformMatrix[2][2]);
+
 void main()
 {
 	vec4 pos;
 	vec3 tangentDir;
 	vec3 bitangent;
+	
 	bitangent		= cross(normal, tangent);
 	float mv_time;
-	
+
 	// = wood_amplitudes.y * ( texture2D(branch_noise_tex, mv1 * mv_time * wood_frequencies.y).rg  * 2.0 - vec2(1.0));
 	if (instancing>0){
 		// drawing instances
@@ -48,11 +57,13 @@ void main()
 		pos			=  ( gl_Vertex * vec4(10.0, 10.0, 10.0, 1.0));	
 		//pos.xz		+= texCoords0.y * amplitude * wood_amplitudes.x * (texture2D(branch_noise_tex, 0.01 * pos.xz + mv1 * mv_time * wood_frequencies.x).xy*2.0-vec2(1.0));
 		pos			= gl_ModelViewMatrix * (transformMatrix * pos);
-		mat3 T		= mat3(transformMatrix);
-		tangentDir	= (gl_NormalMatrix * T * tangent	);
-		normalDir	= (gl_NormalMatrix * T * normal		);
-		bitangent	= (gl_NormalMatrix * T * bitangent	);
+		mat3 T		= gl_NormalMatrix * mat3(transformMatrix);
+		
+		tangentDir	= (T * tangent		);
+		normalDir	= (T * normal		);
+		bitangent	= (T * bitangent	);
 
+		v_wind_dir_ts	=  mat3(transformMatrix) * w_matrix * wind_direction;
 	} else {
 		// drawing single geometry
 		colorVar	= u_colorVariance;
@@ -61,10 +72,11 @@ void main()
 		pos			=  gl_Vertex * vec4(10.0, 10.0, 10.0, 1.0);
 		//pos.xz		+= texCoords0.y * amplitude * wood_amplitudes.x * (texture2D(branch_noise_tex, 0.01 * pos.xz + mv1 * mv_time * wood_frequencies.x).xy*2.0-vec2(1.0));
 		pos			= gl_ModelViewMatrix * pos;
-		
 		tangentDir	= (gl_NormalMatrix * tangent	);
 		normalDir	= (gl_NormalMatrix * normal		);		
 		bitangent	= (gl_NormalMatrix * bitangent	);
+
+		v_wind_dir_ts	=  wind_direction;
 	}
 
 	// calc tangent space...
@@ -72,6 +84,9 @@ void main()
     TBN_Matrix[0]	=  tangentDir; 
     TBN_Matrix[1]	=  bitangent; 
     TBN_Matrix[2]	=  normalDir; 
+
+	v_wind_dir_ts = v_wind_dir_ts * TBN_Matrix;
+
 
 	vec3 lpos		= -(gl_LightSource[0].position).xyz;
 	lightDir_ts		= normalize( lpos )		* TBN_Matrix ;
@@ -84,11 +99,12 @@ void main()
 	
 	lightSpacePosition = LightMVPCameraVInverseMatrix * pos;
 	
-	alpha = clamp(-3.0+5.0*abs(dot(normalize(normalDir.xz), normalize(eyeDir.xz))), 0.0, 1.0);	
-	//alpha =clamp(-0.5 + 2.0*abs(dot(normalize(normalDir), normalize(eyeDir))), 0.0, gl_Color.a);
+	//alpha = clamp(-3.0+5.0*abs(dot(normalize(normalDir.xz), normalize(eyeDir.xz))), 0.0, 1.0);	
+	alpha =clamp(-0.5 + 2.0*abs(dot(normalize(normalDir), normalize(eyeDir))), 0.0, gl_Color.a);
 	//alpha = clamp(abs(dot(normalize(normalDir), normalize(eyeDir))), gl_Color.a, 1.0);
 	//alpha = gl_Color.a;
 	//gl_FrontColor = vec4(normal, alpha);
 	gl_FrontColor	= gl_Color;
+	gl_FrontColor.a = alpha;
 }
 

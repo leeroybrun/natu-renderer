@@ -149,7 +149,8 @@ int common_main(int window_width, int window_height,
                 TWindowSizeChangedCallback    cbUserWindowSizeChanged,
                 TKeyboardChangedCallback      cbUserKeyboardChanged,
                 TMouseButtonChangedCallback   cbUserMouseButtonChanged,
-                TMousePositionChangedCallback cbUserMousePositionChanged) 
+                TMousePositionChangedCallback cbUserMousePositionChanged,
+				int* samples) 
 {
    // Setup user callback functions
    assert(cbUserDisplay && cbUserInitGL);
@@ -163,10 +164,27 @@ int common_main(int window_width, int window_height,
    // Intialize GLFW   
    glfwInit();
 
+   // init GL
+
+
    // Create a window
+   int max_samples = 4;
+
+   // get max samples available on GPU
+   /*
+   glGetIntegerv(GL_MAX_SAMPLES, &max_samples);
+   printf("MSInit= %i\n", max_samples);
+   */
+   if (*samples>max_samples){
+		printf("WARNING: Requested multisampling with %i samples, but maximum available is %i. Using available.\n", *samples, max_samples);
+		*samples = max_samples;
+   }
+   printf("Using %i multisampling.\n", *samples);
+		system("PAUSE");
+   glfwOpenWindowHint(GLFW_FSAA_SAMPLES, *samples);
    glfwOpenWindow(window_width, window_height, 0, 0, 0, 0, 32, 0, GLFW_WINDOW);
    glfwSetWindowTitle(window_title);
-   glfwSetWindowPos(100, 100);
+   glfwSetWindowPos(100, 50);
 
    glfwEnable(GLFW_MOUSE_CURSOR);
    glfwEnable(GLFW_KEY_REPEAT);

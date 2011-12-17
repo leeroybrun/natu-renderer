@@ -294,16 +294,27 @@ void animateLeafVertex(in vec3 origin, inout vec3 position, inout vec3 o_normal,
 	*/
 	// SAMPLE TURBULENT WIND FIELD
 		// sample position
-	vec2 samplePosition = wind_direction.xz * time * leaf_frequency * 0.01;
+	float w = wind_strength + 1.0;
+	vec3 samplePosition = wind_direction.xyz * (w * time * leaf_frequency * 0.01);
 
 
 	vec2 texcoord = texCoords0.xy;
 
-	const float scale = 1.5;
+	const float scale = 1.0;
+
+	vec3 p = scale*(origin - samplePosition); 
+	vec3 amplitude;
+	vec3 wind = ONE3 - abs(wind_direction);
+	amplitude =  texture2D(leaf_noise_tex, p.xz).xyz * wind.y;
+	amplitude += texture2D(leaf_noise_tex, p.yz).xyz * wind.x;
+	amplitude += texture2D(leaf_noise_tex, p.xy).xyz * wind.z;
+	amplitude = (amplitude) * 2.0 - ONE3; 
+
+	/*
 	vec3 amplitude = texture2D(leaf_noise_tex, origin.xz * scale).xyz * 2.0 - 1.0;
 	amplitude += texture2D(leaf_noise_tex, origin.yz * scale - vec2(samplePosition.x,0)).xyz * 2.0 - 1.0;
 	amplitude += texture2D(leaf_noise_tex, origin.xy * scale - vec2(samplePosition.y,0)).xyz * 2.0 - 1.0;
-
+	*/
 	amplitude *= leaf_amplitude;
 	//float scaleL = 0.04;
 
@@ -313,101 +324,9 @@ void animateLeafVertex(in vec3 origin, inout vec3 position, inout vec3 o_normal,
 	o_tangent = normalize ( o_tangent + o_normal*amplitude.x	);
 	o_normal  = normalize ( cross(o_tangent, bitangent)			);
 	o_normal  = normalize ( o_normal + bitangent*amplitude.y	);
-	o_tangent = normalize ( cross (bitangent, o_normal	)		);
-	
-	
+	bitangent = normalize ( cross (o_tangent, o_normal	)		);
 
-	//position = origin + scaleL * ( texCoords0.x * o_tangent + texCoords0.y * bitangent);
-
-	/*
-
-
-	vec3 normal_orig = normal;
-	float rotationZ_offset = amplitude.x*(texcoord.x-0.5);
-	position += rotationZ_offset * normal;
-
-	normal = normal_orig + tangent*(rotationZ_offset/0.04406305);
-	normal = normalize(normal);
-
-	tangent = tangent + normal_orig*(rotationZ_offset/0.04406305);
-	tangent = normalize(tangent);
-
-	float rotationX_offset = amplitude.y*(texcoord.y)*0.5;
-	position += rotationX_offset * tangent;
-
-	vec3 bitangent = cross(normal, tangent);
-	tangent -= bitangent*(rotationX_offset/0.1727);
-	tangent = normalize(tangent);
-
-	float n_offset = amplitude.z * (texcoord.y)*0.5;
-	position += n_offset * normal;
-
-	normal -= bitangent * (n_offset/0.1727);
-	normal = normalize(normal);
-	/*
-
-	vec3 windSamplePosition = origin + wind_direction*leaf_frequency*time*0.01;
-	
-	
-	vec3 xzDir = texture2D(leaf_noise_tex, windSamplePosition.xz).xyz * 2.0 - 1.0;
-	vec3 yzDir = texture2D(leaf_noise_tex, windSamplePosition.yz).xyz * 2.0 - 1.0;
-	vec3 xyDir = texture2D(leaf_noise_tex, windSamplePosition.xy).xyz * 2.0 - 1.0;
-
-	// weight directions by wind direction
-	// TODO
-	vec3 leafDirection = normalize(	xzDir*(1-wind_direction.y) +
-									yzDir*(1-wind_direction.x) +
-									xyDir*(1-wind_direction.z));
-	
-	// rotate normal/tangent/binormal
-
-
-	tangent = leafDirection;
-	normal = cross(tangent, binormal);
-	binormal = cross(normal, tangent);
-	
-
-	
-	/*
-	//vec2 looksvposition = wind_direction.xz * TimeOffsetLeaves;
-	vec2 looksvposition = wind_direction.xz * wind_strength;
-	
-	
-	vec3 amp =  texture2D(leaf_noise_tex, position.xz*0.1).xyz* 2.0 - 1.0;
-		 amp += texture2D(leaf_noise_tex, position.yz*0.1-vec2(looksvposition.x,0)).xyz* 2.0 - 1.0;
-		 amp += texture2D(leaf_noise_tex, position.xy*0.1-vec2(looksvposition.y,0)).xyz* 2.0 - 1.0;
-	
-	// ======================================================
-	// tangent deformation
-	// ======================================================
-	vec3 nondef_normal = normal;
-	float rotoffset = leaf_amplitude*amp.x*(texcoord.x-0.5);
-	position += rotoffset*normal;
-	
-	normal = nondef_normal + tangent*(rotoffset/0.04406305);
-	normal = normalize(normal);
-	
-	tangent = tangent + nondef_normal*(rotoffset/0.04406305);
-	tangent = normalize(tangent);
-	
-	//------------------------------------------------------------------------------------------------
-	
-	vec3 tanoffset = leaf_amplitude*amp.y*(1 - texcoord.y)*0.5;
-	position += tanoffset*tangent;
-	
-	vec3 bitangent = cross(normal,tangent);
-	
-
-	tangent -= bitangent*(tanoffset/0.1727);
-	tangent = normalize(tangent);
-	
-	vec3 noffset = leaf_amplitude*amp.z*(1 - texcoord.y)*0.5;
-	position += noffset*normal;
-	
-	normal -= bitangent*(noffset/0.1727);
-	normal = normalize(normal);
-	
-*/	
+	position = origin + (position.x*bitangent + position.y*o_tangent);
 }
 
 void main()
@@ -421,8 +340,8 @@ void main()
     //float bi	= branch_index;
     //vec4 x		= x_vals;
 	time_offset_v = time_offset;
-	vec3 leafOrigin = vec3(0.0, 0.0, 0.0);
-	
+
+	vec3 leafOrigin = vec3(0.0, 0.0, 0.0);	
 	animateBranchVertex(leafOrigin);
 	animateLeafVertex(leafOrigin, vertex, normal_vs, tangent_vs);
 	
@@ -444,13 +363,11 @@ void main()
 	ts_lightDir_v = normalize(( -gl_LightSource[0].position).xyz * TBN_Matrix );
 
 
-	vertex = leafOrigin + (vertex.x*bitangent + vertex.y*tangent_vs);
 	normal_vs = gl_NormalMatrix * normal_vs;
 	tangent_vs = gl_NormalMatrix * tangent_vs;
 	
 	vPos = gl_ModelViewMatrix * vec4(vertex,1.0);
-	lightSpacePosition = LightMVPCameraVInverseMatrix * vPos;
-	
+	lightSpacePosition = (LightMVPCameraVInverseMatrix * vPos)*0.5 + vec4(0.5);
 
 	ts_viewDir_v = normalize( vPos.xyz * TBN_Matrix) ;
     //animateBranchVertex(vertex); // with branch motion

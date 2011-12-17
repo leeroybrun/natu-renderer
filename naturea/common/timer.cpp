@@ -4,10 +4,6 @@
 // timer.cpp
 //     Timing for running process
 //
-// Licence: the use and distribution of this file is severely limited, please
-// see the file 'doc/Licence.txt'. Any non-authorized use can be prosecuted under
-// International Law. For further questions, please, e-mail to VHavran@seznam.cz
-// or mail to Vlastimil Havran, Pohodli 27, 57001 Litomysl, the Czech Republic.
 // REPLACEMENT_STRING
 //
 // Initial coding by Vlastimil Havran, 1998.

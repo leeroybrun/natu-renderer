@@ -269,7 +269,15 @@ public:
 
 		return result;
 	}
+	inline Vector3 Vector3::getRotatedY(float angle) const
+	{
+		
+		const float sinAngle = float(sin(angle));
+		const float cosAngle = float(cos(angle));
+		const float X = x;
 
+		return Vector3(X*cosAngle + z*sinAngle, y,-X*sinAngle + z*cosAngle);
+	}
 
 	inline void Vector3::rotate(float angle, const Vector3& axis)
 	{

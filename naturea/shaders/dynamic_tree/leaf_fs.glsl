@@ -1,5 +1,5 @@
 #version 120
-#define SHADOW_TRESHOLD 0.0001
+#define SHADOW_TRESHOLD 0.0005
 
 uniform sampler2D color_texture;
 uniform sampler2D frontDecalMap;
@@ -11,7 +11,7 @@ uniform sampler2D backNormalMap;
 uniform sampler2D backTranslucencyMap;
 uniform sampler2D backHalfLife2Map;
 uniform sampler2D seasonMap;
-uniform sampler2D shadowMap;
+uniform sampler2DShadow shadowMap;
 uniform int		shadowMappingEnabled;
 varying vec4	lightSpacePosition;
 vec4 lpos;
@@ -73,6 +73,7 @@ vec3			ts_lightDir		= normalize(ts_lightDir_v);
 // Pixel Shaders
 //--------------------------------------------------------------------------------------
 const float infinity = 999999999;
+/*
 float getDepth(vec2 coords){
 	if (clamp(coords.xy, 0.0, 1.0)!= coords.xy){
 		return infinity; // infinity
@@ -84,7 +85,7 @@ float getDepth(vec2 coords){
 	}
 	return depth;
 }
-
+*/
 
 float getRoughness(float cosa, float m)
 {
@@ -159,7 +160,7 @@ float getCookTorranceSpecularity(vec3 light_vector, vec3 view_vector, vec3 norma
 
 
 
-float getModifiedCookTorranceSpecularity(vec3 light_vector, vec3 view_vector, vec3 normal, float refractionindex, float roughness)
+float getModifiedCookTorranceSpecularity(in vec3 light_vector, in vec3 view_vector, in vec3 normal, in float refractionindex, in float roughness)
 {
 	
 	/*
@@ -175,36 +176,48 @@ float getModifiedCookTorranceSpecularity(vec3 light_vector, vec3 view_vector, ve
 
 
 	/*/
-
+	//normal = -normal;
 	float specularity = 0.0;
-	vec3 H = normalize(-light_vector + view_vector);
-	float NdotL = dot(normal, light_vector)*0.5+0.5;
-	float VdotH = max(dot(view_vector, H), 0.00000001);
+	vec3 H = normalize(light_vector + view_vector);
+	float NdotL = dot(normal, light_vector);//*0.5+0.5;
+	float HdotV = max(dot(H,view_vector), 0.00000001);
 	float NdotH = max(dot(normal, H), 0.00000001);
-	
-	float fresnel = getFresnelTerm(refractionindex, VdotH);
+	float NdotV = max(dot(normal, view_vector), 0.00000001);
+	float fresnel = getFresnelTerm(refractionindex, HdotV);
 	
 	
 	float rough = getRoughness(NdotH, roughness);
 		
 	if (NdotL>0.0){	
-		specularity = (rough / NdotL) * fresnel / 3.14;
-/*
+		//specularity = (rough / NdotL) * fresnel / 3.14;
+
 		specularity = (rough / NdotL) *
-			max(0.0, (getShadowingAndMaskingTerm(normal, wHalfAngleDir, view_vector, light_vector) / NdotV) * fresnel / 3.14);
-*/
+			max(0.0, (getShadowingAndMaskingTerm(normal, H, view_vector, light_vector) / NdotV) * fresnel / 3.14);
+
 		specularity = clamp(specularity, 0.0, 1.0);
 	}
 	return specularity; //specularity;
 	
 }
 
+float getShadow(vec2 position, vec2 offset, float depth){
+	return shadow2D(shadowMap, vec3(position+offset*0.001,depth-SHADOW_TRESHOLD)).r; 
+}
 
+float getShadowIntensity(vec4 sm_pos){
+	float res = getShadow(sm_pos.xy, vec2(0.0, 0.0), sm_pos.z) * 2.0;
+	res += getShadow(sm_pos.xy, vec2(1.0, 0.0), sm_pos.z);
+	res += getShadow(sm_pos.xy, vec2(-1.0, 0.0), sm_pos.z);
+	res += getShadow(sm_pos.xy, vec2(0.0, 1.0), sm_pos.z);
+	res += getShadow(sm_pos.xy, vec2(0.0, -1.0), sm_pos.z);
+	return res/5.0;
+}
 
 
 
 void colorize(out vec4 outColor, in vec3 normal, in vec3 tangent, in vec3 bitangent){
-	// Texture lookups.
+	// Texture lookups
+	
 	vec4 decal_color;
 	vec4 normal_color;
 	vec4 translucency_color;
@@ -233,8 +246,8 @@ void colorize(out vec4 outColor, in vec3 normal, in vec3 tangent, in vec3 bitang
 		//other_cpvcolor = IN.color1;
 	}
 	
-	// --- Season color ---
-	vec2 seasonCoord = vec2(0.5, season + 0.2*leafSpecificNumber - 0.0001*time_offset_v);
+	// SEASON COLOR
+	vec2 seasonCoord = vec2(0.5, season + 0.7*leafSpecificNumber - 0.0001*time_offset_v);
 	
 	vec4 seasonColor =  texture2D(seasonMap, seasonCoord);
 	
@@ -247,29 +260,25 @@ void colorize(out vec4 outColor, in vec3 normal, in vec3 tangent, in vec3 bitang
 	decal_color.a *= seasonColor.a;
 	translucency_color.rgb += seasonColor.rgb;
 	translucency_color.rgb *= colorVariance.rgb;
-	// --- END season color ---
-
-
+	// END SEASON COLOR
 	
-	// --- Alpha Testing ---
-
+	// ALPHA TEST
 	if (decal_color.a < 0.5)
 	{
 		discard;
 	}
-    //return;
-	// --- End Alpha Testing ---
+	// END ALPHA TEST
 
 
-	// --- Shadow Mapping ---
+	// SHADOW MAPPING //
+	float shadow_intensity = 1.0;
+	vec3 shadow_color = vec3(0.2, 0.2, 0.2);
+	if (shadowMappingEnabled>0){		
+		shadow_intensity = getShadowIntensity(lightSpacePosition);
+	}
+	// END SHADOW MAPPING //
 
-//	float shadow_intensity;
-//	vec3 shadow_color = getShadowColor(shadow_intensity, IN.shadowmap_lookup);
-	
-	// --- End Shadow Mapping ---
-
-
-	// --- Lighting ---
+	// SHADING
 
 	float translucency;
 	float specularity = 0.0;
@@ -278,12 +287,10 @@ void colorize(out vec4 outColor, in vec3 normal, in vec3 tangent, in vec3 bitang
 	// Calculate tangent space normal.
 	vec3 ts_normal = normalize(normal_color.xyz * 2.0 - 1.0);
 	
-	// Calculate translucency intensity.
-	/*translucency =	dot(ts_lightDir, vec3(-SQRT6, -SQRT2, -SQRT3)) * halflife2_color.x +
-					dot(ts_lightDir, vec3(-SQRT6,  SQRT2, -SQRT3)) * halflife2_color.y +
-					dot(ts_lightDir, vec3( SQRT23,   0.0, -SQRT3)) * halflife2_color.z;
-	translucency = max(translucency, 0.0);
-	*/
+	// Calculate translucency intensity
+
+	vec3 n = ts_normal;
+	vec3 v = ts_viewDir; 
 	if (!gl_FrontFacing)
 	{
 		// Calculate translucency intensity.
@@ -294,12 +301,9 @@ void colorize(out vec4 outColor, in vec3 normal, in vec3 tangent, in vec3 bitang
 		translucency = max(translucency, 0.0);
 		
 		// Calculate specularity.
-		vec3 n = ts_normal;
-		vec3 v = ts_viewDir; 
-
+		
+		ts_lightDir = -ts_lightDir;
 		specularity = getModifiedCookTorranceSpecularity(ts_lightDir, v, n, REF_INDEX, ROUGHNESS);
-		//specularity = getCookTorranceSpecularity(-ts_lightDir, ts_viewDir, ts_normal);
-		//specularity = getPhongSpecularity(-ts_lightDir, ts_viewDir, ts_normal);
 	}
 	else
 	{
@@ -311,37 +315,29 @@ void colorize(out vec4 outColor, in vec3 normal, in vec3 tangent, in vec3 bitang
 
 		// Calculate specularity.
 		specularity = 0.0;//getModifiedCookTorranceSpecularity(IN.direction_to_light, -IN.view_vector, ts_normal, RefractionIndex, Roughness);
-		//specularity = getPhongSpecularity(IN.direction_to_light, -IN.view_vector, ts_normal);
-		
-		ts_normal.z = -ts_normal.z;
+		//ts_normal = -ts_normal;
 	}
 
 	// Calculate diffuse lighting.
-	diffuse_term = max(0.0, dot(-ts_lightDir, ts_normal));
+	diffuse_term = max(0.0, dot(ts_lightDir, ts_normal));
 	diffuse_term = min(diffuse_term, shadow_intensity);
 
-	// --- End Lighting ---
-	
-	
-	// --- Combine terms for final output color ---
-	
-	// Actual diffuse light intensity depends on falloff map.
-
 	// Calculate lighting terms.
-	///specularity = dot(ts_lightDir, ts_normal);
 	
 	vec3 translucency_in_light = translucency * other_cpvcolor.rgb * gl_LightSource[0].diffuse.rgb ;
 
-	vec3 final_translucency = translucency_color.rgb * translucency_in_light * MultiplyTranslucency;// * (shadow_intensity * ReduceTranslucencyInShadow)* MultiplyTranslucency;
+	vec3 final_translucency = translucency_color.rgb * translucency_in_light * MultiplyTranslucency * (shadow_intensity );
 	
-	vec4 final_ambient = decal_color * cpvcolor * gl_LightSource[0].ambient  * MultiplyAmbient;
-	vec4 final_diffuse = decal_color * diffuse_term * gl_FrontLightProduct[0].diffuse * MultiplyDiffuse;
+	vec4 final_ambient = cpvcolor * gl_LightSource[0].ambient  * MultiplyAmbient;
+	vec4 final_diffuse = diffuse_term * gl_FrontLightProduct[0].diffuse * MultiplyDiffuse;
 	
 	vec4 final_specular = specularity * shadow_intensity * gl_FrontLightProduct[0].diffuse * MultiplySpecular;
 	//outColor = vec4(vec3(translucency),1.0);// * final_ambient.rgb + 0.0001*(final_diffuse.rgb + final_specular.rgb + final_translucency);	
-	outColor.rgb = (final_ambient.rgb + final_diffuse.rgb + final_specular.rgb + final_translucency); //
+	outColor.rgb = (decal_color.rgb * (final_ambient.rgb + final_diffuse.rgb) + final_specular.rgb + final_translucency); //
 	//outColor.rgb = final_specular.rgb; 
 	outColor.a = decal_color.a;
+
+	
 }
 
 
@@ -361,29 +357,16 @@ void main()
 	//float control = clamp (1.0 - 2.0*abs(0.25 - transition_control), 0.0,1.0);
 	
 	// TODO: move into vertex shader (no need to compute per pixel...)
-	
+	/*
 	float s = gauss_steep; // steepness
 	float m = gauss_shift; // shift
 	float a = 1.0/(s*sqrt(2.0*3.14159265));
 	float b = m;
 	float c = s;
 	float gaussianCurve = a*exp(-(transition_control-b)*(transition_control-b)/(2*c*c));
-
-	color.rgb = pow(color.rgb, vec3(1.0 + gauss_weight*gaussianCurve));
 	
-	if (shadowMappingEnabled>0){
-		// SHADOW MAPPING //
-		vec4 lpos = (lightSpacePosition/lightSpacePosition.w * 0.5) + vec4(0.5);
-		float depthEye   = lpos.z;
-		float depthLight = getDepth(lpos.xy);
-		
-		float shade = 1.0;
-		if ((depthEye - depthLight) > SHADOW_TRESHOLD){
-			shade = 0.5;
-		}
-		color.rgb *= shade;
-		// END SHADOW MAPPING //
-	}
+	color.rgb = pow(color.rgb, vec3(1.0 + gauss_weight*gaussianCurve));
+	*/
 	gl_FragData[0] = color;
 	//gl_FragData[0] = color;
 	gl_FragData[1] = color * vec4(0.1, 0.1, 0.1, 1.0);

@@ -10,6 +10,8 @@ void main(void)
 	vec3 P = normalize(pos);
 	float PdotL =(0.5 * (dot(P,lig))+0.5);
 
+	//gl_FragData[0] = vec4(1.0,1.0,1.0,1.0);
+	
 	gl_FragData[0] = origColor;
 	//skycolor.a = 0.5;
 	gl_FragData[1] = origColor * origColor * clamp(PdotL*4.0, 0.5, 1.0);

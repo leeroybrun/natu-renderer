@@ -718,7 +718,7 @@ Texture* DTree::createLODdataTexture(vector<Matrix4x4*> &MVPs)
 {
 	int branchCount = branches.size();
 	int sliceCount = MVPs.size();
-	int sliceItems = 7;
+	int sliceItems = 3;
 	int x = 0; // row = branch index
 	int y = 0; // item index + slice index
 	int channels = 4;
@@ -793,54 +793,56 @@ Texture* DTree::createLODdataTexture(vector<Matrix4x4*> &MVPs)
 
 			// save data
 
-			// origin
+			// origin + t
 			item = 0;
 			data[bi*branchOffset + si*sliceOffset + item*channels + 0] = ot.x ;
 			data[bi*branchOffset + si*sliceOffset + item*channels + 1] = ot.y ;
-			data[bi*branchOffset + si*sliceOffset + item*channels + 2] = ot.z ;
-			data[bi*branchOffset + si*sliceOffset + item*channels + 3] = ot.w ;
+			data[bi*branchOffset + si*sliceOffset + item*channels + 2] = branch->motionVectors[branch->level].x ;
+			data[bi*branchOffset + si*sliceOffset + item*channels + 3] = branch->motionVectors[branch->level].y ;
 
-			// t vector
+			// s+t vector
 			item = 1;
-			data[bi*branchOffset + si*sliceOffset + item*channels + 0] = tt.x ;
-			data[bi*branchOffset + si*sliceOffset + item*channels + 1] = tt.y ;
-			data[bi*branchOffset + si*sliceOffset + item*channels + 2] = tt.z ;
-			data[bi*branchOffset + si*sliceOffset + item*channels + 3] = tt.w ;
-
-			// r vector
-			item = 2;
 			data[bi*branchOffset + si*sliceOffset + item*channels + 0] = rt.x ;
 			data[bi*branchOffset + si*sliceOffset + item*channels + 1] = rt.y ;
 			data[bi*branchOffset + si*sliceOffset + item*channels + 2] = rt.z ;
-			data[bi*branchOffset + si*sliceOffset + item*channels + 3] = rt.w ;
+			data[bi*branchOffset + si*sliceOffset + item*channels + 3] = lenght ;
 
-			// s vector
-			item = 3;
+			// length vector + motionVector
+			item = 2;
 			data[bi*branchOffset + si*sliceOffset + item*channels + 0] = st.x ;
 			data[bi*branchOffset + si*sliceOffset + item*channels + 1] = st.y ;
-			data[bi*branchOffset + si*sliceOffset + item*channels + 2] = st.z ;
-			data[bi*branchOffset + si*sliceOffset + item*channels + 3] = st.w ;
+			data[bi*branchOffset + si*sliceOffset + item*channels + 2] = st.z ; ;
+			data[bi*branchOffset + si*sliceOffset + item*channels + 3] = lenght ;
+
+			// motion vectors
+			//item = 3;
+			//data[bi*branchOffset + si*sliceOffset + item*channels + 0] = ;
+			//data[bi*branchOffset + si*sliceOffset + item*channels + 1] = ;
+			//data[bi*branchOffset + si*sliceOffset + item*channels + 2] = lenght ;
+			//data[bi*branchOffset + si*sliceOffset + item*channels + 3] = lenght ;
 
 			// branch lenght
+			/*
 			item = 4;
-			data[bi*branchOffset + si*sliceOffset + item*channels + 0] = lenght ;
-			data[bi*branchOffset + si*sliceOffset + item*channels + 1] = lenght ;
-			data[bi*branchOffset + si*sliceOffset + item*channels + 2] = lenght ;
-			data[bi*branchOffset + si*sliceOffset + item*channels + 3] = lenght ;
+			data[bi*branchOffset + si*sliceOffset + item*channels + 0] = 0.0 ;
+			data[bi*branchOffset + si*sliceOffset + item*channels + 1] = 0.0 ;
+			data[bi*branchOffset + si*sliceOffset + item*channels + 2] = 0.0 ;
+			data[bi*branchOffset + si*sliceOffset + item*channels + 3] = 0.0 ;
 
 			// motion vectors mv0, mv1
 			item = 5;
-			data[bi*branchOffset + si*sliceOffset + item*channels + 0] = branch->motionVectors[0].x ;
-			data[bi*branchOffset + si*sliceOffset + item*channels + 1] = branch->motionVectors[0].y ;
-			data[bi*branchOffset + si*sliceOffset + item*channels + 2] = branch->motionVectors[1].x ;
-			data[bi*branchOffset + si*sliceOffset + item*channels + 3] = branch->motionVectors[1].y ;
+			data[bi*branchOffset + si*sliceOffset + item*channels + 0] = 0.0 ;
+			data[bi*branchOffset + si*sliceOffset + item*channels + 1] = 0.0 ;
+			data[bi*branchOffset + si*sliceOffset + item*channels + 2] = 0.0 ;
+			data[bi*branchOffset + si*sliceOffset + item*channels + 3] = 0.0 ;
 					
 			// motion vectors mv2, mv3
 			item = 6;
-			data[bi*branchOffset + si*sliceOffset + item*channels + 0] = branch->motionVectors[2].x ;
-			data[bi*branchOffset + si*sliceOffset + item*channels + 1] = branch->motionVectors[2].y ;
-			data[bi*branchOffset + si*sliceOffset + item*channels + 2] = branch->motionVectors[3].x ;
-			data[bi*branchOffset + si*sliceOffset + item*channels + 3] = branch->motionVectors[3].y ;
+			data[bi*branchOffset + si*sliceOffset + item*channels + 0] = 0.0 ;
+			data[bi*branchOffset + si*sliceOffset + item*channels + 1] = 0.0 ;
+			data[bi*branchOffset + si*sliceOffset + item*channels + 2] = 0.0 ;
+			data[bi*branchOffset + si*sliceOffset + item*channels + 3] = 0.0 ;
+			*/
 		} // for each branch
 
 
@@ -858,7 +860,6 @@ Texture* DTree::createLODdataTexture(vector<Matrix4x4*> &MVPs)
 		);
 	delete [] data;
 	data = NULL;
-	printf("data tex created: %i \n", dataTex->id);
 	return dataTex;
 }
 
@@ -970,13 +971,16 @@ void DTree::draw_instance_LOD0(DTreeInstanceData * instance, float alpha){
 	//drawNormals(instance);
 	
 	if (g_draw_lod0){
+			// calc relative wind direction
+			wind_relative_direction = instance->wind_dir;
+
 			time_offset = instance->time_offset;
 			glColor4f(1.0,1.0,1.0, alpha);
 		
 			glDisable(GL_CULL_FACE);
 			glPushMatrix();
 			glTranslatef(instance->position.x, instance->position.y, instance->position.z);
-			//glRotatef(instance->rotation_y, 0.0, 1.0, 0.0);
+			glRotatef(instance->rotation_y, 0.0, 1.0, 0.0);
 			glScalef( 10.f , 10.f, 10.f);
 		
 			
@@ -1095,7 +1099,7 @@ void DTree::draw_instance_LOD1(DTreeInstanceData * instance, float alpha){
 					int off = instance->offset*(3*3*4*sizeof(unsigned int));
 					// draw ebo
 					eboLOD1->draw(GL_UNSIGNED_INT, GL_QUADS, 3*3*4, BUFFER_OFFSET(off));  
-
+				
 					// disable all...
 					eboLOD1->unbind();
 					lod1vbo2->unbind(lod1shader_shadow);
@@ -1163,6 +1167,7 @@ void DTree::draw_instance_LOD1(DTreeInstanceData * instance, float alpha){
 					int off = instance->offset*(3*3*4*sizeof(unsigned int));
 					// draw ebo
 					eboLOD1->draw(GL_UNSIGNED_INT, GL_QUADS, 3*3*4, BUFFER_OFFSET(off));  
+
 
 					// disable all...
 					eboLOD1->unbind();
@@ -2683,6 +2688,12 @@ void DTree::draw2(){
 
 void DTree::enqueueInRenderList(DTreeInstanceData * instance){
 	if (instance!=NULL){
+		// calc wind dir;
+		if (g_wind_dirty){
+			instance->wind_dir = g_tree_wind_direction.getRotatedY(-DEG_TO_RAD*(instance->rotation_y+90));
+			//instance->wind_dir = g_tree_wind_direction;//.getRotatedY(-DEG_TO_RAD*instance->rotation_y);
+		}
+
 		int LODindex = 0;
 		if (instance->distance<=g_lodTresholds.x){
 			//	LOD0
@@ -2985,7 +2996,7 @@ void DTree::initLOD0()
 	branchShader->registerUniform("branch_count",			UniformType::F1,	& this->branchCountF);
 	branchShader->registerUniform("time",					UniformType::F1,	& g_float_time);
 	branchShader->registerUniform("time_offset",			UniformType::F1,	& time_offset);	
-	branchShader->registerUniform("wind_direction",			UniformType::F3,	& g_tree_wind_direction.data);
+	branchShader->registerUniform("wind_direction",			UniformType::F3,	& wind_relative_direction.data);
 	branchShader->registerUniform("wind_strength",			UniformType::F1,	& g_tree_wind_strength);
 	branchShader->registerUniform("wood_amplitudes",		UniformType::F4,	& g_tree_wood_amplitudes.data);
 	branchShader->registerUniform("wood_frequencies",		UniformType::F4,	& g_tree_wood_frequencies.data);
@@ -3019,7 +3030,7 @@ void DTree::initLOD0()
 	bLODShader->registerUniform("branch_count",				UniformType::F1,	& this->branchCountF);
 	bLODShader->registerUniform("time",						UniformType::F1,	& g_float_time);
 	bLODShader->registerUniform("time_offset",				UniformType::F1,	& time_offset);
-	bLODShader->registerUniform("wind_direction",			UniformType::F3,	& g_tree_wind_direction.data);
+	bLODShader->registerUniform("wind_direction",			UniformType::F3,	& wind_relative_direction.data);
 	bLODShader->registerUniform("wind_strength",			UniformType::F1,	& g_tree_wind_strength);
 	bLODShader->registerUniform("wood_amplitudes",			UniformType::F4,	& g_tree_wood_amplitudes.data);
 	bLODShader->registerUniform("wood_frequencies",			UniformType::F4,	& g_tree_wood_frequencies.data);
@@ -3031,7 +3042,7 @@ void DTree::initLOD0()
 	leafShader->registerUniform("branch_count",				UniformType::F1,	& this->branchCountF);
 	leafShader->registerUniform("time",						UniformType::F1,	& g_float_time);
 	leafShader->registerUniform("time_offset",				UniformType::F1,	& time_offset);
-	leafShader->registerUniform("wind_direction",			UniformType::F3,	& g_tree_wind_direction.data);
+	leafShader->registerUniform("wind_direction",			UniformType::F3,	& wind_relative_direction.data);
 	leafShader->registerUniform("wind_strength",			UniformType::F1,	& g_tree_wind_strength);
 	leafShader->registerUniform("wood_amplitudes",			UniformType::F4,	& g_tree_wood_amplitudes.data);
 	leafShader->registerUniform("wood_frequencies",			UniformType::F4,	& g_tree_wood_frequencies.data);
@@ -3062,7 +3073,7 @@ void DTree::initLOD0()
 	leafShader_sh->registerUniform("branch_count",				UniformType::F1,	& this->branchCountF);
 	leafShader_sh->registerUniform("time",						UniformType::F1,	& g_float_time);
 	leafShader_sh->registerUniform("time_offset",				UniformType::F1,	& time_offset);
-	leafShader_sh->registerUniform("wind_direction",			UniformType::F3,	& g_tree_wind_direction.data);
+	leafShader_sh->registerUniform("wind_direction",			UniformType::F3,	& wind_relative_direction.data);
 	leafShader_sh->registerUniform("wind_strength",				UniformType::F1,	& g_tree_wind_strength);
 	leafShader_sh->registerUniform("wood_amplitudes",			UniformType::F4,	& g_tree_wood_amplitudes.data);
 	leafShader_sh->registerUniform("wood_frequencies",			UniformType::F4,	& g_tree_wood_frequencies.data);
@@ -3076,7 +3087,7 @@ void DTree::initLOD0()
 	n_leafShader->registerUniform("branch_count",			UniformType::F1,	& this->branchCountF);
 	n_leafShader->registerUniform("time",					UniformType::F1,	& g_float_time);
 	n_leafShader->registerUniform("time_offset",			UniformType::F1,	& time_offset);	
-	n_leafShader->registerUniform("wind_direction",			UniformType::F3,	& g_tree_wind_direction.data);
+	n_leafShader->registerUniform("wind_direction",			UniformType::F3,	& wind_relative_direction.data);
 	n_leafShader->registerUniform("wind_strength",			UniformType::F1,	& g_tree_wind_strength);
 	n_leafShader->registerUniform("wood_amplitudes",		UniformType::F4,	& g_tree_wood_amplitudes.data);
 	n_leafShader->registerUniform("wood_frequencies",		UniformType::F4,	& g_tree_wood_frequencies.data);
@@ -3095,7 +3106,7 @@ void DTree::initLOD0()
 	lLODShader->registerUniform("branch_count",				UniformType::F1,	& this->branchCountF);
 	lLODShader->registerUniform("time",						UniformType::F1,	& g_float_time);
 	lLODShader->registerUniform("time_offset",				UniformType::F1,	& time_offset);	
-	lLODShader->registerUniform("wind_direction",			UniformType::F3,	& g_tree_wind_direction.data);
+	lLODShader->registerUniform("wind_direction",			UniformType::F3,	& wind_relative_direction.data);
 	lLODShader->registerUniform("wind_strength",			UniformType::F1,	& g_tree_wind_strength);
 	lLODShader->registerUniform("wood_amplitudes",			UniformType::F4,	& g_tree_wood_amplitudes.data);
 	lLODShader->registerUniform("wood_frequencies",			UniformType::F4,	& g_tree_wood_frequencies.data);
@@ -3204,7 +3215,6 @@ void DTree::initLOD1()
 
 	// create data texture for slices...
 	SAFE_DELETE_PTR(lod1dataTexture);
-	printf("LOD1 datatexture: ");
 	lod1dataTexture = createLODdataTexture(MVPmatrices);
 
 	for (int t=0; t<3; t++){
@@ -3282,6 +3292,8 @@ void DTree::initLOD1()
 	lod1shader2->registerUniform("wood_frequencies"		, UniformType::F4, & g_tree_wood_frequencies.data	);
 	lod1shader2->registerUniform("leaf_amplitude"		, UniformType::F1, & g_tree_leaf_amplitude			);
 	lod1shader2->registerUniform("leaf_frequency"		, UniformType::F1, & g_tree_leaf_frequency			);
+	lod1shader2->registerUniform("wind_direction"		, UniformType::F3, & g_tree_wind_direction			);
+	lod1shader2->registerUniform("wind_strength"		, UniformType::F1, & g_tree_wind_strength			);
 	//lod1shader2->registerUniform("varA"					, UniformType::F1, & g_varA							);
 	//lod1shader2->registerUniform("scale"				, UniformType::F1, & g_ParallaxScale				);
 	//lod1shader2->registerUniform("bias"					, UniformType::F1, & g_ParallaxBias					);
@@ -3323,7 +3335,8 @@ void DTree::initLOD1()
 	lod1shader_shadow->registerUniform("near"						, UniformType::F1, & g_ShadowNear					);
 	lod1shader_shadow->registerUniform("far"						, UniformType::F1, & g_ShadowFar					);
 	lod1shader_shadow->registerUniform("branch_count"				, UniformType::F1, & this->branchCountF				);
-	
+	lod1shader_shadow->registerUniform("wind_direction"				, UniformType::F3, & g_tree_wind_direction			);
+	lod1shader_shadow->registerUniform("wind_strength"				, UniformType::F1, & g_tree_wind_strength			);
 	iu1Loc1 = lod1shader2->getLocation("u_colorVariance");
 	
 	tmLoc0 = lod1shader2->getAttributeLocation("transformMatrix");
@@ -3380,18 +3393,18 @@ void DTree::initLOD1()
 	normalArr0.push_back(v3( 1.0,  0.0,  0.0));
 	normalArr0.push_back(v3( 1.0,  0.0,  0.0));
 
-	tangentArr0.push_back(v3( 0.0,  0.0,  1.0));
-	tangentArr0.push_back(v3( 0.0,  0.0,  1.0));
-	tangentArr0.push_back(v3( 0.0,  0.0,  1.0));
-	tangentArr0.push_back(v3( 0.0,  0.0,  1.0));
-	tangentArr0.push_back(v3( 0.0,  0.0,  1.0));
-	tangentArr0.push_back(v3( 0.0,  0.0,  1.0));
-	tangentArr0.push_back(v3( 0.0,  0.0,  1.0));
-	tangentArr0.push_back(v3( 0.0,  0.0,  1.0));
-	tangentArr0.push_back(v3( 0.0,  0.0,  1.0));
-	tangentArr0.push_back(v3( 0.0,  0.0,  1.0));
-	tangentArr0.push_back(v3( 0.0,  0.0,  1.0));
-	tangentArr0.push_back(v3( 0.0,  0.0,  1.0));
+	tangentArr0.push_back(v3( 0.0,  0.0,  -1.0));
+	tangentArr0.push_back(v3( 0.0,  0.0,  -1.0));
+	tangentArr0.push_back(v3( 0.0,  0.0,  -1.0));
+	tangentArr0.push_back(v3( 0.0,  0.0,  -1.0));
+	tangentArr0.push_back(v3( 0.0,  0.0,  -1.0));
+	tangentArr0.push_back(v3( 0.0,  0.0,  -1.0));
+	tangentArr0.push_back(v3( 0.0,  0.0,  -1.0));
+	tangentArr0.push_back(v3( 0.0,  0.0,  -1.0));
+	tangentArr0.push_back(v3( 0.0,  0.0,  -1.0));
+	tangentArr0.push_back(v3( 0.0,  0.0,  -1.0));
+	tangentArr0.push_back(v3( 0.0,  0.0,  -1.0));
+	tangentArr0.push_back(v3( 0.0,  0.0,  -1.0));
 	
 	float y_max = 1.0;//0.97; 
 
@@ -4071,7 +4084,7 @@ void DTree::init(){
 				  sinA			,	0			,	cosA	,	0	,
 				  instance->position.x,	instance->position.y, instance->position.z,	1);
 		instance->transformMatrix = matrix; // copy matrix
-
+		//instance->transformMatrix3= m3(matrix);
 		// to be able to determine the proper type to display,
 		// we need to know from which angle we are looking at the geometry
 		// so we precalculate all we can now, to spare time in draw calls
