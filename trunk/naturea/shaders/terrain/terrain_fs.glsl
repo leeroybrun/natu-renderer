@@ -5,7 +5,7 @@
 //==============================================================================
 #define SCALE 1.0
 #define DIST 0.0001
-#define SHADOW_TRESHOLD 0.0001
+#define SHADOW_TRESHOLD 0.001
 
 uniform sampler2D terrain_tex_01;
 uniform sampler2D terrain_tex_02;
@@ -23,7 +23,7 @@ varying float	height;
 //varying float	fogFactor;
 varying vec4	position;
 
-uniform sampler2D shadowMap;
+uniform sampler2DShadow shadowMap;
 varying vec4	lightSpacePosition;
 vec4 lpos;
 varying	vec4	lightProjSpacePosition;
@@ -33,6 +33,7 @@ uniform mat4    LightMVPmatrix;
 uniform int		fastMode;
 
 const float infinity = 999999999;
+/*
 float getDepth(vec2 coords){
 	if (clamp(coords.xy, 0.0, 1.0)!= coords.xy){
 		return infinity; // infinity
@@ -44,7 +45,20 @@ float getDepth(vec2 coords){
 	}
 	return depth;
 }
+*/
 
+float getShadow(vec2 position, vec2 offset, float depth){
+	return shadow2D(shadowMap, vec3(position+offset*0.001,depth-SHADOW_TRESHOLD)).r; 
+}
+
+float getShadowIntensity(vec4 sm_pos){
+	float res = getShadow(sm_pos.xy, vec2(0.0, 0.0), sm_pos.z) * 2.0;
+	res += getShadow(sm_pos.xy, vec2(1.0, 0.0), sm_pos.z);
+	res += getShadow(sm_pos.xy, vec2(-1.0, 0.0), sm_pos.z);
+	res += getShadow(sm_pos.xy, vec2(0.0, 1.0), sm_pos.z);
+	res += getShadow(sm_pos.xy, vec2(0.0, -1.0), sm_pos.z);
+	return res/5.0;
+}
 void main()
 {
 	if (height>visibleHeightInterval.y || height<visibleHeightInterval.x){
@@ -59,9 +73,9 @@ void main()
 		return;
 	}
 	vec3 N = normalize(normal);
-	vec3 L = normalize(gl_LightSource[0].position.xyz);
+	vec3 L = normalize(-gl_LightSource[0].position.xyz);
 	vec3 E = normalize(-eye);
-	vec3 R = normalize(-reflect(L,N));
+	vec3 R = normalize(reflect(L,N));
 
 	float NdotL = max(dot(normalize(N),normalize(L)), 0.0);
 	float RdotE = max(dot(R,E),0.0);
@@ -103,68 +117,21 @@ void main()
 		tex_color2 = texture2D(terrain_tex_05, gl_TexCoord[0].st*SCALE);
 		tex_color = mix(tex_color2, tex_color1, min(max((height - border_values.w)/border_widths.w, 0.0), 1.0));
 	}
-	vec4 color = gl_FrontLightModelProduct.sceneColor + (Ia + Id)*tex_color +Is;
-	
-	if (shadowMappingEnabled>0){
-		// shadow
-		lpos = (lightSpacePosition/lightSpacePosition.w * 0.5) + vec4(0.5);
-		float depthEye  = lpos.z;
-		float depthLight= getDepth( lpos.xy );
-			// lightSpacePosition = LightProjectionMatrix * LightViewModelMatrix * CameraViewInvereseMatrix * gl_ModelViewMatrix * gl_Vertex
-		
-		
-			//float lightDistance = length(lightSpacePosition);
-			//float depthLight  = texture2D(shadowMap, l.xy).a;
-			//float depthDifference = lightDistance - depthLight;
-			/*
-			vec4 L = lightProjSpacePosition;
-			vec4 l = (L/L.w + vec4(1.0,1.0,1.0,0.0))*0.5;
-			float depthCamera = l.z;
-			float depthLight0  = texture(shadowMap, l.xy).r;
-			vec2 coord = l.xy + vec2(DIST, 0.0);
-			float depthLight1 = texture(shadowMap, coord).r;
-			coord = l.xy + vec2(-DIST, 0.0);
-			float depthLight2 = texture(shadowMap, coord).r;
-			coord = l.xy + vec2(0.0, DIST);
-			float depthLight3 = texture(shadowMap, coord).r;
-			coord = l.xy + vec2(0.0, -DIST);
-			float depthLight4 = texture(shadowMap, coord).r;
 
-			float depthDifference = depthCamera - depthLight0;
-			if (depthDifference > 0.001){
-				shade =shade - 0.05;
-			}
-			depthDifference = depthCamera - depthLight1;
-			if (depthDifference > 0.001){
-				shade =shade - 0.05;
-			}
-			depthDifference = depthCamera - depthLight2;
-			if (depthDifference > 0.001){
-				shade =shade - 0.05;
-			}
-			depthDifference = depthCamera - depthLight3;
-			if (depthDifference > 0.001){
-				shade =shade - 0.05;
-			}
-			depthDifference = depthCamera - depthLight4;
-			if (depthDifference > 0.001){
-				shade =shade - 0.05;
-			}
-			*/
-		
-		
-			//shade = depthDifference;
-		//}
-		float shade = 1.0;
-		if ((depthEye - depthLight) > SHADOW_TRESHOLD){
-			shade = 0.5;
-		}
-		color.rgb *= shade;
+	
+	// SHADOW MAPPING //
+	float shadow_intensity = 1.0;
+	if (shadowMappingEnabled>0 && lightSpacePosition.x>0.0 && lightSpacePosition.x<1.0 && lightSpacePosition.y>0.0 && lightSpacePosition.y<1.0){
+		shadow_intensity = getShadowIntensity(lightSpacePosition);
 	}
+	// END SHADOW MAPPING //
+	//vec4 color = gl_FrontLightModelProduct.sceneColor + (Ia + Id*shadow_intensity)*tex_color +Is*shadow_intensity;
+	vec4 color = gl_FrontLightModelProduct.sceneColor + (Ia + Id*shadow_intensity)*tex_color;// +Is*shadow_intensity;
 	
 	//vec4 color = (Ia + Id)*tex_color +Is;
 	//vec4 color = gl_FrontLightModelProduct.sceneColor;// + (Ia + Id)*tex_color +Is;
 	gl_FragData[0] = color;
+	//gl_FragData[0] = vec4(1.0,1.0,1.0,1.0);
 	//gl_FragData[0] = shade * color;// mix(gl_Fog.color, color, fogFactor );
 	gl_FragData[1] = vec4(0.0, 0.0, 0.0, 1.0);
 }

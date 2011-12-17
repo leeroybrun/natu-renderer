@@ -31,6 +31,6 @@ void main()
 	//gl_FragData[1] = vec4(normal*0.5 + vec3(0.5) , 1.0);
 	//gl_FragData[2] = vec4(b0_origin*0.5+vec2(0.5),b1_origin*0.5+vec2(0.5));
 	
-	gl_FragData[2] = vec4(branchID);
+	gl_FragData[2] = vec4(-branchID);
 	//gl_FragData[2] = vec4(normalize(mv_v),b1_origin*0.5+vec2(0.5));
 }

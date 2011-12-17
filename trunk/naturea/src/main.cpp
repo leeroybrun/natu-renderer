@@ -76,6 +76,9 @@ float	g_god_density		= 0.33;
 float	g_god_weight		= 6.0;
 float	g_illuminationDecay	= 3.27;
 
+bool g_wind_dirty			= true;
+v3	 act_wind_val			= v3(1.0, 0.0, 0.0);
+
 
 v4 g_light_position			= LIGHT_POSITION;
 v4 g_light_direction		= LIGHT_DIRECTION;
@@ -156,18 +159,18 @@ float	g_tree_wave_increase_factor = 1.0;
 float	g_tree_time_offset_1	= 0.0;
 float	g_tree_time_offset_2	= 0.5;		
 
-const int	g_tree_gridSize			= 1;			// = SQRT(count of the trees)
-float		g_tree_mean_distance	= 2.0;			// = how dense is the grid
-float		g_tree_dither			= 1.0;			// = how far can be the tree placed from its' position in grid
+const int	g_tree_gridSize			= 2;			// = SQRT(count of the trees)
+float		g_tree_mean_distance	= 8.0;			// = how dense is the grid
+float		g_tree_dither			= 3.0;			// = how far can be the tree placed from its' position in grid
 
 float		g_dither				= 2.0;
 
 int		g_treesamples = 0;
 
 float	g_leaves_MultiplyAmbient			= 1.0;
-float	g_leaves_MultiplyDiffuse			= 0.7;
-float	g_leaves_MultiplySpecular			= 0.3;
-float	g_leaves_MultiplyTranslucency		= 0.6;
+float	g_leaves_MultiplyDiffuse			= 0.9;
+float	g_leaves_MultiplySpecular			= 0.5;
+float	g_leaves_MultiplyTranslucency		= 0.5;
 float	g_leaves_ReduceTranslucencyInShadow	= 0.9;
 float	g_leaves_shadow_intensity			= 1.0;
 v3		g_leaves_LightDiffuseColor			= v3(0.2, 0.2, 0.2);
@@ -242,7 +245,10 @@ void cbDisplay()
 	g_tree_lod1_count = 0;
 	g_tree_lod2_count = 0;
 
-
+	if (!(g_tree_wind_direction == act_wind_val)){
+		g_wind_dirty = true;
+		g_tree_wind_direction = act_wind_val;
+	}
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); 
 
@@ -283,11 +289,18 @@ void cbDisplay()
 		//glGetQueryObjectiv(tqid, GL_QUERY_RESULT_AVAILABLE, &result_available);
 		//printf("avail: %s\n",result_available?"yes":"no");
 	} 
-	glEnable(GL_MULTISAMPLE);
-	//glEnable(GL_SAMPLE_ALPHA_TO_COVERAGE);
-	p_world->draw();
-	//glDisable(GL_SAMPLE_ALPHA_TO_COVERAGE);
-	glDisable(GL_MULTISAMPLE);
+	if (true){
+		//glBindFramebuffer(GL_FRAMEBUFFER, multi_framebuffer);
+		glEnable(GL_MULTISAMPLE);
+		//glEnable(GL_SAMPLE_ALPHA_TO_COVERAGE);
+			p_world->draw();
+		//glDisable(GL_SAMPLE_ALPHA_TO_COVERAGE);
+		glDisable(GL_MULTISAMPLE);
+		//glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	} else {
+		p_world->draw();
+	}
+	
 	// block CPU to measure time here
 	//glFinish();
 	
@@ -310,6 +323,7 @@ void cbDisplay()
 	g_Statistics.primitives = count;
 	}
 	*/
+	g_wind_dirty = false;
 }
 
 void initApp()
@@ -393,7 +407,7 @@ void cbInitGL()
 
 
 	glGetIntegerv(GL_MAX_SAMPLES, &g_multisample_count);
-
+	printf("MS= %i\n", g_multisample_count);
 
 	// init app
 	initApp();
@@ -506,6 +520,17 @@ void TW_CALL cbGetGrassMax(void *value, void *clientData)
 { 
 	*(float *)value = p_world->grass_planter.height_max;  // for instance
 }
+
+void TW_CALL cbSetWindDir(const void *value, void *clientData)
+{ 
+	memcpy( g_tree_wind_direction.data, value, 3*sizeof(float));
+	g_wind_dirty = true;
+}
+void TW_CALL cbGetWindDir(void *value, void *clientData)
+{ 
+	value = & g_tree_wind_direction.data;  // for instance
+}
+
 
 //-----------------------------------------------------------------------------
 // Name: initGUI()
@@ -722,7 +747,8 @@ void initGUI()
 		" label='Show FBOs' group=Debug help='enable/disable FBO display' "); 
 
 
-	TwAddVarRW(controlBar, "wind_direction",  TW_TYPE_DIR3F, & g_tree_wind_direction.data, "group='Tree'");
+	TwAddVarRW(controlBar, "wind_direction",  TW_TYPE_DIR3F, & act_wind_val.data, "group='Tree'");
+	//TwAddVarCB(controlBar, "wind_direction",  TW_TYPE_DIR3F, cbSetWindDir, cbGetWindDir, NULL, " group='Tree'");
 	TwAddVarRW(controlBar, "wind_strength",   TW_TYPE_FLOAT, & g_tree_wind_strength, " group='Tree' min=0 max=5 step=0.01 ");
 	TwAddVarRW(controlBar, "wood0_frequency", TW_TYPE_FLOAT, & g_tree_wood_frequencies.x, " group='Tree' min=0 max=100 step=0.05 ");
 	TwAddVarRW(controlBar, "wood0_amplitude", TW_TYPE_FLOAT, & g_tree_wood_amplitudes.x, " group='Tree' min=0 max=10 step=0.01 ");
@@ -942,6 +968,9 @@ void cbMousePositionChanged(int x, int y)
 //-----------------------------------------------------------------------------
 int main(int argc, char* argv[]) 
 {
+	if (argc>1){
+		g_samples = atoi(argv[1]); // samples requested 
+	}
 	int output = common_main(g_WinWidth, g_WinHeight,
 		"NATUREA diploma thesis project",
 		cbInitGL,              // init GL callback function
@@ -951,11 +980,12 @@ int main(int argc, char* argv[])
 		cbKeyboardChanged,     // keyboard callback function
 #ifdef USE_ANTTWEAKBAR
 		cbMouseButtonChanged,                  // mouse button callback function
-		cbMousePositionChanged                  // mouse motion callback function
+		cbMousePositionChanged,                  // mouse motion callback function
 #else
 		cbMouseButtonChanged,  // mouse button callback function
-		cbMousePositionChanged // mouse motion callback function
+		cbMousePositionChanged, // mouse motion callback function
 #endif
+		&g_samples
 		);
 	//deinitApp();
 

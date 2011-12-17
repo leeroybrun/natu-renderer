@@ -52,6 +52,9 @@ struct Statistics{
 
 };
 static int g_nula = 0;
+
+extern  bool					g_wind_dirty;
+
 extern	int						g_samples;
 extern	int						g_offset;
 extern	float					g_cosA	;

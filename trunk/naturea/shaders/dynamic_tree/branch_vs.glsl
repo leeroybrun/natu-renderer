@@ -25,6 +25,7 @@ uniform vec3			wind_direction;
 uniform float			wind_strength;
 uniform vec4			wood_amplitudes;
 uniform vec4			wood_frequencies;
+uniform mat4			transformMatrix;
 uniform mat4			LightMVPCameraVInverseMatrix;
 varying	vec4			lightSpacePosition;
 
@@ -273,18 +274,19 @@ void main()
 {
 	color		= WHITE;
     vec3 vertex = gl_Vertex.xyz;
-
     animateBranchVertex(vertex);
 	
 	gl_TexCoord[0] = vec4(texCoords0, 0.0, 0.0);
 	
+
 
 	gl_FrontColor = gl_Color;
 	normal_vs  = gl_NormalMatrix * normal_vs;
 	tangent_vs = gl_NormalMatrix * tangent_vs;
 	
 	vPos = gl_ModelViewMatrix * vec4(vertex,1.0);
-	lightSpacePosition = LightMVPCameraVInverseMatrix * vPos;
+	lightSpacePosition = (LightMVPCameraVInverseMatrix * vPos)*0.5 + vec4(0.5);
+
 	
 	//gl_FrontColor = vec4(gl_NormalMatrix * oVec, 1.0);
 

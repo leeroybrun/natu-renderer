@@ -15,11 +15,12 @@ uniform sampler2D		color_texture;
 uniform vec2			window_size;
 
 uniform int		shadowMappingEnabled;
-uniform sampler2D shadowMap;
+uniform sampler2DShadow shadowMap;
 varying vec4	lightSpacePosition;
 vec4 lpos;
 
 const float infinity = 999999999;
+/*
 float getDepth(vec2 coords){
 	if (clamp(coords.xy, 0.0, 1.0)!= coords.xy){
 		return infinity; // infinity
@@ -30,6 +31,19 @@ float getDepth(vec2 coords){
 		return infinity;
 	}
 	return depth;
+}*/
+
+float getShadow(vec2 position, vec2 offset, float depth){
+	return shadow2D(shadowMap, vec3(position+offset*0.001,depth-SHADOW_TRESHOLD)).r; 
+}
+
+float getShadowIntensity(vec4 sm_pos){
+	float res = getShadow(sm_pos.xy, vec2(0.0, 0.0), sm_pos.z) * 2.0;
+	res += getShadow(sm_pos.xy, vec2(1.0, 0.0), sm_pos.z);
+	res += getShadow(sm_pos.xy, vec2(-1.0, 0.0), sm_pos.z);
+	res += getShadow(sm_pos.xy, vec2(0.0, 1.0), sm_pos.z);
+	res += getShadow(sm_pos.xy, vec2(0.0, -1.0), sm_pos.z);
+	return res/5.0;
 }
 
 void main()
@@ -49,24 +63,20 @@ void main()
 	//float NdotL = abs(dot(N, L));
 	float spec = pow( RdotE, h );
 	vec4 texColor = texture2D(color_texture, gl_TexCoord[0].xy);
-	vec4 ambient = gl_LightSource[0].ambient;
-	vec4 diffuse = gl_FrontLightProduct[0].diffuse * NdotL;
-	vec4 specular = gl_FrontLightProduct[0].specular * spec;
-	vec3 color = ((texColor) * (ambient + diffuse) + specular).xyz;
+	
 	//vec3 color = (texColor * diffuse).xyz;
-	if (shadowMappingEnabled>0){
+
 	// SHADOW MAPPING //
-		vec4 lpos = (lightSpacePosition/lightSpacePosition.w * 0.5) + vec4(0.5);
-		float depthEye   = lpos.z;
-		float depthLight = getDepth( lpos.xy );
-		
-		float shade = 1.0;
-		if ((depthEye - depthLight) > SHADOW_TRESHOLD){
-			shade = 0.5;
-		}
-		color.rgb *= shade;
-	// END SHADOW MAPPING //
+	float shadow_intensity = 1.0;
+	if (shadowMappingEnabled>0){
+		shadow_intensity = getShadowIntensity(lightSpacePosition);
 	}
+	// END SHADOW MAPPING //
+	vec4 ambient = gl_LightSource[0].ambient;
+	vec4 diffuse = gl_FrontLightProduct[0].diffuse * NdotL * shadow_intensity;
+	vec4 specular = gl_FrontLightProduct[0].specular * spec * shadow_intensity;
+	vec3 color = ((texColor) * (ambient + diffuse) + specular).xyz;
+
 	//gl_FragData[0] = vec4(vec3(shade), 1.0);
 	gl_FragData[0] = vec4(color, gl_Color.a);
 	//gl_FragData[1] = color * vec4(0.5, 0.5, 0.5, 1.0);
