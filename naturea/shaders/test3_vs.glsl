@@ -52,7 +52,7 @@ void main()
 		// drawing instances
 		colorVar		= colorVariance.rgb;
 		time_offset_v	= colorVariance.a;
-		mv_time = 0.01 * (time+time_offset_v);
+		mv_time			= 0.01 * (time+time_offset_v);
 		
 		pos			=  ( gl_Vertex * vec4(10.0, 10.0, 10.0, 1.0));	
 		//pos.xz		+= texCoords0.y * amplitude * wood_amplitudes.x * (texture2D(branch_noise_tex, 0.01 * pos.xz + mv1 * mv_time * wood_frequencies.x).xy*2.0-vec2(1.0));
@@ -97,7 +97,8 @@ void main()
 	sliceDesc		= sliceDescription;
 	gl_TexCoord[0]	= vec4(texCoords0, 0.0, 0.0);
 	
-	lightSpacePosition = LightMVPCameraVInverseMatrix * pos;
+	lightSpacePosition = (LightMVPCameraVInverseMatrix * pos);
+	lightSpacePosition = (lightSpacePosition/lightSpacePosition.w * 0.5) + vec4(0.5);
 	
 	//alpha = clamp(-3.0+5.0*abs(dot(normalize(normalDir.xz), normalize(eyeDir.xz))), 0.0, 1.0);	
 	alpha =clamp(-0.5 + 2.0*abs(dot(normalize(normalDir), normalize(eyeDir))), 0.0, gl_Color.a);

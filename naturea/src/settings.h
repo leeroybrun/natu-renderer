@@ -227,6 +227,7 @@ namespace DYN_TREE
 		WEIGHT,
 		COUNT
 	};
+	
 	const static float	MIN_HEIGHT		= 3.f;
 	const static float	MAX_HEIGHT		= 10.f;
 

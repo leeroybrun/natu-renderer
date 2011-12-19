@@ -18,6 +18,12 @@ enum CameraMode{
 	TERRAIN_CONNECTED,
 	WALK
 };
+enum Sorting{
+		SORT_FRONT_TO_BACK,
+		SORT_BACK_TO_FRONT,
+		DO_NOT_SORT
+};
+
 
 enum LODTransitionMethod{
 	HARD_SWITCH,
@@ -205,4 +211,6 @@ extern float	g_CameraNear;
 extern float	g_CameraFar ;
 
 extern float	g_dither;
+
+extern Sorting	g_sorting;
 #endif
