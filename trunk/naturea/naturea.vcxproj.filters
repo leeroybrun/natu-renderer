@@ -211,6 +211,9 @@
     <ClInclude Include="common\GL\glut.h">
       <Filter>includes\GL</Filter>
     </ClInclude>
+    <ClInclude Include="src\scene\vegetation\dynamic\DTreePlanter.h">
+      <Filter>Scene\Vegetation\dynamic</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Scene">
@@ -435,6 +438,9 @@
     </ClCompile>
     <ClCompile Include="src\utility\Sound.cpp">
       <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\scene\vegetation\dynamic\DTreePlanter.cpp">
+      <Filter>Scene\Vegetation\dynamic</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

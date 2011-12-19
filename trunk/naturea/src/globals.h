@@ -135,6 +135,8 @@ extern v4		g_tree_wood_amplitudes;
 extern v4		g_tree_wood_frequencies;
 extern float	g_tree_leaf_amplitude;
 extern float	g_tree_leaf_frequency;
+extern float	g_dtreemin;
+extern float	g_dtreemax;
 
 /**********************************************
 * LOD TREE

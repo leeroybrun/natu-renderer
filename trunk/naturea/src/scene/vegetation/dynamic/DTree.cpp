@@ -46,6 +46,9 @@ DTree::DTree(TextureManager *texManager, ShaderManager *shManager):Vegetation(te
 	lod2depth1				= NULL;
 	lod2depth2				= NULL;
 	ctr	=0;
+
+	i_matricesBuffID		= 0;
+	instancesLocked			= false;
 }					
 DTree::DTree(DTree* copy):
 Vegetation(copy->textureManager, copy->shaderManager)
@@ -2113,279 +2116,6 @@ void DTree::drawNormals(DTreeInstanceData* instance){
 	glEnable(GL_CULL_FACE);
 }
 
-void DTree::draw(){
-	/*
-	if (g_draw_lod1_method){
-		drawLOD1b();
-		return;
-	}
-	for (int i = 0; i < tree_instances.size(); i++){
-		// determine LOD configuration
-		position = tree_instances[i]->position;
-		rotationY= tree_instances[i]->rotation_y;
-		glPushMatrix();
-			glTranslate(position);
-			glRotatef(rotationY, 0.0, 1.0 ,0.0);
-			glScalef(10.0, 10.0, 10.0);
-			drawLOD1();
-		glPopMatrix();
-	} // for each position
-	return;
-	// sort positions depending on the distance
-	/*
-	vector<DTreeInstanceDrawData*> lod0;
-
-	vector<DTreeInstanceDrawData*> lod1;
-
-	vector<DTreeInstanceDrawData*> lod2;
-	*/
-	/*
-	if (tree_instances.size()>1){
-		DTreeInstanceData* act = tree_instances[0];
-		DTreeInstanceData* toDraw;
-		float toDraw_dist = 0.0;
-		float act_dist	= act->position.distanceTo(*viewer_position);
-		for (int i=1; i<tree_instances.size(); i++){
-			//v4* act			= tree_instances[i-1];
-			DTreeInstanceData* next		= tree_instances[i];
-			//float act_dist	= act	->distanceTo(*viewer_position);
-			float next_dist	= next->position.distanceTo(*viewer_position);
-
-			if (act_dist < next_dist){
-				// swap 
-				tree_instances[i-1]	= next;
-				tree_instances[i]	= act;
-				toDraw				= next;
-				toDraw_dist			= next_dist;
-			} else {
-				// 
-				toDraw		= act;
-				toDraw_dist = act_dist;
-				act			= next;
-				act_dist	= next_dist;
-			}
-			toDraw->index = i-1;
-			// draw the rigth LOD
-			alpha_c = 1.0;
-			// if LOD vorbidden
-			if (!g_draw_dtree_lod){
-				drawLOD0();
-				return;
-			}
-			// TODO: check if is in front of camera...
-
-			float alpha=0.0;
-			
-			// manage array of LOD0, LOD1, and LODs in transition: LOD0_LOD1...
-
-			if (act_dist >= g_lodTresholds.w){
-				alpha_c = 1.0;
-
-				//lod2.push_back(drawData;
-
-
-				drawLOD2();
-			} else if (act_dist >= g_lodTresholds.z){
-				alpha = (act_dist - g_lodTresholds.z) / (g_lodTresholds.w - g_lodTresholds.z);
-			
-				// // show LOD 1
-				// 	alpha_c = 1.0-alpha;
-				// 	drawLOD1();
-				// 	glDepthMask(GL_FALSE);				
-				// 	// show LOD 2 
-				// 	alpha_c = alpha;
-				// 	drawLOD2();
-				// 	glDepthMask(GL_TRUE);
-			
-			
-				if (alpha<0.5){
-					// show LOD 1
-					alpha_c = 1.0;
-					drawLOD1();
-					glDepthMask(GL_FALSE);
-					// show LOD 2 
-					alpha_c = 2*alpha;
-					drawLOD2();
-					glDepthMask(GL_TRUE);
-
-				} else {
-					// show LOD 2 
-					alpha_c = 1.0;
-					drawLOD2();
-					// show LOD 1 
-					glDepthMask(GL_FALSE);
-					alpha_c = 2*(1-alpha);
-					drawLOD1();
-					glDepthMask(GL_TRUE);
-				
-				}
-			
-			} else if (act_dist >= g_lodTresholds.y){
-				alpha_c = 1.0;
-				drawLOD1();
-			} else if (act_dist >=g_lodTresholds.x){
-				alpha = (act_dist - g_lodTresholds.x) / (g_lodTresholds.y - g_lodTresholds.x);
-			
-				//glColor4f(0.0, 0.0, 0.0, 1.0-alpha);
-				//	drawLOD0();
-				//	glDepthMask(GL_FALSE);
-				//	// show LOD 1 
-				//	glColor4f(0.0, 0.0, 0.0, alpha);
-				//	drawLOD1();
-				//	glDepthMask(GL_TRUE);
-			
-				if (alpha<0.5){
-					// show LOD 0
-					alpha_c = 1.0;
-					drawLOD0();
-					glDepthMask(GL_FALSE);
-					// show LOD 1 
-					alpha_c = 2*alpha;
-					drawLOD1();
-					glDepthMask(GL_TRUE);
-				} else {
-					// show LOD 0
-					glDepthMask(GL_FALSE);
-					alpha_c = 2*(1-alpha);
-					drawLOD0();
-					glDepthMask(GL_TRUE);
-					// show LOD 1 
-					alpha_c = 1.0;
-					drawLOD1();				
-				}
-			
-			} else {
-				alpha_c = 1.0;
-				drawLOD0();
-			}
-
-
-		} // for
-	} // if positions > 1
-
-
-
-	alpha_c = 1.0;
-
-	if (!g_draw_dtree_lod){
-		drawLOD0();
-		return;
-	}
-	*/
-	// get distance to viewer
-	v3		toViewDir = *viewer_position - position;
-	float distance = toViewDir.length();
-	toViewDir.normalize();
-	float discrepacy = toViewDir.dot(*viewer_direction);
-	//v4 lodTresholds = v4 (12.0, 13.0, 50.0, 55.0);
-	//v4 g_lodTresholds = v4 (15.0, 18.0, 50.0, 55.0);
-	if (discrepacy<0.0){ // if is infront of the camera
-
-		float alpha=0.0;
-		
-		if (distance >= g_lodTresholds.w){
-			alpha_c = 1.0;
-			//drawLOD2();
-		} else if (distance >= g_lodTresholds.z){
-			alpha = (distance - g_lodTresholds.z) / (g_lodTresholds.w - g_lodTresholds.z);
-			g_tree_lod1_count++;
-			/*
-			// // show LOD 1
-			// 	alpha_c = 1.0-alpha;
-			// 	drawLOD1();
-			// 	glDepthMask(GL_FALSE);				
-			// 	// show LOD 2 
-			// 	alpha_c = alpha;
-			// 	drawLOD2();
-			// 	glDepthMask(GL_TRUE);
-			
-			
-			if (alpha<0.5){
-				// show LOD 1
-				alpha_c = 1.0;
-				drawLOD1();
-				glDepthMask(GL_FALSE);
-				// show LOD 2 
-				alpha_c = 2*alpha;
-				drawLOD2();
-				glDepthMask(GL_TRUE);
-				
-			} else {
-				// show LOD 2 
-				alpha_c = 1.0;
-				drawLOD2();
-				// show LOD 1 
-				glDepthMask(GL_FALSE);
-				alpha_c = 2*(1-alpha);
-				drawLOD1();
-				glDepthMask(GL_TRUE);
-				
-			}
-			*/
-		} else if (distance >=g_lodTresholds.y){
-			alpha_c = 1.0;
-			drawLOD1();
-		} else if (distance >=g_lodTresholds.x){
-			alpha = (distance - g_lodTresholds.x) / (g_lodTresholds.y - g_lodTresholds.x);
-			g_tree_lod0_count++;
-			/*
-			if (alpha<0.5){
-				alpha_c = 1.0 - alpha;
-				drawLOD0();
-				//glDepthMask(GL_FALSE);
-				// show LOD 1 
-				alpha_c = alpha;
-				drawLOD1();
-				//glDepthMask(GL_TRUE);
-			} else {
-					
-				// show LOD 0
-				glDepthMask(GL_FALSE);
-				alpha_c = 1.0-alpha;
-				drawLOD0();
-				glDepthMask(GL_TRUE);
-				// show LOD 1 
-				alpha_c = alpha;
-				drawLOD1();	
-				
-			}
-
-			//glColor4f(0.0, 0.0, 0.0, 1.0-alpha);
-			//	drawLOD0();
-			//	glDepthMask(GL_FALSE);
-			//	// show LOD 1 
-			//	glColor4f(0.0, 0.0, 0.0, alpha);
-			//	drawLOD1();
-			//	glDepthMask(GL_TRUE);
-			/*/
-			if (alpha<0.5){
-				// show LOD 0
-				alpha_c = 1.0;
-				drawLOD0();
-				glDepthMask(GL_FALSE);
-				// show LOD 1 
-				alpha_c = 2*alpha;
-				drawLOD1();
-				glDepthMask(GL_TRUE);
-			} else {
-				// show LOD 0
-				glDepthMask(GL_FALSE);
-				alpha_c = 2*(1-alpha);
-				drawLOD0();
-				glDepthMask(GL_TRUE);
-				// show LOD 1 
-				alpha_c = 1.0;
-				drawLOD1();				
-			}
-		
-		} else {
-			alpha_c = 1.0;
-			drawLOD0();
-		}
-
-	} // if in front of camera plane
-}
-
 void DTree::prepareForRender(){
 	countRenderQueues[0] = 0;
 	countRenderQueues[1] = 0;
@@ -2637,9 +2367,6 @@ void DTree::makeTransition(float control, bool maskOld, DTreeInstanceData* insta
 
 
 void DTree::render(){
-
-
-
 	int i;
 	DTreeInstanceData* instance;
 	// render LOD2 instances
@@ -2681,9 +2408,11 @@ void DTree::render(){
 	g_tree_lod2_count	= countRenderQueues[4];
 }
 
-void DTree::draw2(){
-	//prepareForRender();
-	render();	
+void DTree::draw(){
+	if (!instancesLocked){
+		//prepareForRender();
+		render();	
+	}
 }
 
 void DTree::enqueueInRenderList(DTreeInstanceData * instance){
@@ -4049,15 +3778,63 @@ void DTree::initLOD2()
 	lod2ebo->create(GL_UNSIGNED_INT, GL_QUADS, iCnt, ebo_data, GL_STATIC_DRAW);
 
 }
-
+/*
 void DTree::setInstances(v4 ** p_r, int c){
 	positions_rotations = p_r;
 	count = c;
-}
+}*/
+void DTree::initInstances(vector<v4> &positions_rotations){
+	// clear instances
+	instancesLocked = true;
+	count = positions_rotations.size();
+	
+	int i;
 
-void DTree::init(){
-	swapCnt = 0;
+	for (i = 0; i<tree_instances.size(); i++){
+		SAFE_DELETE_ARRAY_PTR(tree_instances[i]);
+	}
+	tree_instances.clear();
+	for (i = 0; i<lod2_instanceMatrices.size(); i++){
+		SAFE_DELETE_ARRAY_PTR(lod2_instanceMatrices[i]);
+		lod2_instanceMatrices[i]=new float[ instanceFloatCount * count];
+	}
+	
+	//lod2_instanceMatrices.clear();
+	
+	for (i = 0; i<lod1_instanceMatrices.size(); i++){
+		SAFE_DELETE_ARRAY_PTR(lod1_instanceMatrices[i]);
+		lod1_instanceMatrices[i]=new float[ instanceFloatCount * count];
+	}
+	
+	//lod1_instanceMatrices.clear();
+	
+	
+	for (i = 0; i<instancesInRenderQueues.size(); i++){
+		SAFE_DELETE_ARRAY_PTR(instancesInRenderQueues[i]);
+		instancesInRenderQueues[i]=new DTreeInstanceData * [count];
+	}
+	
+	int k = instancesInRenderQueues.size();
+	// init instances
 	instanceFloatCount = 20;
+	if (k<1){
+		// first run
+		// init instance matrices
+		// LOD2
+		lod2_instanceMatrices.push_back( new float[ instanceFloatCount * count]);	// A
+		lod2_instanceMatrices.push_back( new float[ instanceFloatCount * count]);	// B
+		// LOD1
+		lod1_instanceMatrices.push_back( new float[ instanceFloatCount * count]);	// A
+		lod1_instanceMatrices.push_back( new float[ instanceFloatCount * count]);	// B
+		lod1_instanceMatrices.push_back( new float[ instanceFloatCount * count]);	// C
+		instancesInRenderQueues.push_back ( new DTreeInstanceData * [count] );		// LOD0
+		instancesInRenderQueues.push_back ( new DTreeInstanceData * [count] );		// LOD0-LOD1
+		instancesInRenderQueues.push_back ( new DTreeInstanceData * [count] );		// LOD1
+		instancesInRenderQueues.push_back ( new DTreeInstanceData * [count] );		// LOD1-LOD2
+		instancesInRenderQueues.push_back ( new DTreeInstanceData * [count] );		// LOD2
+	}
+
+	
 	/*****
 	* LOD1 is made of 3 slice sets... due to blending problems we need to 
 	* switch the rendering order of the sliceSets -> there are 3 types of
@@ -4065,13 +3842,11 @@ void DTree::init(){
 	*/
 	// init instances
 	DTreeInstanceData * instance;
-	v4 * pos_rot;
 	float cosA, sinA;
-	for (int i=0; i< count; i++){
-		pos_rot = positions_rotations[i];
+	for (i=0; i< count; i++){
 		instance = new DTreeInstanceData();
-		instance->position	= pos_rot->xyz();
-		instance->rotation_y= pos_rot->w;
+		instance->position	= positions_rotations[i].xyz();
+		instance->rotation_y= positions_rotations[i].w;
 		instance->index = i;
 		cosA = cos(DEG_TO_RAD*instance->rotation_y);
 		sinA = sin(DEG_TO_RAD*instance->rotation_y);
@@ -4088,7 +3863,7 @@ void DTree::init(){
 		// to be able to determine the proper type to display,
 		// we need to know from which angle we are looking at the geometry
 		// so we precalculate all we can now, to spare time in draw calls
-		instance->dirA = v3( -1.0, 0.0, 0.0).getRotated( instance->rotation_y*DEG_TO_RAD, v3(0.0, 1.0, 0.0));	// A									// A
+		instance->dirA = v3( -1.0, 0.0, 0.0).getRotated( instance->rotation_y*DEG_TO_RAD, v3(0.0, 1.0, 0.0));	// A
 		instance->dirB = instance->dirA.getRotated( 60 * DEG_TO_RAD, v3(0.0, 1.0, 0.0));				// B
 
 		// add some instance attributes
@@ -4099,19 +3874,20 @@ void DTree::init(){
 		instance->index = i;
 		tree_instances.push_back(instance);
 	}
-	// init instance matrices
-	// LOD2
-	lod2_instanceMatrices.push_back( new float[ instanceFloatCount * count]);	// A
-	lod2_instanceMatrices.push_back( new float[ instanceFloatCount * count]);	// B
-	// LOD1
-	lod1_instanceMatrices.push_back( new float[ instanceFloatCount * count]);	// A
-	lod1_instanceMatrices.push_back( new float[ instanceFloatCount * count]);	// B
-	lod1_instanceMatrices.push_back( new float[ instanceFloatCount * count]);	// C
-	instancesInRenderQueues.push_back ( new DTreeInstanceData * [count] );		// LOD0
-	instancesInRenderQueues.push_back ( new DTreeInstanceData * [count] );		// LOD0-LOD1
-	instancesInRenderQueues.push_back ( new DTreeInstanceData * [count] );		// LOD1
-	instancesInRenderQueues.push_back ( new DTreeInstanceData * [count] );		// LOD1-LOD2
-	instancesInRenderQueues.push_back ( new DTreeInstanceData * [count] );		// LOD2
+	
+	// init instance matrices VBO
+	if (i_matricesBuffID>0){
+		glDeleteBuffers(1, &i_matricesBuffID);
+	}
+	glGenBuffers(1, &i_matricesBuffID);
+	glBindBuffer(GL_ARRAY_BUFFER, i_matricesBuffID);
+		// load data
+		glBufferData(GL_ARRAY_BUFFER, count * instanceFloatCount* sizeof(float), NULL, GL_STREAM_DRAW);  
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	instancesLocked = false;	
+}
+void DTree::init(){
+	// COUNT INDEPENDENT
 	countRenderQueues.push_back(0);							// LOD0
 	countRenderQueues.push_back(0);							// LOD0-LOD1
 	countRenderQueues.push_back(0);							// LOD1
@@ -4129,16 +3905,6 @@ void DTree::init(){
 	initLOD0();
 	initLOD1();
 	initLOD2();
-	
-	
-	
-	// init instance matrices VBO
-	i_matricesBuffID = 0;
-	glGenBuffers(1, &i_matricesBuffID);
-	glBindBuffer(GL_ARRAY_BUFFER, i_matricesBuffID);
-		// load data
-		glBufferData(GL_ARRAY_BUFFER, count * instanceFloatCount* sizeof(float), NULL, GL_STREAM_DRAW);  
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 /*
 void DTree::init(){
