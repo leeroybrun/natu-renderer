@@ -1149,9 +1149,9 @@ void DTree::draw_instance_LOD1(DTreeInstanceData * instance, float alpha){
 				jDepthMap			->bind(GL_TEXTURE7);				
 				lod1dataTexture		->bind(GL_TEXTURE8);
 				lod1shader2->use(true);
-			//
-			//
-			//
+			
+			
+			
 			//lod1shader2->setTexture(l2_season	, seasonMap				->textureUnitNumber	);
 			//
 			//lod1shader2->setTexture(l2_color	, jColorMap				->textureUnitNumber	);
@@ -1260,12 +1260,13 @@ void DTree::draw_all_instances_LOD1(){
 			
 				for (int i=0; i<lod1_instanceMatrices.size(); i++){
 					// transfer data to buffer
-					glBufferData(GL_ARRAY_BUFFER, lod1_typeIndices[i] * instanceFloatCount * sizeof(float), lod1_instanceMatrices[i], GL_STREAM_DRAW);
-					int off = i*(3*3*4*sizeof(unsigned int));
-					void * offset = BUFFER_OFFSET(off);
-					// draw instanced
-					eboLOD1->drawInstanced(GL_QUADS, 3*3*4, GL_UNSIGNED_INT, offset, lod1_typeIndices[i]);  
-
+					if (lod1_typeIndices[i]>0){
+						glBufferData(GL_ARRAY_BUFFER, lod1_typeIndices[i] * instanceFloatCount * sizeof(float), lod1_instanceMatrices[i], GL_STREAM_DRAW);
+						int off = i*(3*3*4*sizeof(unsigned int));
+						void * offset = BUFFER_OFFSET(off);
+						// draw instanced
+						eboLOD1->drawInstanced(GL_QUADS, 3*3*4, GL_UNSIGNED_INT, offset, lod1_typeIndices[i]);  
+					}
 				} // for each configuration
 			
 				glVertexAttribDivisor(tmLoc0_shadow, 0);
@@ -1358,12 +1359,13 @@ void DTree::draw_all_instances_LOD1(){
 			
 				for (int i=0; i<lod1_instanceMatrices.size(); i++){
 					// transfer data to buffer
-					glBufferData(GL_ARRAY_BUFFER, lod1_typeIndices[i] * instanceFloatCount * sizeof(float), lod1_instanceMatrices[i], GL_STREAM_DRAW);
-					int off = i*(3*3*4*sizeof(unsigned int));
-					void * offset = BUFFER_OFFSET(off);
-					// draw instanced
-					eboLOD1->drawInstanced(GL_QUADS, 3*3*4, GL_UNSIGNED_INT, offset, lod1_typeIndices[i]);  
-
+					if (lod1_typeIndices[i]>0){
+						glBufferData(GL_ARRAY_BUFFER, lod1_typeIndices[i] * instanceFloatCount * sizeof(float), lod1_instanceMatrices[i], GL_STREAM_DRAW);
+						int off = i*(3*3*4*sizeof(unsigned int));
+						void * offset = BUFFER_OFFSET(off);
+						// draw instanced
+						eboLOD1->drawInstanced(GL_QUADS, 3*3*4, GL_UNSIGNED_INT, offset, lod1_typeIndices[i]);  
+					}
 				} // for each configuration
 			
 				glVertexAttribDivisor(tmLoc0, 0);
@@ -1575,13 +1577,14 @@ void DTree::draw_all_instances_LOD2(){
 				int size = lod2_instanceMatrices.size();
 
 				for (int i=0; i<size; i++){
-					// transfer data to buffer
-					glBufferData(GL_ARRAY_BUFFER, lod2_typeIndices[i] * instanceFloatCount * sizeof(float), lod2_instanceMatrices[i], GL_STREAM_DRAW);
-					int off = i*(2*4*sizeof(unsigned int));
-					void * offset = BUFFER_OFFSET(off);
-					// draw instanced
-					lod2ebo->drawInstanced(GL_QUADS, 2*4, GL_UNSIGNED_INT, offset, lod2_typeIndices[i]);  
-
+					if (lod2_typeIndices[i]>0){
+						// transfer data to buffer
+						glBufferData(GL_ARRAY_BUFFER, lod2_typeIndices[i] * instanceFloatCount * sizeof(float), lod2_instanceMatrices[i], GL_STREAM_DRAW);
+						int off = i*(2*4*sizeof(unsigned int));
+						void * offset = BUFFER_OFFSET(off);
+						// draw instanced
+						lod2ebo->drawInstanced(GL_QUADS, 2*4, GL_UNSIGNED_INT, offset, lod2_typeIndices[i]);  
+					}
 				} // for each configuration
 				glVertexAttribDivisor(ia2Loc1_shadow, 0);
 				glVertexAttribDivisor(tm2Loc0_shadow, 0);
@@ -1673,13 +1676,14 @@ void DTree::draw_all_instances_LOD2(){
 				glVertexAttribDivisor(ia2Loc1, 1);
 				int size = lod2_instanceMatrices.size();
 				for (int i=0; i<size; i++){
-					// transfer data to buffer
-					glBufferData(GL_ARRAY_BUFFER, lod2_typeIndices[i] * instanceFloatCount * sizeof(float), lod2_instanceMatrices[i], GL_STREAM_DRAW);
-					int off = i*(2*4*sizeof(unsigned int));
-					void * offset = BUFFER_OFFSET(off);
-					// draw instanced
-					lod2ebo->drawInstanced(GL_QUADS, 2*4, GL_UNSIGNED_INT, offset, lod2_typeIndices[i]);  
-
+					if (lod2_typeIndices[i]>0){
+						// transfer data to buffer
+						glBufferData(GL_ARRAY_BUFFER, lod2_typeIndices[i] * instanceFloatCount * sizeof(float), lod2_instanceMatrices[i], GL_STREAM_DRAW);
+						int off = i*(2*4*sizeof(unsigned int));
+						void * offset = BUFFER_OFFSET(off);
+						// draw instanced
+						lod2ebo->drawInstanced(GL_QUADS, 2*4, GL_UNSIGNED_INT, offset, lod2_typeIndices[i]);  
+					}
 				} // for each configuration
 				glVertexAttribDivisor(ia2Loc1, 0);
 				glVertexAttribDivisor(tm2Loc0, 0);
@@ -2150,7 +2154,19 @@ void DTree::prepareForRender(){
 		next_instance->distance= next_instance->eye_dir.length();
 		next_instance->eye_dir.normalize();
 		next_instance->discrepacy = g_viewer_direction->dot(next_instance->eye_dir);
-		if (next_instance->distance > act_instance->distance){
+		bool swap;
+		switch (g_sorting){
+			case SORT_FRONT_TO_BACK:
+				swap = next_instance->distance < act_instance->distance;
+			break;
+			case SORT_BACK_TO_FRONT:
+				swap = next_instance->distance > act_instance->distance;
+			break;
+			default:
+				swap = false;
+		}
+		
+		if (swap){
 			// swap
 			tree_instances[i-1]	= next_instance;
 			tree_instances[i-1]	->index = i-1;
@@ -2410,7 +2426,7 @@ void DTree::render(){
 
 void DTree::draw(){
 	if (!instancesLocked){
-		//prepareForRender();
+		prepareForRender();
 		render();	
 	}
 }

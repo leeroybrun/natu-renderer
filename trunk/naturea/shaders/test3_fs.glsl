@@ -1,5 +1,6 @@
 #version 120
 #define SHADOW_TRESHOLD 0.0001
+#define ALPHA_TRESHOLD 0.5
 #define ONE2    vec2(1.0,1.0)
 #define EPSILON 0.0001
 #define EPSILONVEC vec2(EPSILON, EPSILON)
@@ -145,10 +146,12 @@ vec2 convert2TexCoords(in vec2 sliceCoords){
 void	main()
 {	
 
-	if (gl_Color.a<=0.01){discard;}
+	if (gl_Color.a==0.0){discard;}
 	vec4 color = vec4(0.0, 0.0, 0.0, 0.0);
+	vec3 cVar;
 	vec4 seasonColor = vec4(0.0, 0.0, 0.0, 0.0);
 	vec4 normal;
+	float leaf = 0.0;
 	vec2 newPos;
 	float mv_time = (time+time_offset_v) * 0.01;
 	// get frag position
@@ -173,43 +176,81 @@ void	main()
 	// is it a leaf-fragment? yes -> can animate leaf
 	newPos = convert2TexCoords(position);
 	bool isLeaf = sign(texture2D(dataMap, newPos).r)>=0.0;
-	fpos+time*movVectorA
-	fpos+time*movVectorB
+	int front = -1;
+	if (gl_FrontFacing){
+		front = 1;
+	}
+	float NdotL;
 	if (isLeaf){
 		// leaf
 
 		// distort...
-		vec2 texCoordA = tpos+time*movVectorA;
-		vec2 texCoordA = tpos+time*movVectorB;
+		vec2 texCoordA = tpos+leaf_frequency*mv_time*movementVectorA*2.0;
+		vec2 texCoordB = tpos+leaf_frequency*mv_time*movementVectorB*2.0;
 
-		vec2 noise = leaf_amplitude*((texture2D(leaf_noise_tex, texCoordB).st + texture2D(leaf_noise_tex, texCoordA).st) - ONE2);
-		vec2 newPosD = convert2TexCoords(position + noise);
+		vec2 noise = ((texture2D(leaf_noise_tex, texCoordB).st + texture2D(leaf_noise_tex, texCoordA).st) - ONE2);
+		vec2 newPosD = convert2TexCoords(position + leaf_amplitude*0.005*noise);
 		// is the source fragment from branch? if so use original coords...
 		if(sign(texture2D(dataMap, newPosD).r)>=0.0){
 			newPos = newPosD;
 		}
 		color += texture2D(colorMap, newPos);
-
-		normal = texture2D(normalMap, newPos);
-		leaf = (1.0/(1.0-0.004))*(normal.w-0.004);
-		vec2 seasonCoord = vec2(0.5, season + 0.2*leaf - 0.0001*time_offset_v);
-		vec4 seasonColor = texture2D(seasonMap, seasonCoord);
-		if (seasonColor.a<0.75){
+		if (color.a<ALPHA_TRESHOLD){
 			discard;
 		}
+		normal = texture2D(normalMap, newPos);
+		float leaf = (1.0/(1.0-0.004))*(normal.w-0.004);
+		vec2 seasonCoord = vec2(0.5, season + 0.2*leaf - 0.0001*time_offset_v);		
+		seasonColor = texture2D(seasonMap, seasonCoord);
+		if (seasonColor.a<0.5){
+			discard;
+		}
+		cVar = colorVar;
+		//normal = vec4(0.0,0.0,1.0, 0.0);
+		normal = -front*normal;
+
+
+
 	} else {
 		//branch
-		colorVar = vec3(1.0, 1.0, 1.0);
+		color += texture2D(colorMap, newPos);
+		if (color.a<ALPHA_TRESHOLD){
+			discard;
+		}
+		cVar = vec3(1.0, 1.0, 1.0);
 		normal = texture2D(normalMap, newPos);
+		//normal = vec4(0.0,0.0,1.0, 0.0);
+		normal.z = -front*normal.z;
 	}
-	color += texture2D(colorMap, newPos);
+	NdotL = dot ( normalize ( normal.xyz ) , normalize ( lightDir_ts ));
+	// SHADOW MAPPING //
+	float shade = 1.0;
+	if (shadowMappingEnabled>0){
+		float depth_tex = texture2D(depthMap, newPos).x;
+		float depthEye   = lightSpacePosition.z;
+		float depthLight = getDepth( lightSpacePosition.xy );
+		// offset camera depth
+		float remapFactor = 1.0 / (far-near);
+		float offset = (depth_tex*2.0 - 1.0)*0.33333333*remapFactor;
+
+		// perspective
+		//offset = ((-2.0*near*far/(offset*(near-far))) + 1.0);
+
+		depthEye += -front*offset;
+		if ((depthEye - depthLight) > SHADOW_TRESHOLD){
+			shade = 0.0;
+		}
+	}
+	// SHADOW MAPPING END //	
 	color.rgb += seasonColor.rgb;
-	color.rgb *= colorVar;
-
-
-
-
-
+	color.rgb *= cVar;
+	vec3 ambient = color.rgb * gl_LightSource[0].ambient.xyz * MultiplyAmbient;
+	vec3 diffuse = color.rgb * gl_FrontLightProduct[0].diffuse.xyz * clamp(NdotL, 0.0, 1.0) * MultiplyDiffuse * shade;
+	//vec3 specular= ;
+	vec3 translucency= color.rgb * clamp(-NdotL, 0.0, 1.0) * 1.5 * MultiplyTranslucency * shade;
+	color.rgb = ambient + diffuse + translucency;
+	//color.rgb = diffuse;
+	
 	color.a *= gl_Color.a;
 	gl_FragData[0] = color;
 	gl_FragData[1] = color * vec4(0.1, 0.1, 0.1, 1.0);

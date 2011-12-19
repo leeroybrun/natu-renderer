@@ -52,6 +52,8 @@ float g_dtreemax = DYN_TREE::MAX_HEIGHT;
 #include "World.h"
 #include "globals.h"
 
+Sorting g_sorting			= SORT_BACK_TO_FRONT;
+
 CameraMode g_cameraMode		= TERRAIN_RESTRICTED;
 int g_WinWidth				= 1280;//800	;   // Window width
 int g_WinHeight				= 720; //600;   // Window height
@@ -126,7 +128,7 @@ bool     g_FaceNormals          = false; // Show face normal
 bool     g_Transparency         = false; // Draw transparent meshes
 bool     g_WireMode             = false; // Wire mode enabled/disabled
 bool     g_FaceCulling          = true; // Face culling enabled/disabled
-GLfloat  g_AlphaThreshold       = 0.01f; // Alpha test threshold
+GLfloat  g_AlphaThreshold       = 0.5f; // Alpha test threshold
 bool	 g_MouseModeANT			= true;
 
 bool	g_draw_dtree_lod		= true;
@@ -294,11 +296,11 @@ void cbDisplay()
 	} 
 	if (true){
 		//glBindFramebuffer(GL_FRAMEBUFFER, multi_framebuffer);
-		glEnable(GL_MULTISAMPLE);
-		glEnable(GL_SAMPLE_ALPHA_TO_COVERAGE);
+		//glEnable(GL_MULTISAMPLE);
+		//glEnable(GL_SAMPLE_ALPHA_TO_COVERAGE);
 			p_world->draw();
-		glDisable(GL_SAMPLE_ALPHA_TO_COVERAGE);
-		glDisable(GL_MULTISAMPLE);
+		//glDisable(GL_SAMPLE_ALPHA_TO_COVERAGE);
+		//glDisable(GL_MULTISAMPLE);
 		//glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	} else {
 		p_world->draw();
@@ -985,6 +987,8 @@ int main(int argc, char* argv[])
 {
 	if (argc>1){
 		g_samples = atoi(argv[1]); // samples requested 
+	} else {
+		g_samples = 1;
 	}
 	int output = common_main(g_WinWidth, g_WinHeight,
 		"NATUREA diploma thesis project",

@@ -179,8 +179,11 @@ int common_main(int window_width, int window_height,
 		printf("WARNING: Requested multisampling with %i samples, but maximum available is %i. Using available.\n", *samples, max_samples);
 		*samples = max_samples;
    }
-   printf("Using %i multisampling.\n", *samples);
-   glfwOpenWindowHint(GLFW_FSAA_SAMPLES, *samples);
+  if (*samples > 1){
+	 printf("Using %i multisampling.\n", *samples);
+   
+	 glfwOpenWindowHint(GLFW_FSAA_SAMPLES, *samples);
+   }
    glfwOpenWindow(window_width, window_height, 0, 0, 0, 0, 32, 0, GLFW_WINDOW);
    glfwSetWindowTitle(window_title);
    glfwSetWindowPos(100, 50);
