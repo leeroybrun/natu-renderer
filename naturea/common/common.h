@@ -180,7 +180,6 @@ int common_main(int window_width, int window_height,
 		*samples = max_samples;
    }
    printf("Using %i multisampling.\n", *samples);
-		system("PAUSE");
    glfwOpenWindowHint(GLFW_FSAA_SAMPLES, *samples);
    glfwOpenWindow(window_width, window_height, 0, 0, 0, 0, 32, 0, GLFW_WINDOW);
    glfwSetWindowTitle(window_title);

@@ -43,6 +43,9 @@ float tree1min = TREE1_MIN_HEIGHT;
 float tree1max = TREE1_MAX_HEIGHT;
 float grassmin = GRASS_MIN_HEIGHT;
 float grassmax = GRASS_MAX_HEIGHT;
+float g_dtreemin = DYN_TREE::MIN_HEIGHT;
+float g_dtreemax = DYN_TREE::MAX_HEIGHT;
+
 
 #include <assert.h>
 #include "../common/models/cube.h"
@@ -101,7 +104,7 @@ int g_slice_count			= 3;
 int	g_GrassCount			= GRASS_COUNT;
 int	g_Tree1Count			= TREE1_COUNT;
 int	g_Tree2Count			= TREE2_COUNT;
-
+int g_TreeDCount			= 1;
 // GLOBAL CONSTANTS____________________________________________________________
 const GLfloat VECTOR_RENDER_SCALE = 0.20f;
 // GLOBAL VARIABLES____________________________________________________________
@@ -292,9 +295,9 @@ void cbDisplay()
 	if (true){
 		//glBindFramebuffer(GL_FRAMEBUFFER, multi_framebuffer);
 		glEnable(GL_MULTISAMPLE);
-		//glEnable(GL_SAMPLE_ALPHA_TO_COVERAGE);
+		glEnable(GL_SAMPLE_ALPHA_TO_COVERAGE);
 			p_world->draw();
-		//glDisable(GL_SAMPLE_ALPHA_TO_COVERAGE);
+		glDisable(GL_SAMPLE_ALPHA_TO_COVERAGE);
 		glDisable(GL_MULTISAMPLE);
 		//glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	} else {
@@ -426,6 +429,18 @@ void TW_CALL cbMakeSlices(void* clientData)
 {
 	p_world->snapTree(g_snapshot_direction);
 } 
+
+void TW_CALL cbSetDTreeCount(const void *value, void *clientData)
+{ 
+	g_TreeDCount = *(const int*)value; // for instance
+	p_world->dtree_planter.setInstanceCount(g_TreeDCount);
+	//p_world->treeD_planter.plantVegetationCount(g_TreeDCount);
+}
+void TW_CALL cbGetDTreeCount(void *value, void *clientData)
+{ 
+	*(int *)value = p_world->dtree_planter.count; // for instance
+}
+
 
 void TW_CALL cbSetTree2Count(const void *value, void *clientData)
 { 
@@ -771,7 +786,7 @@ void initGUI()
 
 	// TwAddVarRW(controlBar, "slice_count", TW_TYPE_INT32, & g_tree_slice_count, " group='Tree' min=0 max=10 step=1 ");
 
-
+	TwAddVarCB(controlBar, "Dynamic Tree count", TW_TYPE_INT32, cbSetDTreeCount, cbGetDTreeCount, NULL, " group='Vegetation' min=0 max=10000 step=1 ");
 	TwAddVarCB(controlBar, "Tree 2 count", TW_TYPE_INT32, cbSetTree2Count, cbGetTree2Count, NULL, " group='Vegetation' min=0 max=10000 step=1 ");
 	TwAddVarCB(controlBar, "Tree 1 count", TW_TYPE_INT32, cbSetTree1Count, cbGetTree1Count, NULL, " group='Vegetation' min=0 max=10000 step=1 ");
 	TwAddVarCB(controlBar, "Grass count", TW_TYPE_INT32, cbSetGrassCount, cbGetGrassCount, NULL, " group='Vegetation' min=0 max=100000 step=1 ");

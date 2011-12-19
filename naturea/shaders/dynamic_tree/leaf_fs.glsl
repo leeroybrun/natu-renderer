@@ -247,7 +247,7 @@ void colorize(out vec4 outColor, in vec3 normal, in vec3 tangent, in vec3 bitang
 	}
 	
 	// SEASON COLOR
-	vec2 seasonCoord = vec2(0.5, season + 0.7*leafSpecificNumber - 0.0001*time_offset_v);
+	vec2 seasonCoord = vec2(0.5, season + 0.2*leafSpecificNumber - 0.0001*time_offset_v);
 	
 	vec4 seasonColor =  texture2D(seasonMap, seasonCoord);
 	

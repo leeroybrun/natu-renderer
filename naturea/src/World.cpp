@@ -241,7 +241,7 @@ void World::drawWithAlpha(){
 		p_tree1_growth->draw();
 		p_tree2_growth->draw();
 	}
-	p_dtree->draw2();
+	p_dtree->draw();
 	
 }
 
@@ -298,7 +298,7 @@ void World::drawForShadowmapping()
 	
 	// draw models with alpha
 
-	p_dtree->draw2();
+	p_dtree->draw();
 
 
 
@@ -437,65 +437,27 @@ void World::init()
 						100 );
  	count = tree2_planter.plantVegetationCount(g_Tree2Count);
 	printf("count: %i\n", count);
-	
-	
-	
-	
+
+//===============================================================================
+// TREE INIT
+//===============================================================================
 	printf("---- DYNAMIC TREE INIT BEGIN");
 	p_dtree = new DTree(&textureManager, &shaderManager);
 		p_dtree->loadOBJT( DYN_TREE::OBJT_FILENAME );
 		//p_dtree->init();
 		p_dtree->viewer_direction = &p_activeCamera->direction;
 		p_dtree->viewer_position = &p_activeCamera->position;
-	printf("----- END DYNAMIC TREE INIT ");
-	
-//===============================================================================
-// TEST OBJECT INIT
-//===============================================================================
+
 	// positions
+		dtree_planter.init(p_terrain, p_dtree);
+		dtree_planter.createCandidates(g_dtreemin, g_dtreemax, g_tree_dither, g_tree_mean_distance);
+		dtree_planter.setInstanceCount(10);
 	
-	tree_positions = new v4*[g_tree_gridSize*g_tree_gridSize];
-	
-	float x,y,xt,yt,z,r;
-	float diff = g_tree_dither;
-	int instance_index = 0;
-	//float centerOffsetX = g_tree_gridSize/2;
-	float centerOffsetY = g_tree_gridSize/2;
-
-	float centerOffsetX = 0.0;
-	//float centerOffsetY = 0.0;
-
-	for (int i=0; i<g_tree_gridSize; i++){
-		for (int j=0; j<g_tree_gridSize; j++){
-
-			x = (i - centerOffsetX)*g_tree_mean_distance + randomf(-diff, diff);
-			z = (j - centerOffsetY)*g_tree_mean_distance + randomf(-diff, diff);
-			
-			//r = 0.0;
-			r = randomf(-180, 180);
-			xt = x + p_terrain->sz_x/2.0;
-			yt = z + p_terrain->sz_y/2.0;
-			y = p_terrain->getHeightAt(xt,yt);
-			tree_positions[i*g_tree_gridSize + j] = new v4(x,y,z,r);
-			//DTreeInstanceData * idata = new DTreeInstanceData();
-			//idata->alpha = 1.0;
-			//idata->index = instance_index;
-			//instance_index++;
-			//idata->position = v3(x,y,z);
-			//idata->rotation_y = r;
-			//p_dtree->tree_instances.push_back( idata );
-		}
-	}
-	p_dtree->setInstances(tree_positions,g_tree_gridSize*g_tree_gridSize);
 	p_dtree->init(); 
-	/*
-	
-	p_test_model = new TestModel();
-	p_test_model->terrain = p_terrain;
-	p_test_model->camera = p_activeCamera;
-	p_test_model->init();
-	
-	*/
+	printf("----- END DYNAMIC TREE INIT ");
+//===============================================================================
+// END TREE INIT 
+//===============================================================================
 
 	// SOUNDs
 	printf("Starting sound... \n");

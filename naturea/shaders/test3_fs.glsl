@@ -138,17 +138,18 @@ void animateBranch(inout vec2 position, in float bid, in float time, in float of
 	position = position - ( fu.x * r.xy + fu.y * s.xy - (corr_r+corr_s) );
 }
 
+vec2 convert2TexCoords(in vec2 sliceCoords){
+	return (clamp ( sliceCoords  , vec2(0.0, 0.0), ONE2 ) + sliceDesc) / vec2(sliceCnt,sliceSetsCnt);
+}
+
 void	main()
 {	
 
 	if (gl_Color.a<=0.01){discard;}
-
-
 	vec4 color = vec4(0.0, 0.0, 0.0, 0.0);
-	float sls = show_sliceSet;
-	float sl = show_slice;
-	//if (sliceDesc.x!=sl || sliceDesc.y!=sls){discard;}
-
+	vec4 seasonColor = vec4(0.0, 0.0, 0.0, 0.0);
+	vec4 normal;
+	vec2 newPos;
 	float mv_time = (time+time_offset_v) * 0.01;
 	// get frag position
 	vec2 position = gl_TexCoord[0].st;
@@ -166,107 +167,54 @@ void	main()
 	}
 	// animate trunk
 	animateBranch(position, 0.0, mv_time, offset, texCol, wood_amplitudes.x, wood_frequencies.x, v_wind_dir_ts, wind_strength);
-	
-	vec2 newPos;
 	if (position.y>1.0){
 		discard;
 	}
-	vec2 p = clamp ( position  , vec2(0.0, 0.0), vec2(1.0, 1.0) );// + sliceDesc ) / vec2(sliceCnt,sliceSetsCnt);
-	newPos = (p + sliceDesc) / vec2(sliceCnt,sliceSetsCnt);
-
-	color += texture2D(colorMap, newPos);
-	if (color.a<0.5){discard;}
-	float newBranchFlag = sign(texture2D(dataMap, newPos).r);
-	if (newBranchFlag>=0.0){
+	// is it a leaf-fragment? yes -> can animate leaf
+	newPos = convert2TexCoords(position);
+	bool isLeaf = sign(texture2D(dataMap, newPos).r)>=0.0;
+	fpos+time*movVectorA
+	fpos+time*movVectorB
+	if (isLeaf){
 		// leaf
-		vec2 seasonCoord = vec2(0.5, season - 0.0001*time_offset_v);
+
+		// distort...
+		vec2 texCoordA = tpos+time*movVectorA;
+		vec2 texCoordA = tpos+time*movVectorB;
+
+		vec2 noise = leaf_amplitude*((texture2D(leaf_noise_tex, texCoordB).st + texture2D(leaf_noise_tex, texCoordA).st) - ONE2);
+		vec2 newPosD = convert2TexCoords(position + noise);
+		// is the source fragment from branch? if so use original coords...
+		if(sign(texture2D(dataMap, newPosD).r)>=0.0){
+			newPos = newPosD;
+		}
+		color += texture2D(colorMap, newPos);
+
+		normal = texture2D(normalMap, newPos);
+		leaf = (1.0/(1.0-0.004))*(normal.w-0.004);
+		vec2 seasonCoord = vec2(0.5, season + 0.2*leaf - 0.0001*time_offset_v);
 		vec4 seasonColor = texture2D(seasonMap, seasonCoord);
-		if (seasonColor.a<0.5){
+		if (seasonColor.a<0.75){
 			discard;
 		}
-		color.rgb += seasonColor.rgb;
-		color.rgb *= colorVar;
+	} else {
+		//branch
+		colorVar = vec3(1.0, 1.0, 1.0);
+		normal = texture2D(normalMap, newPos);
 	}
-	//color  = texture2D(lod_data_tex, position);
-	//color.rgb = color.rgb*x_val;
+	color += texture2D(colorMap, newPos);
+	color.rgb += seasonColor.rgb;
+	color.rgb *= colorVar;
+
+
+
+
+
 	color.a *= gl_Color.a;
 	gl_FragData[0] = color;
 	gl_FragData[1] = color * vec4(0.1, 0.1, 0.1, 1.0);
 
-	/*
-
-	vec3 eyeDir_ts2 = normalize(eyeDir_ts);
-	float sizeFactor = 1.5/max(window_size.x, window_size.y);
-
-	float dist = gl_FragCoord.z;
-	float inv_dist = 1.0/dist;
-	//float t			= 10.0*(time+time_offset_v)*leaf_frequency*sizeFactor;
 	
-	vec2 movVectorA = movementVectorA;
-	vec2 movVectorB = movementVectorB;
-
-	
-
-	vec2 texC		= gl_TexCoord[0].st;
-	vec2 fpos		= clamp ( texC + sliceDesc , sliceDesc, sliceDesc+vec2(1.0, 1.0) ) / vec2(sliceCnt,sliceSetsCnt);
-	
-	vec2 mv1 = texture2D(dataMap, fpos).xy*2.0 - vec2(1.0);
-	vec2 amp1 = wood_amplitudes.y * ( texture2D(branch_noise_tex, mv1 * mv_time * wood_frequencies.y).rg  * 2.0 - vec2(1.0));
-
-
-	vec2 texCoordA	= fpos+mv_time*movVectorA;
-	vec2 texCoordB	= fpos+mv_time*movVectorB; // gl_TexCoord[0].st+t*movVectorB;
-	
-	vec2 oneV2 = vec2(1.0);
-	vec2 b0 = vec2(0.5,0.0);
-	vec2 b1 = texture2D(dataMap, fpos).zw;
-
-	float dist0 = min (1.0, 2.0 * length(texC - b0)) ; // / branchProjectedLength
-	float dist1 = min (1.0, 5.0 * length(texC - b1)); // / branchProjectedLength
-
-	vec4 color;
-	float angle;
-	float cosA;
-	float sinA;
-	vec2  difVec;
-	mat2 R;
-	vec2 rotatedDifVec;
-	vec2 newPos = texC;
-	*/
-	
-	/*
-	float ti = (time+time_offset_v)*sizeFactor*10.0;
-	vec2 si = sizeFactor* 100.0 * wood_amplitudes.xy;
-	float d = length(b1-vec2(0.5));
-
-	if ((d>0.01)){
-		//angle = dist1 * (amp1.x+amp1.y) * sizeFactor * 200;
-		angle = dist1*(texture2D(branch_noise_tex, (ti * b1 * wood_frequencies.y)).s*2.0 - 1.0)  * si.y * 2.0;
-		//angle = (texture2D(branch_noise_tex, (ti * b1 * wood_frequencies.y)).s*2.0 - 1.0) * si.y;
-		
-		cosA = cos (angle); 
-		sinA = sin (angle);
-		difVec = (newPos - b1);
-		R = mat2(	 cosA	, sinA,
- 					-sinA	, cosA );
-		rotatedDifVec = R*difVec;
-		newPos = b1 + rotatedDifVec;
-	}
-	
-	angle = dist0 * (texture2D(branch_noise_tex, (ti * b0 * wood_frequencies.x)).s*2.0-1.0) * si.x * 0.5;
-	cosA = cos (angle); 
-	sinA = sin (angle);
-	difVec = (newPos - b0);
-	R = mat2(	 cosA	, sinA,
- 				-sinA	, cosA );
-	rotatedDifVec = R*difVec;
-	newPos = b0 + rotatedDifVec;
-	*/
-	
-
-
-	// bending done...
-
 	
 }
 

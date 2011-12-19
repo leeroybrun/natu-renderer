@@ -25,6 +25,7 @@
 #include "scene\Vegetation\static\Tree2.h"
 #include "scene\Vegetation\Planter.h"
 #include "scene\Vegetation\dynamic\DTree.h"
+#include "scene\Vegetation\dynamic\DTreePlanter.h"
 
 class World
 {
@@ -93,7 +94,7 @@ public:
 	Planter				grass_planter;
 	Planter				tree1_planter;
 	Planter				tree2_planter;
-
+	DTreePlanter		dtree_planter;
 private:
 	void				drawWithAlpha();
 	GLuint				fb_LOD_ID;

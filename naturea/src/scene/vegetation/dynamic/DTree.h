@@ -127,15 +127,14 @@ public:
 	//Texture * renderToTexture()
 
 	Vegetation* getCopy();
-
-	void draw2();
+	void draw();
 	void draw_instance_LOD0(DTreeInstanceData * instance, float alpha);
 	void draw_instance_LOD1(DTreeInstanceData * instance, float alpha);
 	void draw_all_instances_LOD1();
 	void draw_instance_LOD2(DTreeInstanceData * instance, float alpha);
 	void draw_all_instances_LOD2();
 
-	void draw();
+	
 	void drawForLOD();
 	void drawLOD0();
 	void drawLOD1();
@@ -144,6 +143,7 @@ public:
 	void draw2Shadowmap();
 
 	void init();
+	void initInstances(vector<v4> &positions_rotations);
 
 	void setInstances(v4 ** positions_rotations, int count);
 	void initLOD0();
@@ -183,7 +183,8 @@ public:
 
 private:
 	// INSTANCES
-	v4**				positions_rotations;
+	bool				instancesLocked;
+	//v4**				positions_rotations;
 	int					count;
 	// INSTANCES END
 
