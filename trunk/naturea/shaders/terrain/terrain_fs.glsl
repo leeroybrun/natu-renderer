@@ -5,7 +5,7 @@
 //==============================================================================
 #define SCALE 1.0
 #define DIST 0.0001
-#define SHADOW_TRESHOLD 0.001
+#define SHADOW_TRESHOLD 0.01
 
 uniform sampler2D terrain_tex_01;
 uniform sampler2D terrain_tex_02;
@@ -23,7 +23,7 @@ varying float	height;
 //varying float	fogFactor;
 varying vec4	position;
 
-uniform sampler2DShadow shadowMap;
+uniform sampler2DMS shadowMap;
 varying vec4	lightSpacePosition;
 vec4 lpos;
 varying	vec4	lightProjSpacePosition;
@@ -38,7 +38,6 @@ float getDepth(vec2 coords){
 	if (clamp(coords.xy, 0.0, 1.0)!= coords.xy){
 		return infinity; // infinity
 	}
-
 	float depth =  texture2D(shadowMap, coords.xy).x;
 	if (depth>=1.0){
 		return infinity;
@@ -46,18 +45,34 @@ float getDepth(vec2 coords){
 	return depth;
 }
 */
-
+uniform vec2	shadowmap_size;
+uniform int		samples;
 float getShadow(vec2 position, vec2 offset, float depth){
-	return shadow2D(shadowMap, vec3(position+offset*0.001,depth-SHADOW_TRESHOLD)).r; 
+	float shade = 0.0;
+	float lightDepth;
+	ivec2 p= (position+offset*0.001)*shadowmap_size;
+	for (int i=0; i<samples; i++){
+		lightDepth = texelFetch(shadowMap, p, i).r;
+		if (lightDepth<depth){
+			shade+=1.0;
+		}
+	}
+	return shade / samples;
 }
+/*
+float getShadow(vec2 position, vec2 offset, float depth){
+
+	return shadow2D(shadowMap, vec3(position+offset*0.001,depth)).r; 
+}*/
 
 float getShadowIntensity(vec4 sm_pos){
+	sm_pos -= SHADOW_TRESHOLD;
 	float res = getShadow(sm_pos.xy, vec2(0.0, 0.0), sm_pos.z) * 2.0;
 	res += getShadow(sm_pos.xy, vec2(1.0, 0.0), sm_pos.z);
 	res += getShadow(sm_pos.xy, vec2(-1.0, 0.0), sm_pos.z);
 	res += getShadow(sm_pos.xy, vec2(0.0, 1.0), sm_pos.z);
 	res += getShadow(sm_pos.xy, vec2(0.0, -1.0), sm_pos.z);
-	return res/5.0;
+	return 1.0 - res/6.0;
 }
 void main()
 {

@@ -37,12 +37,12 @@ void DTreePlanter::createCandidates(
 	float centerOffsetX = size_grid_x/2;
 	float centerOffsetY = size_grid_y/2;
 	int i,j;
-	float x,y,xt,yt,z,r;
+	float x,y,xt,yt,z,r=0.0;
 	for (i=0; i<size_grid_x; i++){
 		for (j=0; j<size_grid_y; j++){
 			x = (i - centerOffsetX)*g_tree_mean_distance + randomf(-dither, dither);
 			z = (j - centerOffsetY)*g_tree_mean_distance + randomf(-dither, dither);
-			r = randomf(-180, 180);
+			//r = randomf(-180, 180);
 			xt = x + terrain->sz_x/2.0;
 			yt = z + terrain->sz_y/2.0;
 			y = terrain->getHeightAt(xt,yt);

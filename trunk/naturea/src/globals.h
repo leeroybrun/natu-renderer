@@ -59,6 +59,8 @@ struct Statistics{
 };
 static int g_nula = 0;
 
+extern	v3						g_ShadowMapSize;
+extern	int						g_shadowMapSamples;
 extern  bool					g_wind_dirty;
 
 extern	int						g_samples;

@@ -3,11 +3,13 @@
 
 Texture::Texture(void)
 {
+	type = GL_TEXTURE_2D;
 	id = 0;
 	textureUnitNumber = 0;
 }
 Texture::Texture(string _inShaderName)
 {
+	type = GL_TEXTURE_2D;
 	id =0;
 	inShaderName = _inShaderName;
 	textureUnitNumber = 0;
@@ -15,6 +17,7 @@ Texture::Texture(string _inShaderName)
 
 Texture::Texture(GLuint _texType, GLuint _inFormat, GLenum _dataFormat, GLenum _dataType, GLvoid * _data, GLsizei _width, GLsizei _height, string _inShaderName)
 {
+	type = GL_TEXTURE_2D;
 	inShaderName = _inShaderName;
 	textureUnitNumber = 0;
 	dataFormat = _dataFormat;
@@ -40,15 +43,15 @@ Texture::~Texture(void)
 
 void Texture::setParameterI(GLenum paramName, GLint paramValue )
 {
-	glBindTexture(GL_TEXTURE_2D, id);
-		glTexParameteri(GL_TEXTURE_2D, paramName, paramValue);
-	glBindTexture(GL_TEXTURE_2D, 0);
+	glBindTexture(type, id);
+		glTexParameteri(type, paramName, paramValue);
+	glBindTexture(type, 0);
 }
 void Texture::setParameterF(GLenum paramName, GLfloat paramValue )
 {
-	glBindTexture(GL_TEXTURE_2D, id);
-		glTexParameterf(GL_TEXTURE_2D, paramName, paramValue);
-	glBindTexture(GL_TEXTURE_2D, 0);
+	glBindTexture(type, id);
+		glTexParameterf(type, paramName, paramValue);
+	glBindTexture(type, 0);
 
 }
 
@@ -74,7 +77,7 @@ void Texture::show(GLint x,GLint y, GLsizei width, GLsizei height, bool depthtes
 	
 	
 	glActiveTexture(textureUnit);
-	glBindTexture(GL_TEXTURE_2D, id);
+	glBindTexture(type, id);
 	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_NONE);
 	glColor4f(1.f,1.f,1.f,1.f);
 
@@ -119,7 +122,6 @@ void Texture::deactivate()
 
 bool Texture::load(string filename, bool buildMipmaps, bool makeFloat,  GLint wrapMode, GLint magFilter, GLint minFilter )
 {
-	GLint type = GL_TEXTURE_2D;
 	vector<unsigned char> buffer;
 	vector<unsigned char> image;
 	LodePNG::loadFile(buffer, filename); //load the image file with given filename
@@ -209,55 +211,56 @@ void Texture::load(string filename, GLint unitNumber, bool buildMipmaps, GLint w
 		unsigned char * data = png.getData();
 		// generate
 		glGenTextures(1, &id);
-		glBindTexture(GL_TEXTURE_2D, id);
+		glBindTexture(type, id);
 		if (buildMipmaps){
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrapMode);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrapMode);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filterMode);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-			gluBuild2DMipmaps(GL_TEXTURE_2D, GL_RGBA, width, height, GL_RGBA, GL_UNSIGNED_BYTE, data);
+			glTexParameteri(type, GL_TEXTURE_WRAP_S, wrapMode);
+			glTexParameteri(type, GL_TEXTURE_WRAP_T, wrapMode);
+			glTexParameteri(type, GL_TEXTURE_MAG_FILTER, filterMode);
+			glTexParameteri(type, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+			gluBuild2DMipmaps(type, GL_RGBA, width, height, GL_RGBA, GL_UNSIGNED_BYTE, data);
 		} else {
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrapMode);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrapMode);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filterMode);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filterMode);
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+			glTexParameteri(type, GL_TEXTURE_WRAP_S, wrapMode);
+			glTexParameteri(type, GL_TEXTURE_WRAP_T, wrapMode);
+			glTexParameteri(type, GL_TEXTURE_MAG_FILTER, filterMode);
+			glTexParameteri(type, GL_TEXTURE_MIN_FILTER, filterMode);
+			glTexImage2D(type, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
 		}
 	} else {
 		// float
 		float * data = png.getFloatData();
 		// generate
 		glGenTextures(1, &id);
-		glBindTexture(GL_TEXTURE_2D, id);
+		glBindTexture(type, id);
 		if (buildMipmaps){
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrapMode);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrapMode);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filterMode);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-			gluBuild2DMipmaps(GL_TEXTURE_2D, GL_RGBA32F, width, height, GL_RGBA, GL_FLOAT, data);
+			glTexParameteri(type, GL_TEXTURE_WRAP_S, wrapMode);
+			glTexParameteri(type, GL_TEXTURE_WRAP_T, wrapMode);
+			glTexParameteri(type, GL_TEXTURE_MAG_FILTER, filterMode);
+			glTexParameteri(type, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+			gluBuild2DMipmaps(type, GL_RGBA32F, width, height, GL_RGBA, GL_FLOAT, data);
 		} else {
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrapMode);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrapMode);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filterMode);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filterMode);
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, width, height, 0, GL_RGBA, GL_FLOAT, data);
+			glTexParameteri(type, GL_TEXTURE_WRAP_S, wrapMode);
+			glTexParameteri(type, GL_TEXTURE_WRAP_T, wrapMode);
+			glTexParameteri(type, GL_TEXTURE_MAG_FILTER, filterMode);
+			glTexParameteri(type, GL_TEXTURE_MIN_FILTER, filterMode);
+			glTexImage2D(type, 0, GL_RGBA32F, width, height, 0, GL_RGBA, GL_FLOAT, data);
 		}
 	}
-	glBindTexture(GL_TEXTURE_2D, 0);
+	glBindTexture(type, 0);
 	png.clear();
 }
 
 unsigned char * Texture::snapshot(){
+
 	int pixelCount = width * height;
 	unsigned char * pixels = new unsigned char [4*sizeof(unsigned char)*pixelCount];
 	//glEnable(GL_TEXTURE_2D);
 	
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, this->id);
+	glBindTexture(type, this->id);
 
 	//glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 0,0, width, height, 0);
 
-	glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+	glGetTexImage(type, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
 	return pixels;
 }
 
@@ -292,13 +295,13 @@ void Texture::bind(GLenum texUnit)
 	textureUnit = texUnit;
 	textureUnitNumber = texUnitToNumber(texUnit);
 	glActiveTexture(texUnit);
-	glBindTexture(GL_TEXTURE_2D, id);
+	glBindTexture(type, id);
 }
 
 void Texture::unbind()
 {
 	glActiveTexture(textureUnit);
-	glBindTexture(GL_TEXTURE_2D, 0);
+	glBindTexture(type, 0);
 }
 
 void Texture::generateMipmaps()

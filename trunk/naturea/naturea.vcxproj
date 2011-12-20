@@ -357,6 +357,8 @@
     <None Include="shaders\models\phong_fs_s.glsl" />
     <None Include="shaders\models\phong_vs.glsl" />
     <None Include="shaders\models\phong_vs_s.glsl" />
+    <None Include="shaders\MStexture\ms_fs.glsl" />
+    <None Include="shaders\MStexture\ms_vs.glsl" />
     <None Include="shaders\skybox\skybox_fs.glsl" />
     <None Include="shaders\skybox\skybox_vs.glsl" />
     <None Include="shaders\sun_fs.glsl" />

@@ -69,6 +69,21 @@ void Light::initShadowMapping(Camera *_cam, int resolution)
 	camera = _cam;
 	resolution_x = resolution;
 	resolution_y = resolution;
+	glGenTextures(1, &db_shad_ID );
+		glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, db_shad_ID );
+		glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, 2, GL_DEPTH_COMPONENT32F, resolution_x, resolution_y, GL_TRUE);
+	
+	glGenTextures(1, &cb_shad_ID );
+		glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, cb_shad_ID );
+		glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, 2, GL_RGB, resolution_x, resolution_y, GL_TRUE);
+	 
+	 glGenFramebuffersEXT(1, &fb_shad_ID);
+		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fb_shad_ID);
+		glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT, GL_TEXTURE_2D_MULTISAMPLE, db_shad_ID, 0);
+		glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_2D_MULTISAMPLE, cb_shad_ID, 0);
+	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+
+	/*
 
 	glGenTextures(1, &db_shad_ID );
 		glBindTexture(GL_TEXTURE_2D, db_shad_ID );
@@ -93,9 +108,10 @@ void Light::initShadowMapping(Camera *_cam, int resolution)
 		glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT, GL_TEXTURE_2D, db_shad_ID, 0);
 		glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_2D, cb_shad_ID, 0);
 	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
-
+	*/
 
 	shadowMapTexture = new Texture();
+	shadowMapTexture->type = GL_TEXTURE_2D_MULTISAMPLE;
 	shadowMapTexture->id = db_shad_ID;
 	shadowMapTexture->inShaderName = "shadowMap";
 	shadowMapTexture->textureUnitNumber = 7; // last texture (0-7)
@@ -145,23 +161,22 @@ void Light::beginShadowMap(){
 	glDisable(GL_LIGHTING);
 	//glEnable(GL_CULL_FACE);
 	//glCullFace(GL_BACK);
+	glEnable(GL_MULTISAMPLE);
 
 }
 void Light::endShadowMap(){
-
+	glDisable(GL_MULTISAMPLE);
 	// redirect rendering back to back screen buffer
 	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
 
 	// reset viewport
 	glViewport(0, 0, g_WinWidth, g_WinHeight);
 	// set camera...
-	glMatrixMode(GL_MODELVIEW);
-	glPopMatrix();
+	
 	glMatrixMode(GL_PROJECTION);
 	glPopMatrix();
-	
-	// SHOW SHADOW MAP
-	showTextures();
+	glMatrixMode(GL_MODELVIEW);
+	glPopMatrix();
 }
 
 void Light::drawForLOD()
@@ -238,7 +253,7 @@ void Light::draw()
 		glVertex3f(blf.x, blf.y, blf.z);
 	glEnd();
 
-	glEnable(GL_TEXTURE_2D);
+	//glEnable(GL_TEXTURE_2D);
 	glActiveTexture(GL_TEXTURE0);	
 	glBindTexture(GL_TEXTURE_2D, db_shad_ID); 
 	glColor4f(1.f,1.f,1.f,0.5f);
@@ -250,7 +265,7 @@ void Light::draw()
 		glMultiTexCoord2f(GL_TEXTURE0, 0.f, 1.f); glVertex3f(tlf.x, tlf.y, tlf.z);		
 	glEnd();
 	glBindTexture(GL_TEXTURE_2D, 0); 
-	glDisable(GL_TEXTURE_2D);
+	//glDisable(GL_TEXTURE_2D);
 	
 	glPopMatrix();
 	/*

@@ -43,7 +43,7 @@ float getShadowIntensity(vec4 sm_pos){
 	res += getShadow(sm_pos.xy, vec2(-1.0, 0.0), sm_pos.z);
 	res += getShadow(sm_pos.xy, vec2(0.0, 1.0), sm_pos.z);
 	res += getShadow(sm_pos.xy, vec2(0.0, -1.0), sm_pos.z);
-	return res/5.0;
+	return res/6.0;
 }
 
 void main()

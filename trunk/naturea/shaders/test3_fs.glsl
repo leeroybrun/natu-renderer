@@ -66,11 +66,24 @@ uniform float		wind_strength;
 float		fogFactor;
 
 
-uniform sampler2D shadowMap;
+uniform sampler2DShadow shadowMap;
 varying vec4	lightSpacePosition;
 vec4 lpos;
 
 const float infinity = 999999999;
+float getShadow(vec2 position, vec2 offset, float depth){
+	return shadow2D(shadowMap, vec3(position+offset*0.001,depth-SHADOW_TRESHOLD)).r; 
+}
+
+float getShadowIntensity(vec4 sm_pos){
+	float res = getShadow(sm_pos.xy, vec2(0.0, 0.0), sm_pos.z) * 2.0;
+	res += getShadow(sm_pos.xy, vec2(1.0, 0.0), sm_pos.z);
+	res += getShadow(sm_pos.xy, vec2(-1.0, 0.0), sm_pos.z);
+	res += getShadow(sm_pos.xy, vec2(0.0, 1.0), sm_pos.z);
+	res += getShadow(sm_pos.xy, vec2(0.0, -1.0), sm_pos.z);
+	return res/6.0;
+}
+/*
 float getDepth(vec2 coords){
 	if (clamp(coords.xy, 0.0, 1.0)!= coords.xy){
 		return infinity; // infinity
@@ -82,6 +95,7 @@ float getDepth(vec2 coords){
 	}
 	return depth;
 }
+*/
 
 void animateBranch(inout vec2 position, in float bid, in float time, in float offset, in float texCol, in float wood_a, in float wood_f, in vec3 wind_d, in float wind_s){
 	vec2 mv;
@@ -226,20 +240,13 @@ void	main()
 	// SHADOW MAPPING //
 	float shade = 1.0;
 	if (shadowMappingEnabled>0){
-		float depth_tex = texture2D(depthMap, newPos).x;
-		float depthEye   = lightSpacePosition.z;
-		float depthLight = getDepth( lightSpacePosition.xy );
+		float depth_tex = texture2D(depthMap, newPos).x*2.0 - 1.0;
 		// offset camera depth
-		float remapFactor = 1.0 / (far-near);
-		float offset = (depth_tex*2.0 - 1.0)*0.33333333*remapFactor;
-
-		// perspective
-		//offset = ((-2.0*near*far/(offset*(near-far))) + 1.0);
-
-		depthEye += -front*offset;
-		if ((depthEye - depthLight) > SHADOW_TRESHOLD){
-			shade = 0.0;
-		}
+		float offset = depth_tex*0.33333333*(far-near);
+		float depthEye   = lightSpacePosition.z-front*offset;
+		//vec4(lightSpacePosition.xy, depthEye, 0.0);
+		//float depthLight = getDepth( lightSpacePosition.xy );
+		shade = getShadowIntensity(vec4(lightSpacePosition.xy, depthEye, 0.0));
 	}
 	// SHADOW MAPPING END //	
 	color.rgb += seasonColor.rgb;

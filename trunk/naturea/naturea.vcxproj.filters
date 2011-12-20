@@ -306,6 +306,9 @@
     <Filter Include="includes\GL">
       <UniqueIdentifier>{50a845e0-bee7-49d3-a691-493d96093081}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Shaders\msTexture">
+      <UniqueIdentifier>{2b351b1b-78fe-4991-8be4-e38883ff7f21}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp" />
@@ -875,6 +878,12 @@
     </None>
     <None Include="common\GL\glut32.dll">
       <Filter>includes\GL</Filter>
+    </None>
+    <None Include="shaders\MStexture\ms_fs.glsl">
+      <Filter>Shaders\msTexture</Filter>
+    </None>
+    <None Include="shaders\MStexture\ms_vs.glsl">
+      <Filter>Shaders\msTexture</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

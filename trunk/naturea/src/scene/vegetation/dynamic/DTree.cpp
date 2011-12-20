@@ -2435,7 +2435,7 @@ void DTree::enqueueInRenderList(DTreeInstanceData * instance){
 	if (instance!=NULL){
 		// calc wind dir;
 		if (g_wind_dirty){
-			instance->wind_dir = g_tree_wind_direction.getRotatedY(-DEG_TO_RAD*(instance->rotation_y+90));
+			instance->wind_dir = g_tree_wind_direction.getRotatedY(-DEG_TO_RAD*(instance->rotation_y));
 			//instance->wind_dir = g_tree_wind_direction;//.getRotatedY(-DEG_TO_RAD*instance->rotation_y);
 		}
 
