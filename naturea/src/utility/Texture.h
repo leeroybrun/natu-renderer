@@ -31,6 +31,8 @@ public:
 	void show(GLint x, GLint y, GLsizei width, GLsizei height, bool depthtest = false);
 
 	GLint		format;
+	GLuint		type;
+	int			samples;
 	GLint		dataFormat;
 	GLenum		textureUnit;
 	GLint		textureUnitNumber;

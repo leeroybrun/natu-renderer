@@ -182,6 +182,43 @@ static int isExtensionSupported(const char *extension)
 	}
 	return 0;
 }
+/*
+static void show_textureMS(GLuint texId, int samples, GLint x,GLint y, GLsizei width, GLsizei height){
+	glMatrixMode(GL_PROJECTION);
+	glPushMatrix();
+	glLoadIdentity();
+	glOrtho(0, g_WinWidth, 0, g_WinHeight, -1,1);
+
+	glMatrixMode(GL_MODELVIEW);
+	glPushMatrix();
+	glLoadIdentity();
+
+	glDisable(GL_LIGHTING);
+	glDisable(GL_DEPTH_TEST);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, texId);
+	glUseProgram(g_msTexShaderID);
+	glUniform1i(glGetUniformLocation(g_msTexShaderID, "colorMap"),0);
+	glUniform2f(glGetUniformLocation(g_msTexShaderID, "size"), g_shadowMapResolution.x,g_shadowMapResolution.y );
+	glColor4f(1.f,1.f,1.f,1.f);
+
+	glBegin(GL_QUADS);
+		glTexCoord2f(0.f, 0.f); glVertex2i(x,y);
+		glTexCoord2f(1.f, 0.f); glVertex2i(x+width,y);
+		glTexCoord2f(1.f, 1.f); glVertex2i(x+width,y+height);
+		glTexCoord2f(0.f, 1.f); glVertex2i(x,y+height);
+	glEnd();
+	glUseProgram(0);
+	glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, 0);
+	glEnable(GL_LIGHTING);
+	glEnable(GL_DEPTH_TEST);
+	
+	glMatrixMode(GL_PROJECTION);
+	glPopMatrix();
+	glMatrixMode(GL_MODELVIEW);
+	glPopMatrix();
+}
+*/
 
 static void show_texture(GLuint texId, GLint x,GLint y, GLsizei width, GLsizei height){
 	glMatrixMode(GL_PROJECTION);
@@ -195,7 +232,7 @@ static void show_texture(GLuint texId, GLint x,GLint y, GLsizei width, GLsizei h
 
 	glDisable(GL_LIGHTING);
 	glDisable(GL_DEPTH_TEST);
-	glEnable(GL_TEXTURE_2D);
+	//glEnable(GL_TEXTURE_2D);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, texId);
 	glColor4f(1.f,1.f,1.f,1.f);
@@ -209,7 +246,7 @@ static void show_texture(GLuint texId, GLint x,GLint y, GLsizei width, GLsizei h
 
 	glEnable(GL_LIGHTING);
 	glEnable(GL_DEPTH_TEST);
-	glDisable(GL_TEXTURE_2D);
+	//glDisable(GL_TEXTURE_2D);
 
 	glMatrixMode(GL_PROJECTION);
 	glPopMatrix();

@@ -270,6 +270,8 @@ void Terrain::init()
 	shader->linkTexture(g_shadowmap1);
 	shader->registerUniform("LightMVPCameraVInverseMatrix", UniformType::M4, g_LightMVPCameraVInverseMatrix);
 	shader->registerUniform("shadowMappingEnabled", UniformType::B1, & g_ShadowMappingEnabled);
+	shader->registerUniform("shadowmap_size", UniformType::F2, & g_ShadowMapSize.data);	
+	shader->registerUniform("samples", UniformType::I1, & g_shadowMapSamples);
 	
 	//LCmatrixLoc					= shader->getLocation("LightMVPCameraVInverseMatrix");
 	//shadowMappingEnabledLoc		= shader->getLocation("shadowMappingEnabled");

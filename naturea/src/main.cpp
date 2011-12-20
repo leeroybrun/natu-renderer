@@ -19,7 +19,8 @@
 #include "../common/Vector4.h"
 #include "settings.h"
 
-
+int		g_shadowMapSamples = 2;
+v3		g_ShadowMapSize(SHADOWMAP_RESOLUTION_X, SHADOWMAP_RESOLUTION_Y, 0.0);
 int		g_samples = 4;
 bool	g_compressToOneTexture = true;
 
