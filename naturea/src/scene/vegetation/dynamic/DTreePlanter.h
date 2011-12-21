@@ -25,15 +25,16 @@ public:
 
 	vector<v4> occupiedCandidates;
 	int count;
+	float dither;
+	float distance;
+	float height_min;
+	float height_max;
 
 private:
 	vector<v4> freeCandidates;	
-	float height_min;
-	float height_max;
+	
 	int res_x;
 	int res_y;
-	float dither;
-	float distance;
 	DTree	*tree;
 	Terrain *terrain;	
 };

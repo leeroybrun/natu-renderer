@@ -11,6 +11,7 @@ uniform float		transition_control;
 uniform vec2		window_size;
 
 uniform float		dither;
+varying vec3		ws_position;
 
 void main()
 {	
@@ -30,6 +31,7 @@ void main()
 	vec3 color = vec3(0.0, 0.0, 0.0);
 	float treshold = 0.5;
 	//gl_FragDepth = gl_FragCoord.z + frontFacing*(depth_tex*2.0 - 1.0)*0.01;
+	/*
 	// DITHER //
 	if (transition_control<1.0 && transition_control>0.0){
 		float c = 2.0*(1.0-transition_control);
@@ -42,7 +44,7 @@ void main()
 			//gl_FragDepth = 1.0;
 		}
 	}
-
-	gl_FragColor = vec4(color, 1.0);
+	*/
+	gl_FragColor = vec4(color, 1.0-transition_control);
 
 }

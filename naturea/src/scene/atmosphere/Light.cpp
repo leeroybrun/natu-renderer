@@ -38,7 +38,7 @@ void Light::drawSun(v3* position){
 			position->z - direction->z * 250.0
 			);
 		shader->use(true);
-		glutSolidSphere(50.0, 6,6);
+		glutSolidSphere(20.0, 10,10);
 		shader->use(false);
 	glPopMatrix();
 
@@ -69,6 +69,7 @@ void Light::initShadowMapping(Camera *_cam, int resolution)
 	camera = _cam;
 	resolution_x = resolution;
 	resolution_y = resolution;
+	/*
 	glGenTextures(1, &db_shad_ID );
 		glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, db_shad_ID );
 		glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, 2, GL_DEPTH_COMPONENT32F, resolution_x, resolution_y, GL_TRUE);
@@ -82,8 +83,8 @@ void Light::initShadowMapping(Camera *_cam, int resolution)
 		glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT, GL_TEXTURE_2D_MULTISAMPLE, db_shad_ID, 0);
 		glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_2D_MULTISAMPLE, cb_shad_ID, 0);
 	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
-
-	/*
+	*/
+	
 
 	glGenTextures(1, &db_shad_ID );
 		glBindTexture(GL_TEXTURE_2D, db_shad_ID );
@@ -108,10 +109,10 @@ void Light::initShadowMapping(Camera *_cam, int resolution)
 		glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT, GL_TEXTURE_2D, db_shad_ID, 0);
 		glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_2D, cb_shad_ID, 0);
 	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
-	*/
+	
 
 	shadowMapTexture = new Texture();
-	shadowMapTexture->type = GL_TEXTURE_2D_MULTISAMPLE;
+	//shadowMapTexture->type = GL_TEXTURE_2D_MULTISAMPLE;
 	shadowMapTexture->id = db_shad_ID;
 	shadowMapTexture->inShaderName = "shadowMap";
 	shadowMapTexture->textureUnitNumber = 7; // last texture (0-7)
@@ -161,11 +162,16 @@ void Light::beginShadowMap(){
 	glDisable(GL_LIGHTING);
 	//glEnable(GL_CULL_FACE);
 	//glCullFace(GL_BACK);
+	/*
 	glEnable(GL_MULTISAMPLE);
-
+	glEnable(GL_SAMPLE_ALPHA_TO_COVERAGE);
+	*/
 }
 void Light::endShadowMap(){
+	/*
+	glDisable(GL_SAMPLE_ALPHA_TO_COVERAGE);
 	glDisable(GL_MULTISAMPLE);
+	*/
 	// redirect rendering back to back screen buffer
 	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
 
@@ -334,7 +340,7 @@ void Light::setup(GLuint lid, v4 *pos, v4 *dir, v4 &ambi, v4 &diff, v4 &spec, fl
 	height		= 20.0;
 	near		= g_ShadowNear;
 	far			= g_ShadowFar;
-
+	g_ShadowFarMNear = far-near;
 	glLightfv(lightId, GL_POSITION      , position->data);
 	glLightfv(lightId, GL_SPOT_DIRECTION, direction->data);
 	glLightfv(lightId, GL_AMBIENT       , ambi.data);

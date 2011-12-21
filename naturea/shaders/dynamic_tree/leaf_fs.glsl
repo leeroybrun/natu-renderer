@@ -162,21 +162,7 @@ float getCookTorranceSpecularity(vec3 light_vector, vec3 view_vector, vec3 norma
 
 float getModifiedCookTorranceSpecularity(in vec3 light_vector, in vec3 view_vector, in vec3 normal, in float refractionindex, in float roughness)
 {
-	
-	/*
-	float specularity = 0.0;	
-	vec3 wHalfAngleDir = normalize(light_vector + view_vector);
-	float fresnel = getFresnelTerm(refractionindex, dot(view_vector, wHalfAngleDir));
-	float rough = getRoughness(dot(normal, wHalfAngleDir), roughness);
-	specularity = (rough / dot(normal, light_vector)) *
-		max(0.0, (getShadowingAndMaskingTerm(normal, wHalfAngleDir, view_vector, light_vector) / dot(normal, view_vector)) * fresnel / 3.14);
-	return clamp(specularity, 0.0, 2.0);
-	
-	
 
-
-	/*/
-	//normal = -normal;
 	float specularity = 0.0;
 	vec3 H = normalize(light_vector + view_vector);
 	float NdotL = dot(normal, light_vector);//*0.5+0.5;
@@ -351,6 +337,7 @@ void main()
 	vec4 color;
 
 	colorize(color, normal_v, tangent_v, bitangent);
+
 	//color = 0.5*texture2D(frontDecalMap, gl_TexCoord[0].yx) + 0.2*texture2D(frontTranslucencyMap, gl_TexCoord[0].yx + ts_lightDir.xy );
 	color.a = gl_Color.a;
 	//if (texture2D(frontDecalMap, gl_TexCoord[0].yx).a<0.9) discard;

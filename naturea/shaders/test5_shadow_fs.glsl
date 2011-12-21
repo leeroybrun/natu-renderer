@@ -1,168 +1,185 @@
 #version 120
 #define SHADOW_TRESHOLD 0.0001
-
+#define ALPHA_TRESHOLD 0.5
+#define ONE2    vec2(1.0,1.0)
+#define EPSILON 0.0001
+#define EPSILONVEC vec2(EPSILON, EPSILON)
 uniform sampler2D	colorMap;
 uniform sampler2D	branch_noise_tex;
 uniform sampler2D	leaf_noise_tex;
 uniform sampler2D	normalMap;
 uniform	sampler2D   dataMap;
-uniform sampler2D   depthMap;
 uniform sampler2D	seasonMap;
+uniform sampler2D	lod_data_tex;
+uniform sampler2D	depthMap;
 uniform float		season;
 uniform float		time;
-
 uniform	vec2		movementVectorA;
 uniform	vec2		movementVectorB;
-uniform vec2		window_size;
 
 uniform vec4		wood_amplitudes;
 uniform vec4		wood_frequencies;
 uniform float		leaf_amplitude;
 uniform float		leaf_frequency;
-uniform float		transition_control;
-uniform float		near;
-uniform	float		far;
 
 varying vec2		sliceDesc;
 
+varying float		mv_time;
 varying float		time_offset_v;
 
-uniform float		dither;
+uniform float		branch_count;
+uniform	float		farMnear;
+varying vec3		v_wind_dir_ts;
+uniform float		wind_strength;
+uniform float		sliceCnt;
+uniform float		sliceSetsCnt;
+#define	texCols			3.0
 
-#define sliceCnt		3
-#define sliceSetsCnt	3
-#define	texCols			18.0
+const float infinity = 999999999;
 
+void animateBranch(inout vec2 position, in float bid, in float time, in float offset, in float texCol, in float wood_a, in float wood_f, in vec3 wind_d, in float wind_s){
+	vec2 mv;
+	vec2 corr_s;
+	vec2 corr_r;
+	float x_val;
+	vec2 amp;
+	vec4 b_data0;
+	vec4 b_data1;
+	vec4 b_data2;
+	vec4 b_data3;
+	vec2 o;
+	vec2 t; 
+	vec3 r; 
+	vec3 s; 
+	float l;
+	b_data0 = texture2D(lod_data_tex, vec2((0.5+offset)*texCol, bid));
+	b_data1 = texture2D(lod_data_tex, vec2((1.5+offset)*texCol, bid));
+	b_data2 = texture2D(lod_data_tex, vec2((2.5+offset)*texCol, bid));
+	//b_data3 = texture2D(lod_data_tex, vec2((3.5+offset)*texCol, branchID));
+	o = b_data0.xy;
+	mv = b_data0.zw;
+	r = b_data1.xyz;
+	s = b_data2.xyz;
+	t = cross(s,r).xy;
+	l = b_data1.w;
+		
+	// get x value on the projected branch
+
+	// naive solution = distance to projected origin / branch projected length
+	// PROBLEMS:
+	// - what about branches pointing to the observer? - projected length is near 0
+	// - even pixels close to projected origin can be very far in terms of x
+	vec2 distVector = abs(position-o);
+	//offset = 0.0; //1.0 - length(t.xy);
+	//x_val = min(1.0, offset + length(distVector)/l);
+	x_val = min(1.0, length(distVector)/l);
+	//color = vec4(x_val);
+	vec2 w = vec2(dot(r, wind_d) * wind_s, dot(s, wind_d) * wind_s);
+	amp = w + wood_a * ( texture2D(branch_noise_tex, mv * time * wood_f).rg  * 2.0 - ONE2);
+	float xval2 = x_val*x_val;
+	
+	float fx = 0.374570*xval2 + 0.129428*xval2*xval2;
+	float dx = 0.749141*x_val + 0.517713*xval2*x_val;
+
+	vec2 fu			= vec2(fx)		* amp;
+	vec2 fu_deriv	= vec2( dx / l) * amp ;
+	// restrict fu_deriv != 0.0
+	fu_deriv = max(fu_deriv, EPSILONVEC) + min(fu_deriv, EPSILONVEC);
+	vec2 us = sqrt(ONE2+fu_deriv*fu_deriv);
+	vec2 ud = fu / fu_deriv * (us - ONE2);
+	corr_r = (t + r.xy*fu_deriv.x)/us.x * ud.x;
+	corr_s = (t + s.xy*fu_deriv.y)/us.y * ud.y;
+	// inverse deformation - must be aplyed in oposite direction
+	position = position - ( fu.x * r.xy + fu.y * s.xy - (corr_r+corr_s) );
+}
+
+vec2 convert2TexCoords(in vec2 sliceCoords){
+	return (clamp ( sliceCoords  , vec2(0.0, 0.0), ONE2 ) + sliceDesc) / vec2(sliceCnt,sliceSetsCnt);
+}
 
 void	main()
 {	
-	float sizeFactor = 1.5/max(window_size.x, window_size.y);
 
-	float dist = gl_FragCoord.z;
-	float inv_dist = 1.0/dist;
-	float t			= 10.0*(time+time_offset_v)*leaf_frequency*sizeFactor;
-	vec2 movVectorA = movementVectorA;
-	vec2 movVectorB = movementVectorB;
-
-	vec2 texC		= gl_TexCoord[0].st;
-	vec2 fpos		= clamp ( texC + sliceDesc , sliceDesc, sliceDesc+vec2(1.0, 1.0) ) / vec2(sliceCnt,sliceSetsCnt);
+	if (gl_Color.a==0.0){discard;}
+	vec4 color = vec4(0.0, 0.0, 0.0, 0.0);
+	vec3 cVar;
+	vec4 seasonColor = vec4(0.0, 0.0, 0.0, 0.0);
+	vec4 normal;
+	float leaf = 0.0;
+	vec2 newPos;
+	float mv_time = (time+time_offset_v) * 0.01;
+	// get frag position
+	vec2 position = gl_TexCoord[0].st;
+	vec2 tpos	= clamp ( position + sliceDesc , sliceDesc, sliceDesc+vec2(1.0, 1.0) ) / vec2(sliceCnt,sliceSetsCnt);
+	// get Level-1 branch
+	float branchID = (texture2D(dataMap, tpos).r);
+	float branchFlag = sign(branchID);
+	branchID = abs(branchID);
+	float offset = sliceDesc.y*texCols;
+	float texCol = 1.0/(sliceSetsCnt*texCols);
 	
-	vec2 mv1 = texture2D(dataMap, fpos).xy*2.0 - vec2(1.0);
-	float mv_time = 0.01 * (time+time_offset_v);
-	vec2 amp1 = wood_amplitudes.y * ( texture2D(branch_noise_tex, mv1 * mv_time * wood_frequencies.y).rg  * 2.0 - vec2(1.0));
-
-
-	vec2 texCoordA	= fpos+t*movVectorA;
-	vec2 texCoordB	= fpos+t*movVectorB; // gl_TexCoord[0].st+t*movVectorB;
-	
-	vec2 oneV2 = vec2(1.0);
-	vec2 b0 = vec2(0.5,0.0);
-	vec2 b1 = texture2D(dataMap, fpos).zw;
-
-	float dist0 = min (1.0, 2.0 * length(texC - b0)) ; // / branchProjectedLength
-	float dist1 = min (1.0, 5.0 * length(texC - b1)); // / branchProjectedLength
-
-	vec4 color;
-	float angle;
-	float cosA;
-	float sinA;
-	vec2  difVec;
-	mat2 R;
-	vec2 rotatedDifVec;
-	vec2 newPos = texC;
-	float ti = (time+time_offset_v)*sizeFactor*10.0;
-	vec2 si = sizeFactor* 100.0 * wood_amplitudes.xy;
-	float d = length(b1-vec2(0.5));
-
-	if ((d>0.01)){
-		//angle = dist1 * (amp1.x+amp1.y) * sizeFactor * 200;
-		angle = dist1*(texture2D(branch_noise_tex, (ti * b1 * wood_frequencies.y)).s*2.0 - 1.0)  * si.y * 2.0;
-		//angle = (texture2D(branch_noise_tex, (ti * b1 * wood_frequencies.y)).s*2.0 - 1.0) * si.y;
-		
-		cosA = cos (angle); 
-		sinA = sin (angle);
-		difVec = (newPos - b1);
-		R = mat2(	 cosA	, sinA,
- 					-sinA	, cosA );
-		rotatedDifVec = R*difVec;
-		newPos = b1 + rotatedDifVec;
+	// level 1 deformation...
+	if (branchID>(0.5)/branch_count){
+		animateBranch(position, branchID, mv_time, offset, texCol, wood_amplitudes.y, wood_frequencies.y, v_wind_dir_ts, wind_strength);
 	}
-	
-	angle = dist0 * (texture2D(branch_noise_tex, (ti * b0 * wood_frequencies.x)).s*2.0-1.0) * si.x * 0.5;
-	cosA = cos (angle); 
-	sinA = sin (angle);
-	difVec = (newPos - b0);
-	R = mat2(	 cosA	, sinA,
- 				-sinA	, cosA );
-	rotatedDifVec = R*difVec;
-	newPos = b0 + rotatedDifVec;
-	
-	newPos = clamp ( newPos  , vec2(0.0, 0.0), vec2(1.0, 1.0) );// + sliceDesc ) / vec2(sliceCnt,sliceSetsCnt);
-	newPos = (newPos + sliceDesc) / vec2(sliceCnt,sliceSetsCnt);
-	texCoordA = (texture2D(leaf_noise_tex, texCoordA).st*2.0 - vec2(1.0));
-	texCoordB = (texture2D(leaf_noise_tex, texCoordB).st*2.0 - vec2(1.0));
-	
-	//newPos = fpos;
-	vec4 fragmentNormal;
-	vec2 noiseOffset = (texCoordA+texCoordB)*sizeFactor*leaf_amplitude*0.5 / sliceCnt;
-	
-	vec2 texCoord = newPos + noiseOffset ;
-	float branchFlag = texture2D(normalMap, texCoord).w + texture2D(normalMap, newPos).w;
-	vec2 lookUpPos = newPos;
-	float leaf = 1.0;
-	if (branchFlag<0.1){
-		// trunk / branch 
-		leaf = 0.0;
-	} else {
-		// foliage
-		lookUpPos = texCoord;
-		
-		leaf = (1.0/0.9)*(fragmentNormal.w-0.1);
+	// animate trunk
+	animateBranch(position, 0.0, mv_time, offset, texCol, wood_amplitudes.x, wood_frequencies.x, v_wind_dir_ts, wind_strength);
+	if (position.y>1.0){
+		discard;
 	}
-	//fragmentNormal = fragmentNormalBranch;
-	float frontFacing = -1.0;
-	if (gl_FrontFacing){
-		frontFacing = 1.0;
-	}
-	vec4 decal_color = texture2D(colorMap, lookUpPos);
-	float depth_tex = texture2D(depthMap, lookUpPos).x;
-
-	// escape when transparent...
-	if (decal_color.a<0.75){discard;}
-
-	//vec3 translucency_in_light = translucency * other_cpvcolor.rgb * gl_LightSource[0].diffuse.rgb ;
-	if (leaf>0.0){
+	// is it a leaf-fragment? yes -> can animate leaf
+	newPos = convert2TexCoords(position);
+	bool isLeaf = sign(texture2D(dataMap, newPos).r)>=0.0;
+	float NdotL;
+	if (isLeaf){
 		// leaf
-		vec2 seasonCoord = vec2(0.5, season + 0.2*leaf - 0.0001*time_offset_v);
-		vec4 seasonColor =  texture2D(seasonMap, seasonCoord);
+
+		// distort...
+		vec2 texCoordA = tpos+leaf_frequency*mv_time*movementVectorA*2.0;
+		vec2 texCoordB = tpos+leaf_frequency*mv_time*movementVectorB*2.0;
+
+		vec2 noise = ((texture2D(leaf_noise_tex, texCoordB).st + texture2D(leaf_noise_tex, texCoordA).st) - ONE2);
+		vec2 newPosD = convert2TexCoords(position + leaf_amplitude*0.005*noise);
+		// is the source fragment from branch? if so use original coords...
+		if(sign(texture2D(dataMap, newPosD).r)>=0.0){
+			newPos = newPosD;
+		}
+		color += texture2D(colorMap, newPos);
+		if (color.a<ALPHA_TRESHOLD){
+			discard;
+		}
+		normal = texture2D(normalMap, newPos);
+		float leaf = (1.0/(1.0-0.004))*(normal.w-0.004);
+		vec2 seasonCoord = vec2(0.5, season + 0.2*leaf - 0.0001*time_offset_v);		
+		seasonColor = texture2D(seasonMap, seasonCoord);
 		if (seasonColor.a<0.5){
 			discard;
 		}
-	} 
-	gl_FragData[0] = vec4(1.0, 0.0, 0.0, 1.0);
-	float treshold = 0.5;
-	float remapFactor = 1.0/(far-near);
-	float depth = gl_FragCoord.z + frontFacing*(depth_tex*2.0 - 1.0)*remapFactor;
-	
-
-	// DITHER //
-	if (transition_control<1.0 && transition_control>0.0){
-		ivec2 screen_pos = ivec2(gl_FragCoord.xy);
-		float c = 2.0*(1.0-transition_control);
-		if (mod(screen_pos.x, c)<treshold && mod(screen_pos.y, c)<treshold){
-		} else {	
+	} else {
+		//branch
+		color += texture2D(colorMap, newPos);
+		if (color.a<ALPHA_TRESHOLD){
 			discard;
 		}
 	}
+	// DITHER
+	float treshold = gl_Color.a;
+	if (treshold<1.0 && treshold>0.0){
+		vec2 screen_pos = gl_FragCoord.xy*0.001;
+		float noise = texture2D(branch_noise_tex, screen_pos).r;
+		if (noise>treshold){
+			discard;
+		}
+	}
+
+	color.a *= gl_Color.a;
+	float front = -1.0;
+	if (gl_FrontFacing){
+		front = 1.0;
+	}
+
+	float depth_tex = texture2D(depthMap, newPos).r;
+	gl_FragDepth = gl_FragCoord.z + front*(depth_tex-0.5)/(sliceCnt*(farMnear));
 	
-	gl_FragData[0] = vec4(1.0, 0.0, 0.0, 1.0);
-	//float depth = gl_FragCoord.z + frontFacing*(depth_tex*2.0 - 1.0)*0.01*3.0;
-	//if (leaf>0.0){
-	//	gl_FragData[1] = color * vec4(0.1, 0.1, 0.1, 1.0);
-	//} else {		
-	//	gl_FragData[1] = vec4(0.0, 0.0, 0.0, 1.0);	
-	//}	
-	//float signal = 1.0-transition_control;
-	gl_FragDepth = depth; // + 0.01*signal*signal;
-	
+	gl_FragData[0] = color;
 }

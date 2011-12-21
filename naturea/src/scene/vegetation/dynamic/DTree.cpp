@@ -12,8 +12,8 @@ DTree::DTree(TextureManager *texManager, ShaderManager *shManager):Vegetation(te
 	lLODShader				= NULL;
 							
 	dataTexture				= NULL;
-	lod1dataTexture			= NULL;
-	lod2dataTexture			= NULL;
+	lod1_dataTexture		= NULL;
+	lod2_dataTexture		= NULL;
 	lColorTexture			= NULL;
 	frontDecalMap			= NULL;
 	frontNormalMap			= NULL;
@@ -35,7 +35,18 @@ DTree::DTree(TextureManager *texManager, ShaderManager *shManager):Vegetation(te
 	branchesEBO				= NULL;
 
 	lod1shader				= NULL;
-	lod1shader2				= NULL;
+	lod1_shader				= NULL;
+
+	lod1_jColorMap			= NULL;
+	lod1_jDataMap			= NULL;
+	lod1_jDepthMap			= NULL;
+	lod1_jNormalMap			= NULL;
+
+	lod2_jColorMap			= NULL;
+	lod2_jDataMap			= NULL;
+	lod2_jDepthMap			= NULL;
+	lod2_jNormalMap			= NULL;
+
 
 	lod2color1				= NULL;
 	lod2color2				= NULL;
@@ -71,8 +82,8 @@ DTree::~DTree(void)
 	SAFE_DELETE_PTR(	lLODShader				);
 
 	SAFE_DELETE_PTR(	dataTexture				);
-	SAFE_DELETE_PTR(	lod1dataTexture			);
-	SAFE_DELETE_PTR(	lod2dataTexture			);
+	SAFE_DELETE_PTR(	lod1_dataTexture			);
+	SAFE_DELETE_PTR(	lod2_dataTexture			);
 	SAFE_DELETE_PTR(	lColorTexture			);
 	SAFE_DELETE_PTR(	frontDecalMap			);
 	SAFE_DELETE_PTR(	frontNormalMap			);
@@ -88,6 +99,17 @@ DTree::~DTree(void)
 
 	SAFE_DELETE_PTR(	branchNoiseTexture		);
 	SAFE_DELETE_PTR(	leafNoiseTexture		);
+
+	SAFE_DELETE_PTR(	lod1_jColorMap			);
+	SAFE_DELETE_PTR(	lod1_jDataMap			);
+	SAFE_DELETE_PTR(	lod1_jDepthMap			);
+	SAFE_DELETE_PTR(	lod1_jNormalMap			);
+
+	SAFE_DELETE_PTR(	lod2_jColorMap			);
+	SAFE_DELETE_PTR(	lod2_jDataMap			);
+	SAFE_DELETE_PTR(	lod2_jDepthMap			);
+	SAFE_DELETE_PTR(	lod2_jNormalMap			);
+
 
 	SAFE_DELETE_PTR(	branchesVBO				);
 	SAFE_DELETE_PTR(	leavesVBO				);
@@ -119,7 +141,7 @@ DTree::~DTree(void)
 	instancesInRenderQueues.clear();
 
 	SAFE_DELETE_PTR(	lod1shader		);
-	SAFE_DELETE_PTR(	lod1shader2		);
+	SAFE_DELETE_PTR(	lod1_shader		);
 
 
 	SAFE_DELETE_PTR(	lod2color1		);	
@@ -1084,39 +1106,39 @@ void DTree::draw_instance_LOD1(DTreeInstanceData * instance, float alpha){
 				glDisable(GL_CULL_FACE);
 				glDisable(GL_LIGHTING);
 
-				jColorMap			->bind(GL_TEXTURE1);
+				lod1_jColorMap			->bind(GL_TEXTURE1);
 				leafNoiseTexture	->bind(GL_TEXTURE2);
 				branchNoiseTexture  ->bind(GL_TEXTURE3);
-				jDataMap			->bind(GL_TEXTURE4);
-				jNormalMap			->bind(GL_TEXTURE5);
+				lod1_jDataMap			->bind(GL_TEXTURE4);
+				lod1_jNormalMap			->bind(GL_TEXTURE5);
 				seasonMap			->bind(GL_TEXTURE6);
-				jDepthMap			->bind(GL_TEXTURE7);				
-				lod1dataTexture		->bind(GL_TEXTURE8);
+				lod1_jDepthMap			->bind(GL_TEXTURE7);				
+				lod1_dataTexture		->bind(GL_TEXTURE8);
 
-				lod1shader_shadow->use(true);
-				lod1vbo2->bind(lod1shader_shadow);
+				lod1_shader_shadow->use(true);
+				lod1_vbo->bind(lod1_shader_shadow);
 				// set attribute
 				// draw EBO...
-				eboLOD1->bind();
+				lod1_ebo->bind();
 			
 					int off = instance->offset*(3*3*4*sizeof(unsigned int));
 					// draw ebo
-					eboLOD1->draw(GL_UNSIGNED_INT, GL_QUADS, 3*3*4, BUFFER_OFFSET(off));  
+					lod1_ebo->draw(GL_UNSIGNED_INT, GL_QUADS, 3*3*4, BUFFER_OFFSET(off));  
 				
 					// disable all...
-					eboLOD1->unbind();
-					lod1vbo2->unbind(lod1shader_shadow);
+					lod1_ebo->unbind();
+					lod1_vbo->unbind(lod1_shader_shadow);
 			
-				jColorMap			->unbind();
+				lod1_jColorMap			->unbind();
 				leafNoiseTexture	->unbind();
 				branchNoiseTexture	->unbind();
-				jDataMap			->unbind();
-				jNormalMap			->unbind();
-				jDepthMap			->unbind();
+				lod1_jDataMap			->unbind();
+				lod1_jNormalMap			->unbind();
+				lod1_jDepthMap			->unbind();
 				seasonMap			->unbind();
-				lod1dataTexture		->unbind();
+				lod1_dataTexture		->unbind();
 					// turn shader off
-				lod1shader_shadow->use(false);
+				lod1_shader_shadow->use(false);
 				glUseProgram(0);	
 				glEnable(GL_CULL_FACE);
 				glEnable(GL_LIGHTING);
@@ -1140,54 +1162,54 @@ void DTree::draw_instance_LOD1(DTreeInstanceData * instance, float alpha){
 				glDisable(GL_LIGHTING);
 
 				g_shadowmap1		->bind(GL_TEXTURE0);
-				jColorMap			->bind(GL_TEXTURE1);
+				lod1_jColorMap			->bind(GL_TEXTURE1);
 				displacementTexture	->bind(GL_TEXTURE2);
 				displacement2Texture->bind(GL_TEXTURE3);
-				jDataMap			->bind(GL_TEXTURE4);
-				jNormalMap			->bind(GL_TEXTURE5);
+				lod1_jDataMap			->bind(GL_TEXTURE4);
+				lod1_jNormalMap			->bind(GL_TEXTURE5);
 				seasonMap			->bind(GL_TEXTURE6);
-				jDepthMap			->bind(GL_TEXTURE7);				
-				lod1dataTexture		->bind(GL_TEXTURE8);
-				lod1shader2->use(true);
+				lod1_jDepthMap			->bind(GL_TEXTURE7);				
+				lod1_dataTexture		->bind(GL_TEXTURE8);
+				lod1_shader->use(true);
 			
 			
 			
-			//lod1shader2->setTexture(l2_season	, seasonMap				->textureUnitNumber	);
+			//lod1_shader->setTexture(l2_season	, seasonMap				->textureUnitNumber	);
 			//
-			//lod1shader2->setTexture(l2_color	, jColorMap				->textureUnitNumber	);
-			//lod1shader2->setTexture(l2_displ	, displacementTexture	->textureUnitNumber	);			
-			//lod1shader2->setTexture(l2_displ2	, displacement2Texture	->textureUnitNumber	);
-			//lod1shader2->setTexture(l2_data		, jDataMap				->textureUnitNumber	);
-			//lod1shader2->setTexture(l2_normal	, jNormalMap			->textureUnitNumber	);
-			//lod1shader2->setTexture(l2_depth	, jDepthMap				->textureUnitNumber	);
+			//lod1_shader->setTexture(l2_color	, lod1_jColorMap				->textureUnitNumber	);
+			//lod1_shader->setTexture(l2_displ	, displacementTexture	->textureUnitNumber	);			
+			//lod1_shader->setTexture(l2_displ2	, displacement2Texture	->textureUnitNumber	);
+			//lod1_shader->setTexture(l2_data		, lod1_jDataMap				->textureUnitNumber	);
+			//lod1_shader->setTexture(l2_normal	, lod1_jNormalMap			->textureUnitNumber	);
+			//lod1_shader->setTexture(l2_depth	, lod1_jDepthMap				->textureUnitNumber	);
 			//
-				lod1shader2->setUniform3f(iu1Loc1, instance->colorVariance.r, instance->colorVariance.g, instance->colorVariance.b);
-				lod1vbo2->bind(lod1shader2);
+				lod1_shader->setUniform3f(iu1Loc1, instance->colorVariance.r, instance->colorVariance.g, instance->colorVariance.b);
+				lod1_vbo->bind(lod1_shader);
 				// set attribute
 				// draw EBO...
-				eboLOD1->bind();
+				lod1_ebo->bind();
 			
 					int off = instance->offset*(3*3*4*sizeof(unsigned int));
 					// draw ebo
-					eboLOD1->draw(GL_UNSIGNED_INT, GL_QUADS, 3*3*4, BUFFER_OFFSET(off));  
+					lod1_ebo->draw(GL_UNSIGNED_INT, GL_QUADS, 3*3*4, BUFFER_OFFSET(off));  
 
 
 					// disable all...
-					eboLOD1->unbind();
-					lod1vbo2->unbind(lod1shader2);
+					lod1_ebo->unbind();
+					lod1_vbo->unbind(lod1_shader);
 			
 				
 					// turn shader off
-				lod1shader2->use(false);
-				jColorMap			->unbind();
+				lod1_shader->use(false);
+				lod1_jColorMap			->unbind();
 				displacementTexture	->unbind();
 				displacement2Texture->unbind();
-				jDataMap			->unbind();
-				jNormalMap			->unbind();
-				jDepthMap			->unbind();
+				lod1_jDataMap			->unbind();
+				lod1_jNormalMap			->unbind();
+				lod1_jDepthMap			->unbind();
 				seasonMap			->unbind();
 				g_shadowmap1		->unbind();
-				lod1dataTexture		->unbind();
+				lod1_dataTexture		->unbind();
 
 				glUseProgram(0);	
 				glEnable(GL_CULL_FACE);
@@ -1203,33 +1225,33 @@ void DTree::draw_all_instances_LOD1(){
 	if (g_draw_lod1 && g_tree_lod1_count>0){
 		if (g_Draw2Shadowmap){			
 			glColor4f(1.0, 1.0, 1.0, 1.0);	
-			int i, j, sliceCount, setCount=sliceSets2.size();
-
+			int i, j, sliceCount, setCount=lod1_sliceSets.size();
+			
 			glDisable(GL_CULL_FACE);
 			glDisable(GL_LIGHTING);
-				jColorMap			->bind(GL_TEXTURE1);
+				lod1_jColorMap			->bind(GL_TEXTURE1);
 				leafNoiseTexture	->bind(GL_TEXTURE2);
 				branchNoiseTexture	->bind(GL_TEXTURE3);
-				jDataMap			->bind(GL_TEXTURE4);
-				jNormalMap			->bind(GL_TEXTURE5);
+				lod1_jDataMap			->bind(GL_TEXTURE4);
+				lod1_jNormalMap			->bind(GL_TEXTURE5);
 				seasonMap			->bind(GL_TEXTURE6);
-				jDepthMap			->bind(GL_TEXTURE7);
-				lod1dataTexture		->bind(GL_TEXTURE8);
+				lod1_jDepthMap			->bind(GL_TEXTURE7);
+				lod1_dataTexture		->bind(GL_TEXTURE8);
 
-			lod1shader_shadow->use(true);
+			lod1_shader_shadow->use(true);
 			
-				//lod1shader2->setTexture(l2_color	, jColorMap				->textureUnitNumber	);
-				//lod1shader2->setTexture(l2_displ	, displacementTexture	->textureUnitNumber	);			
-				//lod1shader2->setTexture(l2_displ2	, displacement2Texture	->textureUnitNumber	);
-				//lod1shader2->setTexture(l2_data		, jDataMap				->textureUnitNumber	);
-				//lod1shader2->setTexture(l2_normal	, jNormalMap			->textureUnitNumber	);
-				//lod1shader2->setTexture(l2_season	, seasonMap				->textureUnitNumber	);
-				//lod1shader2->setTexture(l2_depth	, jDepthMap				->textureUnitNumber	);
+				//lod1_shader->setTexture(l2_color	, lod1_jColorMap				->textureUnitNumber	);
+				//lod1_shader->setTexture(l2_displ	, displacementTexture	->textureUnitNumber	);			
+				//lod1_shader->setTexture(l2_displ2	, displacement2Texture	->textureUnitNumber	);
+				//lod1_shader->setTexture(l2_data		, lod1_jDataMap				->textureUnitNumber	);
+				//lod1_shader->setTexture(l2_normal	, lod1_jNormalMap			->textureUnitNumber	);
+				//lod1_shader->setTexture(l2_season	, seasonMap				->textureUnitNumber	);
+				//lod1_shader->setTexture(l2_depth	, lod1_jDepthMap				->textureUnitNumber	);
 			
 				// bind element buffer
-				eboLOD1->bind();
+				lod1_ebo->bind();
 				// bind vertex attribute buffer
-				lod1vbo2->bind(lod1shader_shadow);	
+				lod1_vbo->bind(lod1_shader_shadow);	
 
 				// instance matrices VBO
 
@@ -1265,7 +1287,7 @@ void DTree::draw_all_instances_LOD1(){
 						int off = i*(3*3*4*sizeof(unsigned int));
 						void * offset = BUFFER_OFFSET(off);
 						// draw instanced
-						eboLOD1->drawInstanced(GL_QUADS, 3*3*4, GL_UNSIGNED_INT, offset, lod1_typeIndices[i]);  
+						lod1_ebo->drawInstanced(GL_QUADS, 3*3*4, GL_UNSIGNED_INT, offset, lod1_typeIndices[i]);  
 					}
 				} // for each configuration
 			
@@ -1285,52 +1307,52 @@ void DTree::draw_all_instances_LOD1(){
 				glDisableVertexAttribArray(tmLoc0_shadow + 2);
 				glDisableVertexAttribArray(tmLoc0_shadow + 3);
 				glBindBuffer(GL_ARRAY_BUFFER, 0);
-				eboLOD1->unbind();
-				lod1vbo2->unbind(lod1shader_shadow);
+				lod1_ebo->unbind();
+				lod1_vbo->unbind(lod1_shader_shadow);
 			
-				jColorMap			->unbind();
+				lod1_jColorMap			->unbind();
 				leafNoiseTexture	->unbind();
 				branchNoiseTexture	->unbind();
-				jDataMap			->unbind();
-				jNormalMap			->unbind();
-				jDepthMap			->unbind();
+				lod1_jDataMap			->unbind();
+				lod1_jNormalMap			->unbind();
+				lod1_jDepthMap			->unbind();
 				seasonMap			->unbind();
-				lod1dataTexture		->unbind();
+				lod1_dataTexture		->unbind();
 				// turn shader off
-			lod1shader_shadow->use(false);
+			lod1_shader_shadow->use(false);
 			glEnable(GL_CULL_FACE);
 			glEnable(GL_LIGHTING);
 		} else {
 			glColor4f(1.0, 1.0, 1.0, 1.0);	
-			int i, j, sliceCount, setCount=sliceSets2.size();
+			int i, j, sliceCount, setCount=lod1_sliceSets.size();
 		
 			glDisable(GL_CULL_FACE);
 			glDisable(GL_LIGHTING);
 
 				g_shadowmap1		->bind(GL_TEXTURE0);
-				jColorMap			->bind(GL_TEXTURE1);
+				lod1_jColorMap			->bind(GL_TEXTURE1);
 				leafNoiseTexture	->bind(GL_TEXTURE2);
 				branchNoiseTexture	->bind(GL_TEXTURE3);
-				jDataMap			->bind(GL_TEXTURE4);
-				jNormalMap			->bind(GL_TEXTURE5);
+				lod1_jDataMap			->bind(GL_TEXTURE4);
+				lod1_jNormalMap			->bind(GL_TEXTURE5);
 				seasonMap			->bind(GL_TEXTURE6);
-				jDepthMap			->bind(GL_TEXTURE7);
-				lod1dataTexture		->bind(GL_TEXTURE8);
+				lod1_jDepthMap			->bind(GL_TEXTURE7);
+				lod1_dataTexture		->bind(GL_TEXTURE8);
 
-			lod1shader2->use(true);
+			lod1_shader->use(true);
 			
-				//lod1shader2->setTexture(l2_color	, jColorMap				->textureUnitNumber	);
-				//lod1shader2->setTexture(l2_displ	, leafNoiseTexture		->textureUnitNumber	);			
-				//lod1shader2->setTexture(l2_displ2	, branchNoiseTexture	->textureUnitNumber	);
-				//lod1shader2->setTexture(l2_data		, jDataMap				->textureUnitNumber	);
-				//lod1shader2->setTexture(l2_normal	, jNormalMap			->textureUnitNumber	);
-				//lod1shader2->setTexture(l2_season	, seasonMap				->textureUnitNumber	);
-				//lod1shader2->setTexture(l2_depth	, jDepthMap				->textureUnitNumber	);
+				//lod1_shader->setTexture(l2_color	, lod1_jColorMap				->textureUnitNumber	);
+				//lod1_shader->setTexture(l2_displ	, leafNoiseTexture		->textureUnitNumber	);			
+				//lod1_shader->setTexture(l2_displ2	, branchNoiseTexture	->textureUnitNumber	);
+				//lod1_shader->setTexture(l2_data		, lod1_jDataMap				->textureUnitNumber	);
+				//lod1_shader->setTexture(l2_normal	, lod1_jNormalMap			->textureUnitNumber	);
+				//lod1_shader->setTexture(l2_season	, seasonMap				->textureUnitNumber	);
+				//lod1_shader->setTexture(l2_depth	, lod1_jDepthMap				->textureUnitNumber	);
 			
 				// bind element buffer
-				eboLOD1->bind();
+				lod1_ebo->bind();
 				// bind vertex attribute buffer
-				lod1vbo2->bind(lod1shader2);	
+				lod1_vbo->bind(lod1_shader);	
 
 				// instance matrices VBO
 
@@ -1364,7 +1386,7 @@ void DTree::draw_all_instances_LOD1(){
 						int off = i*(3*3*4*sizeof(unsigned int));
 						void * offset = BUFFER_OFFSET(off);
 						// draw instanced
-						eboLOD1->drawInstanced(GL_QUADS, 3*3*4, GL_UNSIGNED_INT, offset, lod1_typeIndices[i]);  
+						lod1_ebo->drawInstanced(GL_QUADS, 3*3*4, GL_UNSIGNED_INT, offset, lod1_typeIndices[i]);  
 					}
 				} // for each configuration
 			
@@ -1382,26 +1404,355 @@ void DTree::draw_all_instances_LOD1(){
 				glDisableVertexAttribArray(tmLoc0 + 2);
 				glDisableVertexAttribArray(tmLoc0 + 3);
 				glBindBuffer(GL_ARRAY_BUFFER, 0);
-				eboLOD1->unbind();
-				lod1vbo2->unbind(lod1shader2);
+				lod1_ebo->unbind();
+				lod1_vbo->unbind(lod1_shader);
 			
 				
 				// turn shader off
-			lod1shader2->use(false);
-			jColorMap			->unbind();
+			lod1_shader->use(false);
+			lod1_jColorMap			->unbind();
 			leafNoiseTexture	->unbind();
 			branchNoiseTexture	->unbind();
-			jDataMap			->unbind();
-			jNormalMap			->unbind();
-			jDepthMap			->unbind();
+			lod1_jDataMap			->unbind();
+			lod1_jNormalMap			->unbind();
+			lod1_jDepthMap			->unbind();
 			seasonMap			->unbind();
 			g_shadowmap1        ->unbind();
-			lod1dataTexture		->unbind();
+			lod1_dataTexture		->unbind();
 			glEnable(GL_CULL_FACE);
 			glEnable(GL_LIGHTING);
 		} // if not drawing to shadow map
 	}
 }
+
+void DTree::draw_instance_LOD2b(DTreeInstanceData * instance, float alpha){
+	if (g_draw_lod2){
+		if (g_Draw2Shadowmap){
+			time_offset = instance->time_offset;
+			//printf("draw LOD1 instance\n");
+			glColor4f(1.0,1.0,1.0, alpha);
+			glPushMatrix();
+				glTranslatef(instance->position.x, instance->position.y, instance->position.z);
+				glRotatef(instance->rotation_y, 0.0, 1.0, 0.0);	
+				glDisable(GL_CULL_FACE);
+				glDisable(GL_LIGHTING);
+				
+				leafNoiseTexture		->bind(GL_TEXTURE2);
+				branchNoiseTexture		->bind(GL_TEXTURE3);
+				seasonMap				->bind(GL_TEXTURE6);
+				lod2_jColorMap			->bind(GL_TEXTURE1);
+				lod2_jDataMap			->bind(GL_TEXTURE4);
+				lod2_jNormalMap			->bind(GL_TEXTURE5);
+				lod2_jDepthMap			->bind(GL_TEXTURE7);				
+				lod2_dataTexture		->bind(GL_TEXTURE8);
+
+				lod2_shader_shadow->use(true);
+				lod2_vbo->bind(lod2_shader_shadow);
+				// set attribute
+				// draw EBO...
+				lod2_ebo->bind();
+			
+					int off = instance->offset*(2*4*sizeof(unsigned int));
+					// draw ebo
+					lod2_ebo->draw(GL_UNSIGNED_INT, GL_QUADS, 2*4, BUFFER_OFFSET(off));  
+				
+					// disable all...
+					lod2_ebo->unbind();
+					lod2_vbo->unbind(lod2_shader_shadow);
+
+				seasonMap				->unbind();
+				leafNoiseTexture		->unbind();
+				branchNoiseTexture		->unbind();
+				lod2_jColorMap			->unbind();
+				lod2_jDataMap			->unbind();
+				lod2_jNormalMap			->unbind();
+				lod2_jDepthMap			->unbind();
+				lod2_dataTexture		->unbind();
+					// turn shader off
+				lod2_shader_shadow->use(false);
+				glUseProgram(0);	
+				glEnable(GL_CULL_FACE);
+				glEnable(GL_LIGHTING);
+			
+			glPopMatrix();
+
+
+		} else {
+			time_offset = instance->time_offset;
+			//printf("draw LOD1 instance\n");
+			glColor4f(1.0,1.0,1.0, alpha);
+			glPushMatrix();
+				glTranslatef(instance->position.x, instance->position.y, instance->position.z);
+				glRotatef(instance->rotation_y, 0.0, 1.0, 0.0);
+	
+				glDisable(GL_CULL_FACE);
+				glDisable(GL_LIGHTING);
+
+				g_shadowmap1			->bind(GL_TEXTURE0);				
+				leafNoiseTexture		->bind(GL_TEXTURE2);
+				branchNoiseTexture		->bind(GL_TEXTURE3);
+				seasonMap				->bind(GL_TEXTURE6);
+				lod2_jColorMap			->bind(GL_TEXTURE1);
+				lod2_jDataMap			->bind(GL_TEXTURE4);
+				lod2_jNormalMap			->bind(GL_TEXTURE5);				
+				lod2_jDepthMap			->bind(GL_TEXTURE7);				
+				lod2_dataTexture		->bind(GL_TEXTURE8);
+				lod2_shader->use(true);
+			
+			
+			
+			//lod1_shader->setTexture(l2_season	, seasonMap				->textureUnitNumber	);
+			//
+			//lod1_shader->setTexture(l2_color	, lod1_jColorMap				->textureUnitNumber	);
+			//lod1_shader->setTexture(l2_displ	, displacementTexture	->textureUnitNumber	);			
+			//lod1_shader->setTexture(l2_displ2	, displacement2Texture	->textureUnitNumber	);
+			//lod1_shader->setTexture(l2_data		, lod1_jDataMap				->textureUnitNumber	);
+			//lod1_shader->setTexture(l2_normal	, lod1_jNormalMap			->textureUnitNumber	);
+			//lod1_shader->setTexture(l2_depth	, lod1_jDepthMap				->textureUnitNumber	);
+			//
+				lod2_shader->setUniform3f(lod2_iu1Loc1, instance->colorVariance.r, instance->colorVariance.g, instance->colorVariance.b);
+				lod2_vbo->bind(lod2_shader);
+				// set attribute
+				// draw EBO...
+				lod2_ebo->bind();
+			
+					int off = instance->offset*(2*4*sizeof(unsigned int));
+					// draw ebo
+					lod2_ebo->draw(GL_UNSIGNED_INT, GL_QUADS, 2*4, BUFFER_OFFSET(off));  
+
+
+					// disable all...
+					lod2_ebo->unbind();
+					lod2_vbo->unbind(lod2_shader);
+			
+				
+					// turn shader off
+				lod2_shader->use(false);
+				lod2_jColorMap			->unbind();				
+				lod2_jDataMap			->unbind();
+				lod2_jNormalMap			->unbind();
+				lod2_jDepthMap			->unbind();
+				lod2_dataTexture		->unbind();
+
+				seasonMap				->unbind();
+				g_shadowmap1			->unbind();
+				leafNoiseTexture		->unbind();
+				branchNoiseTexture		->unbind();
+				
+				glUseProgram(0);	
+				glEnable(GL_CULL_FACE);
+				glEnable(GL_LIGHTING);
+			
+			glPopMatrix();
+		} // if not draw to shadow map...
+	}
+}
+
+void DTree::draw_all_instances_LOD2b(){
+	g_transitionControl = 1.0;
+	if (g_draw_lod2 && g_tree_lod2_count>0){
+		if (g_Draw2Shadowmap){			
+			glColor4f(1.0, 1.0, 1.0, 1.0);	
+			int i, j, sliceCount, setCount=lod2_sliceSets.size();
+			
+			glDisable(GL_CULL_FACE);
+			glDisable(GL_LIGHTING);
+				lod2_jColorMap			->bind(GL_TEXTURE1);
+				leafNoiseTexture		->bind(GL_TEXTURE2);
+				branchNoiseTexture		->bind(GL_TEXTURE3);
+				lod2_jDataMap			->bind(GL_TEXTURE4);
+				lod2_jNormalMap			->bind(GL_TEXTURE5);
+				seasonMap				->bind(GL_TEXTURE6);
+				lod2_jDepthMap			->bind(GL_TEXTURE7);
+				lod2_dataTexture		->bind(GL_TEXTURE8);
+
+			lod2_shader_shadow->use(true);
+			
+				//lod1_shader->setTexture(l2_color	, lod1_jColorMap				->textureUnitNumber	);
+				//lod1_shader->setTexture(l2_displ	, displacementTexture	->textureUnitNumber	);			
+				//lod1_shader->setTexture(l2_displ2	, displacement2Texture	->textureUnitNumber	);
+				//lod1_shader->setTexture(l2_data		, lod1_jDataMap				->textureUnitNumber	);
+				//lod1_shader->setTexture(l2_normal	, lod1_jNormalMap			->textureUnitNumber	);
+				//lod1_shader->setTexture(l2_season	, seasonMap				->textureUnitNumber	);
+				//lod1_shader->setTexture(l2_depth	, lod1_jDepthMap				->textureUnitNumber	);
+			
+				// bind element buffer
+				lod2_ebo->bind();
+				// bind vertex attribute buffer
+				lod2_vbo->bind(lod2_shader_shadow);	
+
+				// instance matrices VBO
+
+
+				// bind instance data
+				glBindBuffer(GL_ARRAY_BUFFER, i_matricesBuffID);
+				glEnableVertexAttribArray(lod2_tmLoc0_shadow);
+				glEnableVertexAttribArray(lod2_tmLoc0_shadow + 1);
+				glEnableVertexAttribArray(lod2_tmLoc0_shadow + 2);
+				glEnableVertexAttribArray(lod2_tmLoc0_shadow + 3);
+				
+				if (lod2_iaLoc1_shadow>=0){
+					glEnableVertexAttribArray(lod2_iaLoc1_shadow);
+					glVertexAttribPointer(lod2_iaLoc1_shadow, 4, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * instanceFloatCount, (void*)(sizeof(float) * 16));
+					glVertexAttribDivisor(lod2_iaLoc1_shadow, 1);
+				}
+				
+				glVertexAttribPointer(lod2_tmLoc0_shadow, 4, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * instanceFloatCount, (void*)(0));
+				glVertexAttribPointer(lod2_tmLoc0_shadow + 1, 4, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * instanceFloatCount, (void*)(sizeof(float) * 4));
+				glVertexAttribPointer(lod2_tmLoc0_shadow + 2, 4, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * instanceFloatCount, (void*)(sizeof(float) * 8));
+				glVertexAttribPointer(lod2_tmLoc0_shadow + 3, 4, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * instanceFloatCount, (void*)(sizeof(float) * 12));
+				// color variations, time_offset
+			
+				glVertexAttribDivisor(lod2_tmLoc0_shadow, 1);
+				glVertexAttribDivisor(lod2_tmLoc0_shadow + 1, 1);
+				glVertexAttribDivisor(lod2_tmLoc0_shadow + 2, 1);
+				glVertexAttribDivisor(lod2_tmLoc0_shadow + 3, 1);
+			
+				for (int i=0; i<lod2_instanceMatrices.size(); i++){
+					// transfer data to buffer
+					if (lod2_typeIndices[i]>0){
+						glBufferData(GL_ARRAY_BUFFER, lod2_typeIndices[i] * instanceFloatCount * sizeof(float), lod2_instanceMatrices[i], GL_STREAM_DRAW);
+						int off = i*(2*4*sizeof(unsigned int));
+						void * offset = BUFFER_OFFSET(off);
+						// draw instanced
+						lod2_ebo->drawInstanced(GL_QUADS, 2*4, GL_UNSIGNED_INT, offset, lod2_typeIndices[i]);  
+					}
+				} // for each configuration
+			
+				glVertexAttribDivisor(lod2_tmLoc0_shadow, 0);
+				glVertexAttribDivisor(lod2_tmLoc0_shadow + 1, 0);
+				glVertexAttribDivisor(lod2_tmLoc0_shadow + 2, 0);
+				glVertexAttribDivisor(lod2_tmLoc0_shadow + 3, 0);
+				// disable all...
+				
+				if (lod2_iaLoc1_shadow>=0){
+					glVertexAttribDivisor(lod2_iaLoc1_shadow, 0);
+					glDisableVertexAttribArray(lod2_iaLoc1_shadow);
+				}
+				
+				glDisableVertexAttribArray(lod2_tmLoc0_shadow);
+				glDisableVertexAttribArray(lod2_tmLoc0_shadow + 1);
+				glDisableVertexAttribArray(lod2_tmLoc0_shadow + 2);
+				glDisableVertexAttribArray(lod2_tmLoc0_shadow + 3);
+				glBindBuffer(GL_ARRAY_BUFFER, 0);
+				lod2_ebo->unbind();
+				lod2_vbo->unbind(lod2_shader_shadow);
+			
+				leafNoiseTexture		->unbind();
+				branchNoiseTexture		->unbind();
+				seasonMap				->unbind();
+				lod2_jDataMap			->unbind();
+				lod2_jNormalMap			->unbind();
+				lod2_jDepthMap			->unbind();
+				lod2_jColorMap			->unbind();
+				lod2_dataTexture		->unbind();
+				// turn shader off
+			lod2_shader_shadow->use(false);
+			glEnable(GL_CULL_FACE);
+			glEnable(GL_LIGHTING);
+		} else {
+			glColor4f(1.0, 1.0, 1.0, 1.0);	
+			int i, j, sliceCount, setCount=lod2_sliceSets.size();
+		
+			glDisable(GL_CULL_FACE);
+			glDisable(GL_LIGHTING);
+
+				g_shadowmap1			->bind(GL_TEXTURE0);
+				seasonMap				->bind(GL_TEXTURE6);
+				leafNoiseTexture		->bind(GL_TEXTURE2);
+				branchNoiseTexture		->bind(GL_TEXTURE3);
+				lod2_jDataMap			->bind(GL_TEXTURE4);
+				lod2_jNormalMap			->bind(GL_TEXTURE5);
+				lod2_jColorMap			->bind(GL_TEXTURE1);
+				lod2_jDepthMap			->bind(GL_TEXTURE7);
+				lod2_dataTexture		->bind(GL_TEXTURE8);
+
+			lod2_shader->use(true);
+			
+				//lod1_shader->setTexture(l2_color	, lod1_jColorMap				->textureUnitNumber	);
+				//lod1_shader->setTexture(l2_displ	, leafNoiseTexture		->textureUnitNumber	);			
+				//lod1_shader->setTexture(l2_displ2	, branchNoiseTexture	->textureUnitNumber	);
+				//lod1_shader->setTexture(l2_data		, lod1_jDataMap				->textureUnitNumber	);
+				//lod1_shader->setTexture(l2_normal	, lod1_jNormalMap			->textureUnitNumber	);
+				//lod1_shader->setTexture(l2_season	, seasonMap				->textureUnitNumber	);
+				//lod1_shader->setTexture(l2_depth	, lod1_jDepthMap				->textureUnitNumber	);
+			
+				// bind element buffer
+				lod2_ebo->bind();
+				// bind vertex attribute buffer
+				lod2_vbo->bind(lod2_shader);	
+
+				// instance matrices VBO
+
+
+				// bind instance data
+				glBindBuffer(GL_ARRAY_BUFFER, i_matricesBuffID);
+				glEnableVertexAttribArray(lod2_tmLoc0);
+				glEnableVertexAttribArray(lod2_tmLoc0 + 1);
+				glEnableVertexAttribArray(lod2_tmLoc0 + 2);
+				glEnableVertexAttribArray(lod2_tmLoc0 + 3);
+				if (lod2_iaLoc1>=0){
+					glEnableVertexAttribArray(lod2_iaLoc1);
+					glVertexAttribPointer(lod2_iaLoc1, 4, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * instanceFloatCount, (void*)(sizeof(float) * 16));
+					glVertexAttribDivisor(lod2_iaLoc1, 1);
+				}
+				glVertexAttribPointer(lod2_tmLoc0, 4, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * instanceFloatCount, (void*)(0));
+				glVertexAttribPointer(lod2_tmLoc0 + 1, 4, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * instanceFloatCount, (void*)(sizeof(float) * 4));
+				glVertexAttribPointer(lod2_tmLoc0 + 2, 4, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * instanceFloatCount, (void*)(sizeof(float) * 8));
+				glVertexAttribPointer(lod2_tmLoc0 + 3, 4, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * instanceFloatCount, (void*)(sizeof(float) * 12));
+				// color variations, time_offset
+			
+				glVertexAttribDivisor(lod2_tmLoc0, 1);
+				glVertexAttribDivisor(lod2_tmLoc0 + 1, 1);
+				glVertexAttribDivisor(lod2_tmLoc0 + 2, 1);
+				glVertexAttribDivisor(lod2_tmLoc0 + 3, 1);
+			
+				for (int i=0; i<lod2_instanceMatrices.size(); i++){
+					// transfer data to buffer
+					if (lod2_typeIndices[i]>0){
+						glBufferData(GL_ARRAY_BUFFER, lod2_typeIndices[i] * instanceFloatCount * sizeof(float), lod2_instanceMatrices[i], GL_STREAM_DRAW);
+						int off = i*(2*4*sizeof(unsigned int));
+						void * offset = BUFFER_OFFSET(off);
+						// draw instanced
+						lod2_ebo->drawInstanced(GL_QUADS, 2*4, GL_UNSIGNED_INT, offset, lod2_typeIndices[i]);  
+					}
+				} // for each configuration
+			
+				glVertexAttribDivisor(lod2_tmLoc0, 0);
+				glVertexAttribDivisor(lod2_tmLoc0 + 1, 0);
+				glVertexAttribDivisor(lod2_tmLoc0 + 2, 0);
+				glVertexAttribDivisor(lod2_tmLoc0 + 3, 0);
+				// disable all...
+				if (lod2_iaLoc1>=0){
+					glVertexAttribDivisor(lod2_iaLoc1, 0);
+					glDisableVertexAttribArray(lod2_iaLoc1);
+				}
+				glDisableVertexAttribArray(lod2_tmLoc0);
+				glDisableVertexAttribArray(lod2_tmLoc0 + 1);
+				glDisableVertexAttribArray(lod2_tmLoc0 + 2);
+				glDisableVertexAttribArray(lod2_tmLoc0 + 3);
+				glBindBuffer(GL_ARRAY_BUFFER, 0);
+				lod2_ebo->unbind();
+				lod2_vbo->unbind(lod2_shader);
+			
+				
+				// turn shader off
+			lod2_shader->use(false);
+			leafNoiseTexture		->unbind();
+			branchNoiseTexture		->unbind();
+			seasonMap				->unbind();
+			g_shadowmap1			->unbind();
+			lod2_jColorMap			->unbind();
+			lod2_jDataMap			->unbind();
+			lod2_jNormalMap			->unbind();
+			lod2_jDepthMap			->unbind();	
+			lod2_dataTexture		->unbind();
+			glEnable(GL_CULL_FACE);
+			glEnable(GL_LIGHTING);
+		} // if not drawing to shadow map
+	}
+}
+
 
 void DTree::draw_instance_LOD2(DTreeInstanceData * instance, float alpha){
 	if (g_draw_lod2){
@@ -1428,19 +1779,19 @@ void DTree::draw_instance_LOD2(DTreeInstanceData * instance, float alpha){
 				lod2depth1			->bind(GL_TEXTURE10);
 				lod2depth2			->bind(GL_TEXTURE11);
 			
-				lod2shader_shadow->use(true);
-				lod2vbo->bind(lod2shader_shadow);
+				lod2_shader_shadow->use(true);
+				lod2_vbo->bind(lod2_shader_shadow);
 				// set attribute
 				// draw EBO...
-				lod2ebo->bind();
+				lod2_ebo->bind();
 			
 					int off = instance->offset*(2*4*sizeof(unsigned int));
 					// draw ebo
-					lod2ebo->draw(GL_UNSIGNED_INT, GL_QUADS, 2*4, BUFFER_OFFSET(off));  
+					lod2_ebo->draw(GL_UNSIGNED_INT, GL_QUADS, 2*4, BUFFER_OFFSET(off));  
 
 					// disable all...
-					lod2ebo->unbind();
-					lod2vbo->unbind(lod2shader_shadow);
+					lod2_ebo->unbind();
+					lod2_vbo->unbind(lod2_shader_shadow);
 				leafNoiseTexture	->unbind();
 				branchNoiseTexture	->unbind();
 				lod2color1			->unbind();
@@ -1450,7 +1801,7 @@ void DTree::draw_instance_LOD2(DTreeInstanceData * instance, float alpha){
 				lod2branch1			->unbind();
 				lod2branch2			->unbind();
 					// turn shader off
-				lod2shader_shadow->use(false);
+				lod2_shader_shadow->use(false);
 				glUseProgram(0);	
 				glEnable(GL_CULL_FACE);
 				glEnable(GL_LIGHTING);			
@@ -1478,20 +1829,20 @@ void DTree::draw_instance_LOD2(DTreeInstanceData * instance, float alpha){
 				lod2depth1			->bind(GL_TEXTURE10);
 				lod2depth2			->bind(GL_TEXTURE11);
 			
-				lod2shader->use(true);
-				lod2shader->setUniform3f(lod2loc_colorVariance, instance->colorVariance.r, instance->colorVariance.g, instance->colorVariance.b);
-				lod2vbo->bind(lod2shader);
+				lod2_shader->use(true);
+				lod2_shader->setUniform3f(lod2loc_colorVariance, instance->colorVariance.r, instance->colorVariance.g, instance->colorVariance.b);
+				lod2_vbo->bind(lod2_shader);
 				// set attribute
 				// draw EBO...
-				lod2ebo->bind();
+				lod2_ebo->bind();
 			
 					int off = instance->offset*(2*4*sizeof(unsigned int));
 					// draw ebo
-					lod2ebo->draw(GL_UNSIGNED_INT, GL_QUADS, 2*4, BUFFER_OFFSET(off));  
+					lod2_ebo->draw(GL_UNSIGNED_INT, GL_QUADS, 2*4, BUFFER_OFFSET(off));  
 
 					// disable all...
-					lod2ebo->unbind();
-					lod2vbo->unbind(lod2shader);
+					lod2_ebo->unbind();
+					lod2_vbo->unbind(lod2_shader);
 				leafNoiseTexture	->unbind();
 				branchNoiseTexture	->unbind();
 				lod2color1			->unbind();
@@ -1502,7 +1853,7 @@ void DTree::draw_instance_LOD2(DTreeInstanceData * instance, float alpha){
 				lod2branch2			->unbind();
 				g_shadowmap1		->unbind();
 					// turn shader off
-				lod2shader->use(false);
+				lod2_shader->use(false);
 				glUseProgram(0);	
 				glEnable(GL_CULL_FACE);
 				glEnable(GL_LIGHTING);
@@ -1533,24 +1884,24 @@ void DTree::draw_all_instances_LOD2(){
 				lod2depth1			->bind(GL_TEXTURE10);
 				lod2depth2			->bind(GL_TEXTURE11);
 
-			lod2shader_shadow->use(true);
+			lod2_shader_shadow->use(true);
 			
 
-				//lod2shader->setTexture(lod2loc_color_tex_1		, lod2color1			->textureUnitNumber	);
-				//lod2shader->setTexture(lod2loc_color_tex_2		, lod2color2			->textureUnitNumber	);
-				//lod2shader->setTexture(lod2loc_normal_tex_1		, lod2normal1			->textureUnitNumber	);
-				//lod2shader->setTexture(lod2loc_normal_tex_2		, lod2normal2			->textureUnitNumber	);
-				//lod2shader->setTexture(lod2loc_branch_tex_1		, lod2branch1			->textureUnitNumber	);
-				//lod2shader->setTexture(lod2loc_branch_tex_2		, lod2branch2			->textureUnitNumber	);
+				//lod2_shader->setTexture(lod2loc_color_tex_1		, lod2color1			->textureUnitNumber	);
+				//lod2_shader->setTexture(lod2loc_color_tex_2		, lod2color2			->textureUnitNumber	);
+				//lod2_shader->setTexture(lod2loc_normal_tex_1		, lod2normal1			->textureUnitNumber	);
+				//lod2_shader->setTexture(lod2loc_normal_tex_2		, lod2normal2			->textureUnitNumber	);
+				//lod2_shader->setTexture(lod2loc_branch_tex_1		, lod2branch1			->textureUnitNumber	);
+				//lod2_shader->setTexture(lod2loc_branch_tex_2		, lod2branch2			->textureUnitNumber	);
 				//
 				//
-				//lod2shader->setTexture(lod2loc_leaf_tex		, leafNoiseTexture		->textureUnitNumber	);	
-				//lod2shader->setTexture(lod2loc_branch_tex	, branchNoiseTexture	->textureUnitNumber	);
-				//lod2shader->setTexture(lod2loc_season_tex	, seasonMap				->textureUnitNumber	);
+				//lod2_shader->setTexture(lod2loc_leaf_tex		, leafNoiseTexture		->textureUnitNumber	);	
+				//lod2_shader->setTexture(lod2loc_branch_tex	, branchNoiseTexture	->textureUnitNumber	);
+				//lod2_shader->setTexture(lod2loc_season_tex	, seasonMap				->textureUnitNumber	);
 				// bind element buffer
-				lod2ebo->bind();
+				lod2_ebo->bind();
 				// bind vertex attribute buffer
-				lod2vbo->bind(lod2shader_shadow);	
+				lod2_vbo->bind(lod2_shader_shadow);	
 
 				// instance matrices VBO
 
@@ -1583,7 +1934,7 @@ void DTree::draw_all_instances_LOD2(){
 						int off = i*(2*4*sizeof(unsigned int));
 						void * offset = BUFFER_OFFSET(off);
 						// draw instanced
-						lod2ebo->drawInstanced(GL_QUADS, 2*4, GL_UNSIGNED_INT, offset, lod2_typeIndices[i]);  
+						lod2_ebo->drawInstanced(GL_QUADS, 2*4, GL_UNSIGNED_INT, offset, lod2_typeIndices[i]);  
 					}
 				} // for each configuration
 				glVertexAttribDivisor(ia2Loc1_shadow, 0);
@@ -1598,8 +1949,8 @@ void DTree::draw_all_instances_LOD2(){
 				glDisableVertexAttribArray(tm2Loc0_shadow + 2);
 				glDisableVertexAttribArray(tm2Loc0_shadow + 3);
 				glBindBuffer(GL_ARRAY_BUFFER, 0);
-				lod2ebo->unbind();
-				lod2vbo->unbind(lod2shader_shadow);
+				lod2_ebo->unbind();
+				lod2_vbo->unbind(lod2_shader_shadow);
 			
 				leafNoiseTexture	->unbind();
 				branchNoiseTexture  ->unbind();
@@ -1613,7 +1964,7 @@ void DTree::draw_all_instances_LOD2(){
 				lod2depth1			->unbind();
 				lod2depth2			->unbind();
 				// turn shader off
-			lod2shader_shadow->use(false);
+			lod2_shader_shadow->use(false);
 			glEnable(GL_CULL_FACE);
 			glEnable(GL_LIGHTING);
 		} else {
@@ -1634,24 +1985,24 @@ void DTree::draw_all_instances_LOD2(){
 				lod2branch2			->bind(GL_TEXTURE5);
 				g_shadowmap1		->bind(GL_TEXTURE9);
 
-			lod2shader->use(true);
+			lod2_shader->use(true);
 			
 
-				lod2shader->setTexture(lod2loc_color_tex_1		, lod2color1			->textureUnitNumber	);
-				lod2shader->setTexture(lod2loc_color_tex_2		, lod2color2			->textureUnitNumber	);
-				lod2shader->setTexture(lod2loc_normal_tex_1		, lod2normal1			->textureUnitNumber	);
-				lod2shader->setTexture(lod2loc_normal_tex_2		, lod2normal2			->textureUnitNumber	);
-				lod2shader->setTexture(lod2loc_branch_tex_1		, lod2branch1			->textureUnitNumber	);
-				lod2shader->setTexture(lod2loc_branch_tex_2		, lod2branch2			->textureUnitNumber	);
+				lod2_shader->setTexture(lod2loc_color_tex_1		, lod2color1			->textureUnitNumber	);
+				lod2_shader->setTexture(lod2loc_color_tex_2		, lod2color2			->textureUnitNumber	);
+				lod2_shader->setTexture(lod2loc_normal_tex_1		, lod2normal1			->textureUnitNumber	);
+				lod2_shader->setTexture(lod2loc_normal_tex_2		, lod2normal2			->textureUnitNumber	);
+				lod2_shader->setTexture(lod2loc_branch_tex_1		, lod2branch1			->textureUnitNumber	);
+				lod2_shader->setTexture(lod2loc_branch_tex_2		, lod2branch2			->textureUnitNumber	);
 
 
-				lod2shader->setTexture(lod2loc_leaf_tex		, leafNoiseTexture		->textureUnitNumber	);	
-				lod2shader->setTexture(lod2loc_branch_tex	, branchNoiseTexture	->textureUnitNumber	);
-				lod2shader->setTexture(lod2loc_season_tex	, seasonMap				->textureUnitNumber	);
+				lod2_shader->setTexture(lod2loc_leaf_tex		, leafNoiseTexture		->textureUnitNumber	);	
+				lod2_shader->setTexture(lod2loc_branch_tex	, branchNoiseTexture	->textureUnitNumber	);
+				lod2_shader->setTexture(lod2loc_season_tex	, seasonMap				->textureUnitNumber	);
 				// bind element buffer
-				lod2ebo->bind();
+				lod2_ebo->bind();
 				// bind vertex attribute buffer
-				lod2vbo->bind(lod2shader);	
+				lod2_vbo->bind(lod2_shader);	
 
 				// instance matrices VBO
 
@@ -1682,7 +2033,7 @@ void DTree::draw_all_instances_LOD2(){
 						int off = i*(2*4*sizeof(unsigned int));
 						void * offset = BUFFER_OFFSET(off);
 						// draw instanced
-						lod2ebo->drawInstanced(GL_QUADS, 2*4, GL_UNSIGNED_INT, offset, lod2_typeIndices[i]);  
+						lod2_ebo->drawInstanced(GL_QUADS, 2*4, GL_UNSIGNED_INT, offset, lod2_typeIndices[i]);  
 					}
 				} // for each configuration
 				glVertexAttribDivisor(ia2Loc1, 0);
@@ -1697,8 +2048,8 @@ void DTree::draw_all_instances_LOD2(){
 				glDisableVertexAttribArray(tm2Loc0 + 2);
 				glDisableVertexAttribArray(tm2Loc0 + 3);
 				glBindBuffer(GL_ARRAY_BUFFER, 0);
-				lod2ebo->unbind();
-				lod2vbo->unbind(lod2shader);
+				lod2_ebo->unbind();
+				lod2_vbo->unbind(lod2_shader);
 			
 				leafNoiseTexture	->unbind();
 				branchNoiseTexture  ->unbind();
@@ -1711,14 +2062,14 @@ void DTree::draw_all_instances_LOD2(){
 				lod2branch2			->unbind();
 				g_shadowmap1		->unbind();
 				// turn shader off
-			lod2shader->use(false);
+			lod2_shader->use(false);
 			glEnable(GL_CULL_FACE);
 			glEnable(GL_LIGHTING);
 		} // if not drawing to shadowmap
 	}
 }
 
-
+/*
 void DTree::drawLOD0()
 {
 	if (g_draw_lod0){
@@ -1858,20 +2209,19 @@ void DTree::drawLOD1()
 	}
 }
 
-
 void DTree::drawLOD1b()
 {
 	if (g_draw_lod1){
 		glColor4f(0.0, 0.0,0.0, alpha_c);
 		g_tree_lod1_count++;
-		int i, j, sliceCount, setCount=sliceSets2.size();
+		int i, j, sliceCount, setCount=lod1_sliceSets.size();
 		Texture * colorTexture, * dataTexture, *displacementTexture, *displacement2Texture, *normalTexture;
 		displacementTexture		=	leafNoiseTexture;
 		displacement2Texture	=	branchNoiseTexture;
 		
-		colorTexture			=	jColorMap;
-		dataTexture				=	jDataMap;
-		normalTexture			=	jNormalMap;
+		colorTexture			=	lod1_jColorMap;
+		dataTexture				=	lod1_jDataMap;
+		normalTexture			=	lod1_jNormalMap;
 
 		glPushMatrix();
 					
@@ -1881,59 +2231,59 @@ void DTree::drawLOD1b()
 			glDisable(GL_CULL_FACE);
 			glDisable(GL_LIGHTING);
 			
-			/*
-			v3 dirA = v3( -1.0, 0.0, 0.0);									// A
-			v3 rightA = dirA.getRotated( 90*DEG_TO_RAD, v3(0.0, 1.0, 0.0));
-			v3 dirB = dirA.getRotated(  60*DEG_TO_RAD, v3(0.0, 1.0, 0.0));	// B
-			v3 rightB = dirB.getRotated( 90*DEG_TO_RAD, v3(0.0, 1.0, 0.0));
-			v3 dirC = dirA.getRotated( -60*DEG_TO_RAD, v3(0.0, 1.0, 0.0));	// C
-			v3 rightC = dirC.getRotated( 90*DEG_TO_RAD, v3(0.0, 1.0, 0.0));
-			float short_l = 0.1, long_l = 0.3;
-			glPushMatrix();
-				glTranslatef(0.0, 0.1, 0.0);
-				glBegin(GL_LINE_STRIP);
-					glColor4f(1.0, 0.0,0.0, alpha_c);
-					glVertex3f(short_l*rightA.x, short_l*rightA.y, short_l*rightA.z); glVertex3f(0.0, .0, .0); glVertex3f(long_l*dirA.x, long_l*dirA.y, long_l*dirA.z);
-				glEnd();
-				glBegin(GL_LINE_STRIP);
-					glColor4f(0.0, 1.0,0.0, alpha_c);
-					glVertex3f(short_l*rightB.x, short_l*rightB.y, short_l*rightB.z); glVertex3f(0.0, .0, .0); glVertex3f(long_l*dirB.x, long_l*dirB.y, long_l*dirB.z);
-				glEnd();
-				glBegin(GL_LINE_STRIP);
-					glColor4f(0.0, 0.0, 1.0, alpha_c);
-					glVertex3f(short_l*rightC.x, short_l*rightC.y, short_l*rightC.z); glVertex3f(0.0, .0, .0); glVertex3f(long_l*dirC.x, long_l*dirC.y, long_l*dirC.z);
-				glEnd();
+			
+			//v3 dirA = v3( -1.0, 0.0, 0.0);									// A
+			//v3 rightA = dirA.getRotated( 90*DEG_TO_RAD, v3(0.0, 1.0, 0.0));
+			//v3 dirB = dirA.getRotated(  60*DEG_TO_RAD, v3(0.0, 1.0, 0.0));	// B
+			//v3 rightB = dirB.getRotated( 90*DEG_TO_RAD, v3(0.0, 1.0, 0.0));
+			//v3 dirC = dirA.getRotated( -60*DEG_TO_RAD, v3(0.0, 1.0, 0.0));	// C
+			//v3 rightC = dirC.getRotated( 90*DEG_TO_RAD, v3(0.0, 1.0, 0.0));
+			//float short_l = 0.1, long_l = 0.3;
+			//glPushMatrix();
+			//	glTranslatef(0.0, 0.1, 0.0);
+			//	glBegin(GL_LINE_STRIP);
+			//		glColor4f(1.0, 0.0,0.0, alpha_c);
+			//		glVertex3f(short_l*rightA.x, short_l*rightA.y, short_l*rightA.z); glVertex3f(0.0, .0, .0); glVertex3f(long_l*dirA.x, long_l*dirA.y, long_l*dirA.z);
+			//	glEnd();
+			//	glBegin(GL_LINE_STRIP);
+			//		glColor4f(0.0, 1.0,0.0, alpha_c);
+			//		glVertex3f(short_l*rightB.x, short_l*rightB.y, short_l*rightB.z); glVertex3f(0.0, .0, .0); glVertex3f(long_l*dirB.x, long_l*dirB.y, long_l*dirB.z);
+			//	glEnd();
+			//	glBegin(GL_LINE_STRIP);
+			//		glColor4f(0.0, 0.0, 1.0, alpha_c);
+			//		glVertex3f(short_l*rightC.x, short_l*rightC.y, short_l*rightC.z); glVertex3f(0.0, .0, .0); glVertex3f(long_l*dirC.x, long_l*dirC.y, long_l*dirC.z);
+			//	glEnd();
 
-				glBegin(GL_LINES);
-					glColor4f(1.0, 1.0, 1.0, alpha_c);
-					glVertex3f(0.0, 0.0, 0.0); glVertex3f(eyeDir.x,eyeDir.y, eyeDir.z);
-				glEnd();
-			glPopMatrix();
-			*/
-			lod1shader2->use(true);
-			jColorMap			->bind(GL_TEXTURE1);
+			//	glBegin(GL_LINES);
+			//		glColor4f(1.0, 1.0, 1.0, alpha_c);
+			//		glVertex3f(0.0, 0.0, 0.0); glVertex3f(eyeDir.x,eyeDir.y, eyeDir.z);
+			//	glEnd();
+			//glPopMatrix();
+			
+			lod1_shader->use(true);
+			lod1_jColorMap			->bind(GL_TEXTURE1);
 			displacementTexture	->bind(GL_TEXTURE2);
 			displacement2Texture->bind(GL_TEXTURE3);
-			jDataMap			->bind(GL_TEXTURE4);
-			jNormalMap			->bind(GL_TEXTURE5);
+			lod1_jDataMap			->bind(GL_TEXTURE4);
+			lod1_jNormalMap			->bind(GL_TEXTURE5);
 
 			//u_time_offset->data = &	g_tree_time_offset_1;
 	
 			//printf("SETTING TEXTURE[%s] loc:%i, unit id: %i\n", colorTexture->inShaderName.c_str(),l2_color, colorTexture->textureUnitNumber);
-			lod1shader2->setTexture(l2_color	, jColorMap				->textureUnitNumber	);
+			lod1_shader->setTexture(l2_color	, lod1_jColorMap				->textureUnitNumber	);
 			//printf("SETTING TEXTURE[%s] loc:%i, unit id: %i\n", displacementTexture->inShaderName.c_str(),l2_displ, displacementTexture->textureUnitNumber);
-			lod1shader2->setTexture(l2_displ	, displacementTexture	->textureUnitNumber	);			
+			lod1_shader->setTexture(l2_displ	, displacementTexture	->textureUnitNumber	);			
 			//printf("SETTING TEXTURE[%s] loc:%i, unit id: %i\n", displacement2Texture->inShaderName.c_str(),l2_displ2, displacement2Texture->textureUnitNumber);
-			lod1shader2->setTexture(l2_displ2	, displacement2Texture	->textureUnitNumber	);
+			lod1_shader->setTexture(l2_displ2	, displacement2Texture	->textureUnitNumber	);
 			//printf("SETTING TEXTURE[%s] loc:%i, unit id: %i\n", dataTexture->inShaderName.c_str(),l2_data, dataTexture->textureUnitNumber);
-			lod1shader2->setTexture(l2_data		, jDataMap				->textureUnitNumber	);
+			lod1_shader->setTexture(l2_data		, lod1_jDataMap				->textureUnitNumber	);
 			//printf("SETTING TEXTURE[%s] loc:%i, unit id: %i\n", normalTexture->inShaderName.c_str(),l2_normal, normalTexture->textureUnitNumber);
-			lod1shader2->setTexture(l2_normal	, jNormalMap			->textureUnitNumber	);
+			lod1_shader->setTexture(l2_normal	, lod1_jNormalMap			->textureUnitNumber	);
 			//glDepthMask(GL_FALSE);
-			lod1vbo2->bind(lod1shader2);
+			lod1_vbo->bind(lod1_shader);
 
 			// draw EBO...
-			eboLOD1->bind();
+			lod1_ebo->bind();
 
 			// for each instance
 
@@ -1965,14 +2315,14 @@ void DTree::drawLOD1b()
 					}
 					int off = o*(4*3*3*sizeof(unsigned int));
 					void * offset = BUFFER_OFFSET(off);
-					eboLOD1->draw(GL_UNSIGNED_INT, GL_QUADS, 3*3*4, offset);
+					lod1_ebo->draw(GL_UNSIGNED_INT, GL_QUADS, 3*3*4, offset);
 				glPopMatrix();
 			} // for each position
 			
-			eboLOD1->unbind();
+			lod1_ebo->unbind();
 
-			lod1vbo2->unbind(lod1shader2);
-			//lod1vbo2->draw(lod1shader2, GL_QUADS, 0);
+			lod1_vbo->unbind(lod1_shader);
+			//lod1_vbo->draw(lod1_shader, GL_QUADS, 0);
 			//glDepthMask(GL_TRUE);
 			colorTexture		->unbind();
 			displacementTexture	->unbind();
@@ -1980,7 +2330,7 @@ void DTree::drawLOD1b()
 			dataTexture			->unbind();
 			normalTexture		->unbind();
 			// turn off shader
-			lod1shader2->use(false);
+			lod1_shader->use(false);
 			
 			glEnable(GL_CULL_FACE);
 			glEnable(GL_LIGHTING);
@@ -1988,7 +2338,6 @@ void DTree::drawLOD1b()
 		glPopMatrix();
 	}
 }
-
 
 void DTree::drawLOD2()
 {
@@ -2119,6 +2468,57 @@ void DTree::drawNormals(DTreeInstanceData* instance){
 	glPopMatrix();
 	glEnable(GL_CULL_FACE);
 }
+*/
+// 
+void DTree::drawForLOD(){
+	// TODO: optimize rendering for LOD slice generation...
+	glDisable(GL_CULL_FACE);
+	// draw bbox
+	//bbox->draw();
+
+	glDisable(GL_LIGHTING);
+	// bind textures
+	dataTexture->bind(GL_TEXTURE1);
+	branchNoiseTexture->bind(GL_TEXTURE2);
+	bColorTexture->bind(GL_TEXTURE4);
+
+	// draw branches
+	branchesEBO->draw(bLODShader);
+
+	bColorTexture->unbind();
+
+	// bind textures
+	leafNoiseTexture->bind(GL_TEXTURE3);
+	frontDecalMap		->bind(GL_TEXTURE4);
+	frontNormalMap		->bind(GL_TEXTURE5);
+	frontTranslucencyMap->bind(GL_TEXTURE6);
+	frontHalfLife2Map	->bind(GL_TEXTURE7);
+	backDecalMap		->bind(GL_TEXTURE8);
+	backNormalMap		->bind(GL_TEXTURE9);
+	backTranslucencyMap	->bind(GL_TEXTURE10);
+	backHalfLife2Map	->bind(GL_TEXTURE11);
+
+
+
+	// draw leaves
+	leavesVBO->draw(lLODShader, GL_QUADS, 0);
+
+
+	leafNoiseTexture->unbind();
+	frontDecalMap		->unbind();
+	frontNormalMap		->unbind();
+	frontTranslucencyMap->unbind();
+	frontHalfLife2Map	->unbind();
+	backDecalMap		->unbind();
+	backNormalMap		->unbind();
+	backTranslucencyMap	->unbind();
+	backHalfLife2Map	->unbind();
+	branchNoiseTexture->unbind();
+	dataTexture->unbind();
+	glEnable(GL_LIGHTING);
+	glEnable(GL_CULL_FACE);
+
+}
 
 void DTree::prepareForRender(){
 	countRenderQueues[0] = 0;
@@ -2187,6 +2587,7 @@ void DTree::prepareForRender(){
 		enqueueInRenderList(rest_instance);
 	}
 }
+
 void DTree::makeTransition(float control, bool maskOld, DTreeInstanceData* instance, void (DTree::*drawLODA)(DTreeInstanceData*, float),  void (DTree::*drawLODB)(DTreeInstanceData*, float)){
 	float shift;
 	float c;
@@ -2381,19 +2782,18 @@ void DTree::makeTransition(float control, bool maskOld, DTreeInstanceData* insta
 		}
 }
 
-
 void DTree::render(){
 	int i;
 	DTreeInstanceData* instance;
 	// render LOD2 instances
 	isInstancingEnabled = true;
-	draw_all_instances_LOD2();
+	draw_all_instances_LOD2b();
 	// render LOD1-LOD2 transitioning instances
 	isInstancingEnabled = false;
 	for (i=0; i<countRenderQueues[3]; i++){
 		instance = instancesInRenderQueues[3][i];
 		float alpha = instance->alpha;
-		makeTransition(alpha,true, instance, &DTree::draw_instance_LOD1, &DTree::draw_instance_LOD2);
+		makeTransition(alpha,true, instance, &DTree::draw_instance_LOD1, &DTree::draw_instance_LOD2b);
 	}
 	// render LOD1 instances
 	isInstancingEnabled = true;
@@ -2435,7 +2835,7 @@ void DTree::enqueueInRenderList(DTreeInstanceData * instance){
 	if (instance!=NULL){
 		// calc wind dir;
 		if (g_wind_dirty){
-			instance->wind_dir = g_tree_wind_direction.getRotatedY(-DEG_TO_RAD*(instance->rotation_y));
+			instance->wind_dir = g_tree_wind_direction.getRotatedY(-DEG_TO_RAD*(instance->rotation_y+90));
 			//instance->wind_dir = g_tree_wind_direction;//.getRotatedY(-DEG_TO_RAD*instance->rotation_y);
 		}
 
@@ -2558,56 +2958,6 @@ void DTree::enqueueInRenderList(DTreeInstanceData * instance){
 	} // not NULL instance
 }
 
-void DTree::drawForLOD(){
-	// TODO: optimize rendering for LOD slice generation...
-	glDisable(GL_CULL_FACE);
-	// draw bbox
-	//bbox->draw();
-
-	glDisable(GL_LIGHTING);
-	// bind textures
-	dataTexture->bind(GL_TEXTURE1);
-	branchNoiseTexture->bind(GL_TEXTURE2);
-	bColorTexture->bind(GL_TEXTURE4);
-
-	// draw branches
-	branchesEBO->draw(bLODShader);
-
-	bColorTexture->unbind();
-
-	// bind textures
-	leafNoiseTexture->bind(GL_TEXTURE3);
-	frontDecalMap		->bind(GL_TEXTURE4);
-	frontNormalMap		->bind(GL_TEXTURE5);
-	frontTranslucencyMap->bind(GL_TEXTURE6);
-	frontHalfLife2Map	->bind(GL_TEXTURE7);
-	backDecalMap		->bind(GL_TEXTURE8);
-	backNormalMap		->bind(GL_TEXTURE9);
-	backTranslucencyMap	->bind(GL_TEXTURE10);
-	backHalfLife2Map	->bind(GL_TEXTURE11);
-
-
-
-	// draw leaves
-	leavesVBO->draw(lLODShader, GL_QUADS, 0);
-
-
-	leafNoiseTexture->unbind();
-	frontDecalMap		->unbind();
-	frontNormalMap		->unbind();
-	frontTranslucencyMap->unbind();
-	frontHalfLife2Map	->unbind();
-	backDecalMap		->unbind();
-	backNormalMap		->unbind();
-	backTranslucencyMap	->unbind();
-	backHalfLife2Map	->unbind();
-	branchNoiseTexture->unbind();
-	dataTexture->unbind();
-	glEnable(GL_LIGHTING);
-	glEnable(GL_CULL_FACE);
-
-}
-
 void DTree::initLOD0()
 {
 	printf("DYN_TREE init\n");
@@ -2651,11 +3001,6 @@ void DTree::initLOD0()
 
 
 	// init shaders
-	n_branchShader = new Shader("n_branch");
-	n_branchShader->loadShader(DYN_TREE::SHADER_BRANCH_VN,DYN_TREE::SHADER_BRANCH_FN, DYN_TREE::SHADER_BRANCH_GN, 3, GL_TRIANGLES, GL_LINE_STRIP);  
-	n_leafShader = new Shader("n_leaf");
-	n_leafShader->loadShader(DYN_TREE::SHADER_LEAF_VN,DYN_TREE::SHADER_LEAF_FN, DYN_TREE::SHADER_LEAF_GN, 3*4+4, GL_TRIANGLES, GL_LINE_STRIP);  
-
 	branchShader = new Shader("branch");
 	branchShader->loadShader(DYN_TREE::SHADER_BRANCH_V,DYN_TREE::SHADER_BRANCH_F); 
 	leafShader = new Shader("leaf");
@@ -2681,10 +3026,6 @@ void DTree::initLOD0()
 	branchShader_sh->linkTexture(branchNoiseTexture	);
 	branchShader_sh->linkTexture(bColorTexture		);
 
-
-	n_branchShader->linkTexture(branchNoiseTexture);
-	n_branchShader->linkTexture(bColorTexture);
-
 	bLODShader->linkTexture(branchNoiseTexture);
 	bLODShader->linkTexture(bColorTexture);
 
@@ -2707,21 +3048,6 @@ void DTree::initLOD0()
 	leafShader_sh->linkTexture(branchNoiseTexture	);
 	leafShader_sh->linkTexture(leafNoiseTexture		);
 
-
-	n_leafShader->linkTexture(branchNoiseTexture);
-	n_leafShader->linkTexture(leafNoiseTexture);
-	//n_leafShader->linkTexture(lColorTexture);
-	n_leafShader->linkTexture(frontDecalMap		);
-	n_leafShader->linkTexture(frontNormalMap		);
-	n_leafShader->linkTexture(frontTranslucencyMap);
-	n_leafShader->linkTexture(frontHalfLife2Map	);
-	n_leafShader->linkTexture(backDecalMap		);
-	n_leafShader->linkTexture(backNormalMap		);
-	n_leafShader->linkTexture(backTranslucencyMap	);
-	n_leafShader->linkTexture(backHalfLife2Map	);
-
-
-
 	lLODShader->linkTexture(branchNoiseTexture	);
 	lLODShader->linkTexture(leafNoiseTexture	);
 	//lLODShader->linkTexture(lColorTexture);
@@ -2738,6 +3064,9 @@ void DTree::initLOD0()
 
 	// register uniforms
 	this->branchCountF = 0;
+	branchShader->registerUniform("shadowmap_size",			UniformType::F2,	& g_ShadowMapSize.data);
+	branchShader->registerUniform("samples",				UniformType::I1,	& g_shadowMapSamples);
+	
 	branchShader->registerUniform("branch_count",			UniformType::F1,	& this->branchCountF);
 	branchShader->registerUniform("time",					UniformType::F1,	& g_float_time);
 	branchShader->registerUniform("time_offset",			UniformType::F1,	& time_offset);	
@@ -2758,19 +3087,6 @@ void DTree::initLOD0()
 	branchShader_sh->registerUniform("wood_frequencies",	UniformType::F4,	& g_tree_wood_frequencies.data);
 	branchShader_sh->registerUniform("window_size",			UniformType::F2,	& g_window_sizes.data);		
 	branchShader_sh->registerUniform("transition_control",	UniformType::F1,	& g_transitionControl);		
-	
-
-
-	n_branchShader->registerUniform("branch_count",			UniformType::F1,	& this->branchCountF);
-	n_branchShader->registerUniform("time",					UniformType::F1,	& g_float_time);
-	n_branchShader->registerUniform("time_offset",			UniformType::F1,	& time_offset);	
-	n_branchShader->registerUniform("wind_direction",		UniformType::F3,	& g_tree_wind_direction.data);
-	n_branchShader->registerUniform("wind_strength",		UniformType::F1,	& g_tree_wind_strength);
-	n_branchShader->registerUniform("wood_amplitudes",		UniformType::F4,	& g_tree_wood_amplitudes.data);
-	n_branchShader->registerUniform("wood_frequencies",		UniformType::F4,	& g_tree_wood_frequencies.data);
-	n_branchShader->registerUniform("window_size",			UniformType::F2,	& g_window_sizes.data);		
-
-
 
 	bLODShader->registerUniform("branch_count",				UniformType::F1,	& this->branchCountF);
 	bLODShader->registerUniform("time",						UniformType::F1,	& g_float_time);
@@ -2784,6 +3100,9 @@ void DTree::initLOD0()
 	//branchShader->registerUniform("leaf_amplitude", UniformType::F1, & g_tree_wood_amplitudes.data);
 	//branchShader->registerUniform("leaf_frequency", UniformType::F1, & g_tree_wood_amplitudes.data);
 
+	leafShader->registerUniform("shadowmap_size",			UniformType::F2,	& g_ShadowMapSize.data);
+	leafShader->registerUniform("samples",					UniformType::I1,	& g_shadowMapSamples);
+	
 	leafShader->registerUniform("branch_count",				UniformType::F1,	& this->branchCountF);
 	leafShader->registerUniform("time",						UniformType::F1,	& g_float_time);
 	leafShader->registerUniform("time_offset",				UniformType::F1,	& time_offset);
@@ -2829,25 +3148,6 @@ void DTree::initLOD0()
 	leafShader_sh->registerUniform("transition_control",		UniformType::F1,	& g_transitionControl);		
 	leafShader_sh->registerUniform("dither",					UniformType::F1,	& g_dither);
 
-	n_leafShader->registerUniform("branch_count",			UniformType::F1,	& this->branchCountF);
-	n_leafShader->registerUniform("time",					UniformType::F1,	& g_float_time);
-	n_leafShader->registerUniform("time_offset",			UniformType::F1,	& time_offset);	
-	n_leafShader->registerUniform("wind_direction",			UniformType::F3,	& wind_relative_direction.data);
-	n_leafShader->registerUniform("wind_strength",			UniformType::F1,	& g_tree_wind_strength);
-	n_leafShader->registerUniform("wood_amplitudes",		UniformType::F4,	& g_tree_wood_amplitudes.data);
-	n_leafShader->registerUniform("wood_frequencies",		UniformType::F4,	& g_tree_wood_frequencies.data);
-	n_leafShader->registerUniform("leaf_amplitude",			UniformType::F1,	& g_tree_leaf_amplitude);
-	n_leafShader->registerUniform("leaf_frequency",			UniformType::F1,	& g_tree_leaf_frequency);
-	n_leafShader->registerUniform("MultiplyAmbient",		UniformType::F1,	& g_leaves_MultiplyAmbient);
-	n_leafShader->registerUniform("MultiplyDiffuse",		UniformType::F1,	& g_leaves_MultiplyDiffuse);
-	n_leafShader->registerUniform("MultiplySpecular",		UniformType::F1,	& g_leaves_MultiplySpecular);
-	n_leafShader->registerUniform("MultiplyTranslucency",	UniformType::F1,	& g_leaves_MultiplyTranslucency);
-	n_leafShader->registerUniform("ReduceTranslucencyInShadow", UniformType::F1,& g_leaves_ReduceTranslucencyInShadow);
-	n_leafShader->registerUniform("shadow_intensity",		UniformType::F1,	& g_leaves_shadow_intensity);
-	n_leafShader->registerUniform("LightDiffuseColor",		UniformType::F3,	& g_leaves_LightDiffuseColor.data);
-	n_leafShader->registerUniform("window_size",			UniformType::F2,	& g_window_sizes.data);		
-
-
 	lLODShader->registerUniform("branch_count",				UniformType::F1,	& this->branchCountF);
 	lLODShader->registerUniform("time",						UniformType::F1,	& g_float_time);
 	lLODShader->registerUniform("time_offset",				UniformType::F1,	& time_offset);	
@@ -2873,10 +3173,8 @@ void DTree::initLOD0()
 	//dataTexture->save("dataTexture.png");
 	branchShader->linkTexture(dataTexture);
 	branchShader_sh->linkTexture(dataTexture);
-	n_branchShader->linkTexture(dataTexture);
 	leafShader	->linkTexture(dataTexture);
 	leafShader_sh->linkTexture(dataTexture);
-	n_leafShader->linkTexture(dataTexture);
 	bLODShader	->linkTexture(dataTexture);
 	lLODShader	->linkTexture(dataTexture);
 
@@ -2889,8 +3187,6 @@ void DTree::initLOD0()
 	leavesVBO	->compileWithShader(leafShader);
 	branchesVBO	->compileWithShader(branchShader_sh);
 	leavesVBO	->compileWithShader(leafShader_sh);
-	branchesVBO ->compileWithShader(n_branchShader);
-	leavesVBO	->compileWithShader(n_leafShader);
 	branchesVBO	->compileWithShader(bLODShader);
 	leavesVBO	->compileWithShader(lLODShader);
 
@@ -2902,6 +3198,8 @@ void DTree::initLOD0()
 
 void DTree::initLOD1()
 {
+	lod1_sliceCount = 3.0;
+	lod1_sliceSetCount = 3.0;
 	eBranchmapInternalFormat = GL_RGBA32F;
 	eBranchmapFormat		 = GL_RGBA;
 	eBranchmapDataType		 = GL_FLOAT;
@@ -2916,19 +3214,15 @@ void DTree::initLOD1()
 	float res = 512;
 	lod1_win_resolution = v2 (res, res);
 	
-	DTreeSliceSet * set;
-	slice_count = 3;
-	resolution_x = lod1_win_resolution.x;
-	resolution_y = lod1_win_resolution.y;
-	
+	DTreeSliceSet * set;	
 	set = new DTreeSliceSet();
 	set->rotation_y = 0.0f;
 	
 	mvp = new Matrix4x4();
-	this->createSlices(dir, right, mvp, false);
+	this->createSlices(& this->slices, lod1_sliceCount, lod1_win_resolution.x, lod1_win_resolution.y, dir, right, mvp, false);
 	MVPmatrices.push_back(mvp);
 	set->setSlices(this->slices);
-	sliceSets2.push_back(set);
+	lod1_sliceSets.push_back(set);
 	slices.clear();	
 	
 	float angle = 45;
@@ -2938,160 +3232,166 @@ void DTree::initLOD1()
 	set = new DTreeSliceSet();
 	set->rotation_y = angle;
 	mvp = new Matrix4x4();
-	this->createSlices(dir, right, mvp, false);
+	this->createSlices(& this->slices, lod1_sliceCount, lod1_win_resolution.x, lod1_win_resolution.y, dir, right, mvp, false);
 	MVPmatrices.push_back(mvp);
 	set->setSlices(this->slices);
-	//set->createFromDir(this, dir);
-	sliceSets2.push_back(set);
+	lod1_sliceSets.push_back(set);
 	slices.clear();	
 
 	dir.rotateY(-2*angle*DEG_TO_RAD);
 	right.rotateY(-2*angle*DEG_TO_RAD);
 	set = new DTreeSliceSet();	
 	mvp = new Matrix4x4();
-	this->createSlices(dir, right, mvp, false);
+	this->createSlices(& this->slices, lod1_sliceCount, lod1_win_resolution.x, lod1_win_resolution.y, dir, right, mvp, false);
 	MVPmatrices.push_back(mvp);
 	set->rotation_y = -angle;
 	set->setSlices(this->slices);
 	//set->createFromDir(this, dir);
-	sliceSets2.push_back(set);
+	lod1_sliceSets.push_back(set);
 	slices.clear();	
 
 
 	// create data texture for slices...
-	SAFE_DELETE_PTR(lod1dataTexture);
-	lod1dataTexture = createLODdataTexture(MVPmatrices);
+	SAFE_DELETE_PTR(lod1_dataTexture);
+	lod1_dataTexture = createLODdataTexture(MVPmatrices);
 
 	for (int t=0; t<3; t++){
 		SAFE_DELETE_PTR(MVPmatrices[t]);
 	}
 	MVPmatrices.clear();
 	// join textures to one...
-	joinSliceSetsTextures();
+	joinSliceSetsTextures(	& lod1_jColorMap,
+							& lod1_jDataMap,
+							& lod1_jDepthMap,
+							& lod1_jNormalMap,
+							& lod1_sliceSets,
+							lod1_sliceSetCount,
+							lod1_sliceCount, 
+							lod1_win_resolution.x,
+							lod1_win_resolution.y);
 	
 	// create mipmaps
-	jColorMap->generateMipmaps();
-	jNormalMap->generateMipmaps();
-	jNormalMap->setParameterI(GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
-	//jDepthMap->generateMipmaps();
+	lod1_jColorMap->generateMipmaps();
+	lod1_jNormalMap->generateMipmaps();
+	lod1_jNormalMap->setParameterI(GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
+	//lod1_jDepthMap->generateMipmaps();
 
 	// init shaders
-	lod1shader2 = new Shader("lod1");
-	lod1shader2->loadShader("shaders/test3_vs.glsl", "shaders/test3_fs.glsl");
+	lod1_shader = new Shader("lod1");
+	lod1_shader->loadShader("shaders/test3_vs.glsl", "shaders/test3_fs.glsl");
 	
-	lod1shader_shadow = new Shader("lod1_shadow");
-	lod1shader_shadow->loadShader("shaders/test5_shadow_vs.glsl", "shaders/test5_shadow_fs.glsl");
+	lod1_shader_shadow = new Shader("lod1_shadow");
+	lod1_shader_shadow->loadShader("shaders/test5_shadow_vs.glsl", "shaders/test5_shadow_fs.glsl");
 	
-	jColorMap			 ->textureUnitNumber = 0;
-	jNormalMap			 ->textureUnitNumber = 0;
+	lod1_jColorMap			 ->textureUnitNumber = 0;
+	lod1_jNormalMap			 ->textureUnitNumber = 0;
 	branchNoiseTexture	 ->textureUnitNumber = 0;
 	leafNoiseTexture	 ->textureUnitNumber = 0;
-	jDataMap			 ->textureUnitNumber = 0;
-	jDepthMap			 ->textureUnitNumber = 0;
+	lod1_jDataMap			 ->textureUnitNumber = 0;
+	lod1_jDepthMap			 ->textureUnitNumber = 0;
 	seasonMap			 ->textureUnitNumber = 0;
-	lod1dataTexture		 ->textureUnitNumber = 0;
-	lod1shader_shadow->linkTexture(jColorMap);
-	lod1shader_shadow->linkTexture(jNormalMap);
-	lod1shader_shadow->linkTexture(branchNoiseTexture);
-	lod1shader_shadow->linkTexture(leafNoiseTexture);
-	lod1shader_shadow->linkTexture(jDataMap);
-	lod1shader_shadow->linkTexture(jDepthMap);
-	lod1shader_shadow->linkTexture(seasonMap);
-	lod1shader_shadow->linkTexture(lod1dataTexture);
+	lod1_dataTexture		 ->textureUnitNumber = 0;
+	lod1_shader_shadow->linkTexture(lod1_jColorMap);
+	lod1_shader_shadow->linkTexture(lod1_jNormalMap);
+	lod1_shader_shadow->linkTexture(branchNoiseTexture);
+	lod1_shader_shadow->linkTexture(leafNoiseTexture);
+	lod1_shader_shadow->linkTexture(lod1_jDataMap);
+	lod1_shader_shadow->linkTexture(lod1_jDepthMap);
+	lod1_shader_shadow->linkTexture(seasonMap);
+	lod1_shader_shadow->linkTexture(lod1_dataTexture);
 	// link textures to shader
 	//shader->linkTexture(colorMap			);
 	//shader->linkTexture(displacementMap	);
 	//shader->linkTexture(dataMap			);
 
-	//l2_color	= lod1shader2->getGLLocation("colorMap"			);
-	//l2_displ	= lod1shader2->getGLLocation("leaf_noise_tex"	);
-	//l2_displ2	= lod1shader2->getGLLocation("branch_noise_tex"	);
-	//l2_data		= lod1shader2->getGLLocation("dataMap"			);
-	//l2_normal	= lod1shader2->getGLLocation("normalMap"		);
-	//l2_depth	= lod1shader2->getGLLocation("depthMap"			);
+	//l2_color	= lod1_shader->getGLLocation("colorMap"			);
+	//l2_displ	= lod1_shader->getGLLocation("leaf_noise_tex"	);
+	//l2_displ2	= lod1_shader->getGLLocation("branch_noise_tex"	);
+	//l2_data		= lod1_shader->getGLLocation("dataMap"			);
+	//l2_normal	= lod1_shader->getGLLocation("normalMap"		);
+	//l2_depth	= lod1_shader->getGLLocation("depthMap"			);
 	//
-	//l2_season	= lod1shader2->getGLLocation("seasonMap"		);
+	//l2_season	= lod1_shader->getGLLocation("seasonMap"		);
 
-	lod1shader2->linkTexture(jColorMap);
-	lod1shader2->linkTexture(jNormalMap);
-	lod1shader2->linkTexture(branchNoiseTexture);
-	lod1shader2->linkTexture(leafNoiseTexture);
-	lod1shader2->linkTexture(jDataMap);
-	lod1shader2->linkTexture(jDepthMap);
-	lod1shader2->linkTexture(seasonMap);
-	lod1shader2->linkTexture(g_shadowmap1);
-	lod1shader2->linkTexture(lod1dataTexture);
+	lod1_shader->linkTexture(lod1_jColorMap);
+	lod1_shader->linkTexture(lod1_jNormalMap);
+	lod1_shader->linkTexture(branchNoiseTexture);
+	lod1_shader->linkTexture(leafNoiseTexture);
+	lod1_shader->linkTexture(lod1_jDataMap);
+	lod1_shader->linkTexture(lod1_jDepthMap);
+	lod1_shader->linkTexture(seasonMap);
+	lod1_shader->linkTexture(g_shadowmap1);
+	lod1_shader->linkTexture(lod1_dataTexture);
 
-
-	lod1shader2->registerUniform("branch_count"			, UniformType::F1, & this->branchCountF				);
-	lod1shader2->registerUniform("time"					, UniformType::F1, & g_float_time					);
-	lod1shader2->registerUniform("time_offset"			, UniformType::F1, & time_offset					);
-	lod1shader2->registerUniform("season"				, UniformType::F1, & g_season						);
-	lod1shader2->registerUniform("instancing"			, UniformType::I1, & isInstancingEnabled			);
-	lod1shader2->registerUniform("shift"				, UniformType::F1, & g_transitionShift				);
-	lod1shader2->registerUniform("transition_control"	, UniformType::F1, & g_transitionControl			);
-	lod1shader2->registerUniform("movementVectorA"		, UniformType::F2, & g_tree_movementVectorA			);
-	lod1shader2->registerUniform("movementVectorB"		, UniformType::F2, & g_tree_movementVectorB			);
-	lod1shader2->registerUniform("window_size"			, UniformType::F2, & lod1_win_resolution			);
-	lod1shader2->registerUniform("wood_amplitudes"		, UniformType::F4, & g_tree_wood_amplitudes.data	);
-	lod1shader2->registerUniform("wood_frequencies"		, UniformType::F4, & g_tree_wood_frequencies.data	);
-	lod1shader2->registerUniform("leaf_amplitude"		, UniformType::F1, & g_tree_leaf_amplitude			);
-	lod1shader2->registerUniform("leaf_frequency"		, UniformType::F1, & g_tree_leaf_frequency			);
-	lod1shader2->registerUniform("wind_direction"		, UniformType::F3, & g_tree_wind_direction			);
-	lod1shader2->registerUniform("wind_strength"		, UniformType::F1, & g_tree_wind_strength			);
-	//lod1shader2->registerUniform("varA"					, UniformType::F1, & g_varA							);
-	//lod1shader2->registerUniform("scale"				, UniformType::F1, & g_ParallaxScale				);
-	//lod1shader2->registerUniform("bias"					, UniformType::F1, & g_ParallaxBias					);
-	lod1shader2->registerUniform("MultiplyAmbient",				UniformType::F1,	& g_leaves_MultiplyAmbient);
-	lod1shader2->registerUniform("MultiplyDiffuse",				UniformType::F1,	& g_leaves_MultiplyDiffuse);
-	lod1shader2->registerUniform("MultiplySpecular",			UniformType::F1,	& g_leaves_MultiplySpecular);
-	lod1shader2->registerUniform("MultiplyTranslucency",		UniformType::F1,	& g_leaves_MultiplyTranslucency);
-	lod1shader2->registerUniform("ReduceTranslucencyInShadow",	UniformType::F1,	& g_leaves_ReduceTranslucencyInShadow);
-	lod1shader2->registerUniform("shadow_intensity",			UniformType::F1,	& g_leaves_shadow_intensity);
-	lod1shader2->registerUniform("LightDiffuseColor",			UniformType::F3,	& g_leaves_LightDiffuseColor.data);
-	lod1shader2->registerUniform("branch_count",			UniformType::F1,	& this->branchCountF);
-	lod1shader2->registerUniform("show_sliceSet",			UniformType::I1,	& g_tree_show_sliceSet);
-	lod1shader2->registerUniform("show_slice",			UniformType::I1,		& g_tree_show_slice);
+	lod1_shader->registerUniform("shadowmap_size"			, UniformType::F2, & g_ShadowMapSize.data				);
+	lod1_shader->registerUniform("samples"					, UniformType::I1, & g_shadowMapSamples					);
+	lod1_shader->registerUniform("branch_count"			, UniformType::F1, & this->branchCountF				);
+	lod1_shader->registerUniform("time"					, UniformType::F1, & g_float_time					);
+	lod1_shader->registerUniform("time_offset"			, UniformType::F1, & time_offset					);
+	lod1_shader->registerUniform("season"				, UniformType::F1, & g_season						);
+	lod1_shader->registerUniform("instancing"			, UniformType::I1, & isInstancingEnabled			);
+	lod1_shader->registerUniform("shift"				, UniformType::F1, & g_transitionShift				);
+	lod1_shader->registerUniform("transition_control"	, UniformType::F1, & g_transitionControl			);
+	lod1_shader->registerUniform("movementVectorA"		, UniformType::F2, & g_tree_movementVectorA			);
+	lod1_shader->registerUniform("movementVectorB"		, UniformType::F2, & g_tree_movementVectorB			);
+	lod1_shader->registerUniform("window_size"			, UniformType::F2, & lod1_win_resolution			);
+	lod1_shader->registerUniform("wood_amplitudes"		, UniformType::F4, & g_tree_wood_amplitudes.data	);
+	lod1_shader->registerUniform("wood_frequencies"		, UniformType::F4, & g_tree_wood_frequencies.data	);
+	lod1_shader->registerUniform("leaf_amplitude"		, UniformType::F1, & g_tree_leaf_amplitude			);
+	lod1_shader->registerUniform("leaf_frequency"		, UniformType::F1, & g_tree_leaf_frequency			);
+	lod1_shader->registerUniform("wind_direction"		, UniformType::F3, & g_tree_wind_direction			);
+	lod1_shader->registerUniform("wind_strength"		, UniformType::F1, & g_tree_wind_strength			);
+	//lod1_shader->registerUniform("varA"					, UniformType::F1, & g_varA							);
+	//lod1_shader->registerUniform("scale"				, UniformType::F1, & g_ParallaxScale				);
+	//lod1_shader->registerUniform("bias"					, UniformType::F1, & g_ParallaxBias					);
+	lod1_shader->registerUniform("MultiplyAmbient",				UniformType::F1,	& g_leaves_MultiplyAmbient);
+	lod1_shader->registerUniform("MultiplyDiffuse",				UniformType::F1,	& g_leaves_MultiplyDiffuse);
+	lod1_shader->registerUniform("MultiplySpecular",			UniformType::F1,	& g_leaves_MultiplySpecular);
+	lod1_shader->registerUniform("MultiplyTranslucency",		UniformType::F1,	& g_leaves_MultiplyTranslucency);
+	lod1_shader->registerUniform("ReduceTranslucencyInShadow",	UniformType::F1,	& g_leaves_ReduceTranslucencyInShadow);
+	lod1_shader->registerUniform("shadow_intensity",			UniformType::F1,	& g_leaves_shadow_intensity);
+	lod1_shader->registerUniform("LightDiffuseColor",			UniformType::F3,	& g_leaves_LightDiffuseColor.data);
+	lod1_shader->registerUniform("branch_count",				UniformType::F1,	& this->branchCountF);
+	lod1_shader->registerUniform("sliceCnt",					UniformType::F1,	& this->lod1_sliceCount);
+	lod1_shader->registerUniform("sliceSetsCnt",				UniformType::F1,	& this->lod1_sliceSetCount);
+	lod1_shader->registerUniform("farMnear",	UniformType::F1,	& g_ShadowFarMNear);
 	
-
-	
-	lod1shader2->registerUniform("near",	UniformType::F1,	& g_ShadowNear);
-	lod1shader2->registerUniform("far",		UniformType::F1,	& g_ShadowFar);
-
-	lod1shader2->registerUniform("LightMVPCameraVInverseMatrix",			UniformType::M4,	g_LightMVPCameraVInverseMatrix);
-	lod1shader2->registerUniform("shadowMappingEnabled",	UniformType::B1,	& g_ShadowMappingEnabled);
+	lod1_shader->registerUniform("LightMVPCameraVInverseMatrix",			UniformType::M4,	g_LightMVPCameraVInverseMatrix);
+	lod1_shader->registerUniform("shadowMappingEnabled",	UniformType::B1,	& g_ShadowMappingEnabled);
 
 	// shadow shader
-	lod1shader_shadow->registerUniform("branch_count"				, UniformType::F1, & this->branchCountF				);
-	lod1shader_shadow->registerUniform("time"						, UniformType::F1, & g_float_time					);
-	lod1shader_shadow->registerUniform("time_offset"				, UniformType::F1, & time_offset					);
-	lod1shader_shadow->registerUniform("season"						, UniformType::F1, & g_season						);
-	lod1shader_shadow->registerUniform("instancing"					, UniformType::I1, & isInstancingEnabled			);
-	lod1shader_shadow->registerUniform("shift"						, UniformType::F1, & g_transitionShift				);
-	lod1shader_shadow->registerUniform("transition_control"			, UniformType::F1, & g_transitionControl			);
-	lod1shader_shadow->registerUniform("movementVectorA"			, UniformType::F2, & g_tree_movementVectorA			);
-	lod1shader_shadow->registerUniform("movementVectorB"			, UniformType::F2, & g_tree_movementVectorB			);
-	lod1shader_shadow->registerUniform("window_size"				, UniformType::F2, & lod1_win_resolution			);
-	lod1shader_shadow->registerUniform("wood_amplitudes"			, UniformType::F4, & g_tree_wood_amplitudes.data	);
-	lod1shader_shadow->registerUniform("wood_frequencies"			, UniformType::F4, & g_tree_wood_frequencies.data	);
-	lod1shader_shadow->registerUniform("leaf_amplitude"				, UniformType::F1, & g_tree_leaf_amplitude			);
-	lod1shader_shadow->registerUniform("leaf_frequency"				, UniformType::F1, & g_tree_leaf_frequency			);
-	lod1shader_shadow->registerUniform("dither"						, UniformType::F1, & g_dither						);
-	lod1shader_shadow->registerUniform("near"						, UniformType::F1, & g_ShadowNear					);
-	lod1shader_shadow->registerUniform("far"						, UniformType::F1, & g_ShadowFar					);
-	lod1shader_shadow->registerUniform("branch_count"				, UniformType::F1, & this->branchCountF				);
-	lod1shader_shadow->registerUniform("wind_direction"				, UniformType::F3, & g_tree_wind_direction			);
-	lod1shader_shadow->registerUniform("wind_strength"				, UniformType::F1, & g_tree_wind_strength			);
-	iu1Loc1 = lod1shader2->getLocation("u_colorVariance");
+	lod1_shader_shadow->registerUniform("branch_count"				, UniformType::F1, & this->branchCountF				);
+	lod1_shader_shadow->registerUniform("time"						, UniformType::F1, & g_float_time					);
+	lod1_shader_shadow->registerUniform("time_offset"				, UniformType::F1, & time_offset					);
+	lod1_shader_shadow->registerUniform("season"						, UniformType::F1, & g_season						);
+	lod1_shader_shadow->registerUniform("instancing"					, UniformType::I1, & isInstancingEnabled			);
+	lod1_shader_shadow->registerUniform("shift"						, UniformType::F1, & g_transitionShift				);
+	lod1_shader_shadow->registerUniform("transition_control"			, UniformType::F1, & g_transitionControl			);
+	lod1_shader_shadow->registerUniform("movementVectorA"			, UniformType::F2, & g_tree_movementVectorA			);
+	lod1_shader_shadow->registerUniform("movementVectorB"			, UniformType::F2, & g_tree_movementVectorB			);
+	lod1_shader_shadow->registerUniform("window_size"				, UniformType::F2, & lod1_win_resolution			);
+	lod1_shader_shadow->registerUniform("wood_amplitudes"			, UniformType::F4, & g_tree_wood_amplitudes.data	);
+	lod1_shader_shadow->registerUniform("wood_frequencies"			, UniformType::F4, & g_tree_wood_frequencies.data	);
+	lod1_shader_shadow->registerUniform("leaf_amplitude"				, UniformType::F1, & g_tree_leaf_amplitude			);
+	lod1_shader_shadow->registerUniform("leaf_frequency"				, UniformType::F1, & g_tree_leaf_frequency			);
+	lod1_shader_shadow->registerUniform("dither"						, UniformType::F1, & g_dither						);
+	lod1_shader_shadow->registerUniform("farMnear"						, UniformType::F1, & g_ShadowFarMNear					);
+	lod1_shader_shadow->registerUniform("branch_count"				, UniformType::F1, & this->branchCountF				);
+	lod1_shader_shadow->registerUniform("wind_direction"			, UniformType::F3, & g_tree_wind_direction			);
+	lod1_shader_shadow->registerUniform("wind_strength"				, UniformType::F1, & g_tree_wind_strength			);
+	lod1_shader_shadow->registerUniform("sliceCnt",					UniformType::F1,	& this->lod1_sliceCount);
+	lod1_shader_shadow->registerUniform("sliceSetsCnt",				UniformType::F1,	& this->lod1_sliceSetCount);
 	
-	tmLoc0 = lod1shader2->getAttributeLocation("transformMatrix");
-	iaLoc1 = lod1shader2->getAttributeLocation("colorVariance");
-	tmLoc0_shadow = lod1shader_shadow->getAttributeLocation("transformMatrix");
-	iaLoc1_shadow = lod1shader_shadow->getAttributeLocation("colorVariance");
+	iu1Loc1 = lod1_shader->getLocation("u_colorVariance");
+	
+	tmLoc0 = lod1_shader->getAttributeLocation("transformMatrix");
+	iaLoc1 = lod1_shader->getAttributeLocation("colorVariance");
+	tmLoc0_shadow = lod1_shader_shadow->getAttributeLocation("transformMatrix");
+	iaLoc1_shadow = lod1_shader_shadow->getAttributeLocation("colorVariance");
 
 	int i;
-	// int i = lod1shader2->registerUniform("time_offset"	, UniformType::F1, & tree_time_offset);
-	// u_time_offset = lod1shader2->getUniform(i);
+	// int i = lod1_shader->registerUniform("time_offset"	, UniformType::F1, & tree_time_offset);
+	// u_time_offset = lod1_shader->getUniform(i);
 	
 	/*
 	shader = new Shader("test");
@@ -3235,8 +3535,8 @@ void DTree::initLOD1()
 
 	// init VBO
 	int count = vertexCount;
-	lod1vbo2 = new VBO();
-	lod1vbo2->setVertexCount(count);
+	lod1_vbo = new VBO();
+	lod1_vbo->setVertexCount(count);
 	// position
 	VBODataSet * dataSet = new VBODataSet(
 		vertices,
@@ -3245,7 +3545,7 @@ void DTree::initLOD1()
 		ATTRIB_NAMES::POSITION,
 		true
 	);
-	lod1vbo2->addVertexAttribute( dataSet );
+	lod1_vbo->addVertexAttribute( dataSet );
 	// normal
 	dataSet = new VBODataSet(
 		normals,
@@ -3254,7 +3554,7 @@ void DTree::initLOD1()
 		ATTRIB_NAMES::NORMAL,
 		false
 	);
-	lod1vbo2->addVertexAttribute( dataSet );
+	lod1_vbo->addVertexAttribute( dataSet );
 	// tangent
 	dataSet = new VBODataSet(
 		tangents,
@@ -3263,7 +3563,7 @@ void DTree::initLOD1()
 		ATTRIB_NAMES::TANGENT,
 		false
 	);
-	lod1vbo2->addVertexAttribute( dataSet );
+	lod1_vbo->addVertexAttribute( dataSet );
 	// texture coordinates
 	dataSet = new VBODataSet(
 		texCoords,
@@ -3272,7 +3572,7 @@ void DTree::initLOD1()
 		ATTRIB_NAMES::TEXCOORD0,
 		false
 	);
-	lod1vbo2->addVertexAttribute( dataSet );
+	lod1_vbo->addVertexAttribute( dataSet );
 	// slice attributes
 	dataSet = new VBODataSet(
 		sliceAttr,
@@ -3281,11 +3581,11 @@ void DTree::initLOD1()
 		"sliceDescription",
 		false
 	);
-	lod1vbo2->addVertexAttribute( dataSet );
+	lod1_vbo->addVertexAttribute( dataSet );
 	// link vbo and shaders
-	lod1vbo2->compileData(GL_STATIC_DRAW);
-	lod1vbo2->compileWithShader(lod1shader2);
-	lod1vbo2->compileWithShader(lod1shader_shadow);
+	lod1_vbo->compileData(GL_STATIC_DRAW);
+	lod1_vbo->compileWithShader(lod1_shader);
+	lod1_vbo->compileWithShader(lod1_shader_shadow);
 
 	/*	
 	*	CREATE EBO
@@ -3306,167 +3606,347 @@ void DTree::initLOD1()
 								};
 	int iCnt = 3 * 4 * sliceCount * 3; // 4 = vertexCnt of one slice, 3 = number of slice sets
 	
-	eboLOD1 = new EBO();
-	eboLOD1->create(GL_UNSIGNED_INT, GL_QUADS, iCnt, ebo_data, GL_STATIC_DRAW);
+	lod1_ebo = new EBO();
+	lod1_ebo->create(GL_UNSIGNED_INT, GL_QUADS, iCnt, ebo_data, GL_STATIC_DRAW);
 }
 
-
-/*void DTree::initLOD1()
-{
-	
+void DTree::initLOD2b()
+{   
+	lod2_sliceCount = 1.0;
+	lod2_sliceSetCount = 2.0;
+	eBranchmapInternalFormat = GL_RGBA32F;
+	eBranchmapFormat		 = GL_RGBA;
+	eBranchmapDataType		 = GL_FLOAT;
+	// create place to store MVP matrices of slices...
+	vector<Matrix4x4*> MVPmatrices;
+	Matrix4x4 *mvp;
 	// create slices
 
 	// create 2 sliceSets (cross, double sided)
 	v3 dir = v3(-1.0, 0.0, 0.0);
 	v3 right = v3(0.0, 0.0, -1.0);
-	float res = 512;
-	lod1_win_resolution = v2 (res, res);
+	float res = 256;
+	lod2_win_resolution = v2 (res, res);
 	
-	DTreeSliceSet * set;
-	slice_count = 3;
-	resolution_x = lod1_win_resolution.x;
-	resolution_y = lod1_win_resolution.y;
-	
+	DTreeSliceSet * set;	
 	set = new DTreeSliceSet();
-	set->rotation_y = 180.0f;	
-	this->createSlices(-dir, right, false);
+	set->rotation_y = 0.0f;
+	
+	mvp = new Matrix4x4();
+	this->createSlices(& this->slices, lod2_sliceCount, lod2_win_resolution.x, lod2_win_resolution.y, dir, right, mvp, false);
+	MVPmatrices.push_back(mvp);
 	set->setSlices(this->slices);
-	sliceSets.push_back(set);
+	lod2_sliceSets.push_back(set);
+	slices.clear();	
 	
-	
-	//dir.rotateY(-30*DEG_TO_RAD);
-	//right.rotateY(-30*DEG_TO_RAD);
-	dir.rotateY(60*DEG_TO_RAD);
-	right.rotateY(60*DEG_TO_RAD);
+	float angle = 90;
+
+	dir.rotateY(angle*DEG_TO_RAD);
+	right.rotateY(angle*DEG_TO_RAD);
 	set = new DTreeSliceSet();
-	set->rotation_y = 60;
-	this->createSlices(dir, right, false);
+	set->rotation_y = angle;
+	mvp = new Matrix4x4();
+	this->createSlices(& this->slices, lod2_sliceCount, lod2_win_resolution.x, lod2_win_resolution.y, dir, right, mvp, false);
+	MVPmatrices.push_back(mvp);
 	set->setSlices(this->slices);
-	//set->createFromDir(this, dir);
-	sliceSets.push_back(set);
+	lod2_sliceSets.push_back(set);
+	slices.clear();	
 
-	dir = v3(-1.0, 0.0, 0.0);
-	right = v3(0.0, 0.0, -1.0);
-	//dir.rotateY(+30*DEG_TO_RAD);
 
-	dir.rotateY(-60*DEG_TO_RAD);	
-	right.rotateY(-60*DEG_TO_RAD);
-	set = new DTreeSliceSet();	
-	this->createSlices(dir, right, false);
-	set->rotation_y = -60;
-	set->setSlices(this->slices);
-	//set->createFromDir(this, dir);
-	sliceSets.push_back(set);
+	// create data texture for slices...
+	SAFE_DELETE_PTR(lod2_dataTexture);
+	lod2_dataTexture = createLODdataTexture(MVPmatrices);
 
+	for (int t=0; t<int(lod2_sliceSetCount); t++){
+		SAFE_DELETE_PTR(MVPmatrices[t]);
+	}
+	MVPmatrices.clear();
 	// join textures to one...
-	//joinSliceSetsTextures();
-	
-	
-	
+	joinSliceSetsTextures(	&lod2_jColorMap,
+							&lod2_jDataMap,
+							&lod2_jDepthMap,
+							&lod2_jNormalMap,
+							&lod2_sliceSets,
+							lod2_sliceSetCount,
+							lod2_sliceCount, 
+							lod2_win_resolution.x,
+							lod2_win_resolution.y);
+	// create mipmaps
+	lod2_jColorMap->generateMipmaps();
+	lod2_jNormalMap->generateMipmaps();
+	lod2_jNormalMap->setParameterI(GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
+	//lod1_jDepthMap->generateMipmaps();
+
 	// init shaders
+	lod2_shader = new Shader("lod2");
+	lod2_shader->loadShader("shaders/test3_vs.glsl", "shaders/test3_fs.glsl");
+	
+	lod2_shader_shadow = new Shader("lod2_shadow");
+	lod2_shader_shadow->loadShader("shaders/test5_shadow_vs.glsl", "shaders/test5_shadow_fs.glsl");
+	
+	lod2_jColorMap			->textureUnitNumber = 0;
+	lod2_jNormalMap			->textureUnitNumber = 0;
+	branchNoiseTexture		->textureUnitNumber = 0;
+	leafNoiseTexture		->textureUnitNumber = 0;
+	lod2_jDataMap			->textureUnitNumber = 0;
+	lod2_jDepthMap			->textureUnitNumber = 0;
+	seasonMap				->textureUnitNumber = 0;
+	lod2_dataTexture		->textureUnitNumber = 0;
+	lod2_shader_shadow->linkTexture(lod2_jColorMap);
+	lod2_shader_shadow->linkTexture(lod2_jNormalMap);
+	lod2_shader_shadow->linkTexture(branchNoiseTexture);
+	lod2_shader_shadow->linkTexture(leafNoiseTexture);
+	lod2_shader_shadow->linkTexture(lod2_jDataMap);
+	lod2_shader_shadow->linkTexture(lod2_jDepthMap);
+	lod2_shader_shadow->linkTexture(seasonMap);
+	lod2_shader_shadow->linkTexture(lod2_dataTexture);
+	
 
+	lod2_shader->linkTexture(lod2_jColorMap);
+	lod2_shader->linkTexture(lod2_jNormalMap);
+	lod2_shader->linkTexture(branchNoiseTexture);
+	lod2_shader->linkTexture(leafNoiseTexture);
+	lod2_shader->linkTexture(lod2_jDataMap);
+	lod2_shader->linkTexture(lod2_jDepthMap);
+	lod2_shader->linkTexture(seasonMap);
+	lod2_shader->linkTexture(g_shadowmap1);
+	lod2_shader->linkTexture(lod2_dataTexture);
 
+	lod2_shader->registerUniform("shadowmap_size"			, UniformType::F2, & g_ShadowMapSize.data			);
+	lod2_shader->registerUniform("samples"					, UniformType::I1, & g_shadowMapSamples				);
+	lod2_shader->registerUniform("branch_count"				, UniformType::F1, & this->branchCountF				);
+	lod2_shader->registerUniform("time"						, UniformType::F1, & g_float_time					);
+	lod2_shader->registerUniform("time_offset"				, UniformType::F1, & time_offset					);
+	lod2_shader->registerUniform("season"					, UniformType::F1, & g_season						);
+	lod2_shader->registerUniform("instancing"				, UniformType::I1, & isInstancingEnabled			);
+	lod2_shader->registerUniform("shift"					, UniformType::F1, & g_transitionShift				);
+	lod2_shader->registerUniform("transition_control"		, UniformType::F1, & g_transitionControl			);
+	lod2_shader->registerUniform("movementVectorA"			, UniformType::F2, & g_tree_movementVectorA			);
+	lod2_shader->registerUniform("movementVectorB"			, UniformType::F2, & g_tree_movementVectorB			);
+	lod2_shader->registerUniform("window_size"				, UniformType::F2, & lod2_win_resolution			);
+	lod2_shader->registerUniform("wood_amplitudes"			, UniformType::F4, & g_tree_wood_amplitudes.data	);
+	lod2_shader->registerUniform("wood_frequencies"			, UniformType::F4, & g_tree_wood_frequencies.data	);
+	lod2_shader->registerUniform("leaf_amplitude"			, UniformType::F1, & g_tree_leaf_amplitude			);
+	lod2_shader->registerUniform("leaf_frequency"			, UniformType::F1, & g_tree_leaf_frequency			);
+	lod2_shader->registerUniform("wind_direction"			, UniformType::F3, & g_tree_wind_direction			);
+	lod2_shader->registerUniform("wind_strength"			, UniformType::F1, & g_tree_wind_strength			);
+	lod2_shader->registerUniform("MultiplyAmbient"			, UniformType::F1,	& g_leaves_MultiplyAmbient		);
+	lod2_shader->registerUniform("MultiplyDiffuse"			, UniformType::F1,	& g_leaves_MultiplyDiffuse		);
+	lod2_shader->registerUniform("MultiplySpecular"			, UniformType::F1,	& g_leaves_MultiplySpecular		);
+	lod2_shader->registerUniform("MultiplyTranslucency"		, UniformType::F1,	& g_leaves_MultiplyTranslucency	);
+	lod2_shader->registerUniform("ReduceTranslucencyInShadow", UniformType::F1,	& g_leaves_ReduceTranslucencyInShadow);
+	lod2_shader->registerUniform("shadow_intensity"			, UniformType::F1,	& g_leaves_shadow_intensity		);
+	lod2_shader->registerUniform("LightDiffuseColor"		, UniformType::F3,	& g_leaves_LightDiffuseColor.data);
+	lod2_shader->registerUniform("branch_count"				, UniformType::F1,	& this->branchCountF			);
+	lod2_shader->registerUniform("sliceCnt"					, UniformType::F1,	& this->lod2_sliceCount			);
+	lod2_shader->registerUniform("sliceSetsCnt"				, UniformType::F1,	& this->lod2_sliceSetCount		);
+	lod2_shader->registerUniform("farMnear"					, UniformType::F1,	& g_ShadowFarMNear				);
+	lod2_shader->registerUniform("LightMVPCameraVInverseMatrix", UniformType::M4,	g_LightMVPCameraVInverseMatrix);
+	lod2_shader->registerUniform("shadowMappingEnabled"		, UniformType::B1,	& g_ShadowMappingEnabled		);
 
+	// shadow shader
+	lod2_shader_shadow->registerUniform("branch_count"				, UniformType::F1, & this->branchCountF				);
+	lod2_shader_shadow->registerUniform("time"						, UniformType::F1, & g_float_time					);
+	lod2_shader_shadow->registerUniform("time_offset"				, UniformType::F1, & time_offset					);
+	lod2_shader_shadow->registerUniform("season"					, UniformType::F1, & g_season						);
+	lod2_shader_shadow->registerUniform("instancing"				, UniformType::I1, & isInstancingEnabled			);
+	lod2_shader_shadow->registerUniform("shift"						, UniformType::F1, & g_transitionShift				);
+	lod2_shader_shadow->registerUniform("transition_control"		, UniformType::F1, & g_transitionControl			);
+	lod2_shader_shadow->registerUniform("movementVectorA"			, UniformType::F2, & g_tree_movementVectorA			);
+	lod2_shader_shadow->registerUniform("movementVectorB"			, UniformType::F2, & g_tree_movementVectorB			);
+	lod2_shader_shadow->registerUniform("window_size"				, UniformType::F2, & lod2_win_resolution			);
+	lod2_shader_shadow->registerUniform("wood_amplitudes"			, UniformType::F4, & g_tree_wood_amplitudes.data	);
+	lod2_shader_shadow->registerUniform("wood_frequencies"			, UniformType::F4, & g_tree_wood_frequencies.data	);
+	lod2_shader_shadow->registerUniform("leaf_amplitude"			, UniformType::F1, & g_tree_leaf_amplitude			);
+	lod2_shader_shadow->registerUniform("leaf_frequency"			, UniformType::F1, & g_tree_leaf_frequency			);
+	lod2_shader_shadow->registerUniform("dither"					, UniformType::F1, & g_dither						);
+	lod2_shader_shadow->registerUniform("farMnear"					, UniformType::F1, & g_ShadowFarMNear				);
+	lod2_shader_shadow->registerUniform("branch_count"				, UniformType::F1, & this->branchCountF				);
+	lod2_shader_shadow->registerUniform("wind_direction"			, UniformType::F3, & g_tree_wind_direction			);
+	lod2_shader_shadow->registerUniform("wind_strength"				, UniformType::F1, & g_tree_wind_strength			);
+	lod2_shader_shadow->registerUniform("sliceCnt"					, UniformType::F1, & this->lod2_sliceCount			);
+	lod2_shader_shadow->registerUniform("sliceSetsCnt"				, UniformType::F1, & this->lod2_sliceSetCount		);
+	
+	lod2_iu1Loc1		= lod2_shader->getLocation("u_colorVariance");
+	lod2_tmLoc0			= lod2_shader->getAttributeLocation("transformMatrix");
+	lod2_iaLoc1			= lod2_shader->getAttributeLocation("colorVariance");
+	lod2_tmLoc0_shadow	= lod2_shader_shadow->getAttributeLocation("transformMatrix");
+	lod2_iaLoc1_shadow	= lod2_shader_shadow->getAttributeLocation("colorVariance");
 
-	lod1shader = new Shader("test");
-	lod1shader->loadShader("shaders/test2_vs.glsl", "shaders/test2_fs.glsl");
+	int i;
+	// int i = lod1_shader->registerUniform("time_offset"	, UniformType::F1, & tree_time_offset);
+	// u_time_offset = lod1_shader->getUniform(i);
+	
+	/*
+	shader = new Shader("test");
+	shader->loadShader("shaders/test_vs.glsl", "shaders/test_fs.glsl");
 	// link textures to shader
-	//shader->linkTexture(colorMap			);
-	//shader->linkTexture(displacementMap		);
-	//shader->linkTexture(dataMap				);
+	shader->linkTexture(frontDecalMap		);
+	shader->linkTexture(frontNormalMap		);
+	shader->linkTexture(frontTranslucencyMap);
+	shader->linkTexture(frontHalfLife2Map	);
+	shader->linkTexture(backDecalMap		);
+	shader->linkTexture(backNormalMap		);
+	shader->linkTexture(backTranslucencyMap	);
+	shader->linkTexture(backHalfLife2Map	);
+	*/
+	vector<v3> vertexArr0;
+	vector<v3> normalArr0;
+	vector<v3> tangentArr0;
+	vector<v2> texCoordArr0;
+	vector<v2> sliceAtrArr0;
 
-	l_color		 = lod1shader->getGLLocation("colorMap"			);
-	l_displ		 = lod1shader->getGLLocation("leaf_noise_tex"	);
-	l_displ2	 = lod1shader->getGLLocation("branch_noise_tex"	);
-	l_data		 = lod1shader->getGLLocation("dataMap"			);
-	l_normal	 = lod1shader->getGLLocation("normalMap"		);
+	vertexArr0.push_back(v3( 0.0,  0.0, -0.5 ));
+	vertexArr0.push_back(v3( 0.0,  0.0,  0.5 ));
+	vertexArr0.push_back(v3( 0.0,  1.0,  0.5 ));
+	vertexArr0.push_back(v3( 0.0,  1.0, -0.5 ));
 
-	lod1shader->registerUniform("time"					, UniformType::F1, & g_float_time					);
+	normalArr0.push_back(v3( 1.0,  0.0,  0.0));
+	normalArr0.push_back(v3( 1.0,  0.0,  0.0));
+	normalArr0.push_back(v3( 1.0,  0.0,  0.0));
+	normalArr0.push_back(v3( 1.0,  0.0,  0.0));
+
+	tangentArr0.push_back(v3( 0.0,  0.0,  -1.0));
+	tangentArr0.push_back(v3( 0.0,  0.0,  -1.0));
+	tangentArr0.push_back(v3( 0.0,  0.0,  -1.0));
+	tangentArr0.push_back(v3( 0.0,  0.0,  -1.0));
 	
-	lod1shader->registerUniform("wave_amplitude"		, UniformType::F1, & g_tree_wave_amplitude			);
-	lod1shader->registerUniform("wave_frequency"		, UniformType::F1, & g_tree_wave_frequency			);
-	lod1shader->registerUniform("movementVectorA"		, UniformType::F2, & g_tree_movementVectorA			);
-	lod1shader->registerUniform("movementVectorB"		, UniformType::F2, & g_tree_movementVectorB			);
-	lod1shader->registerUniform("wave_y_offset"			, UniformType::F1, & g_tree_wave_y_offset			);
-	lod1shader->registerUniform("wave_increase_factor"	, UniformType::F1, & g_tree_wave_increase_factor	);
-	lod1shader->registerUniform("window_size"			, UniformType::F2, & lod1_win_resolution					);
+	float y_max = 1.0;//0.97; 
 
+	texCoordArr0.push_back(v2( 1.0,  0.0	));
+	texCoordArr0.push_back(v2( 0.0,  0.0	));
+	texCoordArr0.push_back(v2( 0.0,  y_max	));
+	texCoordArr0.push_back(v2( 1.0,  y_max	));
 
-	lod1shader->registerUniform("wood_amplitudes"		, UniformType::F4, & g_tree_wood_amplitudes.data	);
-	lod1shader->registerUniform("wood_frequencies"		, UniformType::F4, & g_tree_wood_frequencies.data	);
-	lod1shader->registerUniform("leaf_amplitude"		, UniformType::F1, & g_tree_leaf_amplitude			);
-	lod1shader->registerUniform("leaf_frequency"		, UniformType::F1, & g_tree_leaf_frequency			);
-
-	//int i = lod1shader->registerUniform("time_offset"	, UniformType::F1, & tree_time_offset);
-	//u_time_offset = lod1shader->getUniform(i);
+	// first slice number, second sliceSet number
+	sliceAtrArr0.push_back(v2( 0.0,  0.0));
+	sliceAtrArr0.push_back(v2( 0.0,  0.0));
+	sliceAtrArr0.push_back(v2( 0.0,  0.0));
+	sliceAtrArr0.push_back(v2( 0.0,  0.0));
 	
 	
-	// shader = new Shader("test");
-	// shader->loadShader("shaders/test_vs.glsl", "shaders/test_fs.glsl");
-	// // link textures to shader
-	// shader->linkTexture(frontDecalMap		);
-	// shader->linkTexture(frontNormalMap		);
-	// shader->linkTexture(frontTranslucencyMap);
-	// shader->linkTexture(frontHalfLife2Map	);
-	// shader->linkTexture(backDecalMap		);
-	// shader->linkTexture(backNormalMap		);
-	// shader->linkTexture(backTranslucencyMap	);
-	// shader->linkTexture(backHalfLife2Map	);
-	
+	// A 
+
+	int sliceCount = 1;
+	v3 axisY = v3(0.0, 1.0, 0.0);
+	// B
+	float angleR= angle;
+	for (i=0; i<(sliceCount*4); i++){
+		vertexArr0.push_back(vertexArr0[i].getRotated(angleR*DEG_TO_RAD, axisY));
+		normalArr0.push_back(normalArr0[i].getRotated(angleR*DEG_TO_RAD, axisY));
+		tangentArr0.push_back(tangentArr0[i].getRotated(angleR*DEG_TO_RAD, axisY));
+		texCoordArr0.push_back(texCoordArr0[i]);
+		sliceAtrArr0.push_back(v2(sliceAtrArr0[i].x, 1.0));
+	}
+	// copy to buffer
+	GLfloat* vertices	= new GLfloat[3*vertexArr0.size()]; 
+	GLfloat* normals	= new GLfloat[3*normalArr0.size()]; 
+	GLfloat* tangents	= new GLfloat[3*tangentArr0.size()]; 
+	GLfloat* texCoords	= new GLfloat[2*texCoordArr0.size()]; 
+	GLfloat* sliceAttr	= new GLfloat[2*sliceAtrArr0.size()]; 
+	int vertexCount = vertexArr0.size();
+	for (i=0; i<vertexCount; i++){
+		vertices[i*3 + 0] = vertexArr0[i].x;
+		vertices[i*3 + 1] = vertexArr0[i].y;
+		vertices[i*3 + 2] = vertexArr0[i].z;
+		normals	[i*3 + 0] = normalArr0[i].x;
+		normals	[i*3 + 1] = normalArr0[i].y;
+		normals	[i*3 + 2] = normalArr0[i].z;
+		tangents[i*3 + 0] = tangentArr0[i].x;
+		tangents[i*3 + 1] = tangentArr0[i].y;
+		tangents[i*3 + 2] = tangentArr0[i].z;
+		texCoords[i*2 + 0] = texCoordArr0[i].x;
+		texCoords[i*2 + 1] = texCoordArr0[i].y;
+		sliceAttr[i*2 + 0] = sliceAtrArr0[i].x;
+		sliceAttr[i*2 + 1] = sliceAtrArr0[i].y;
+	}
+	// delete vector 'vertexArr0'
+
+	vertexArr0.clear();
+	normalArr0.clear();
+	tangentArr0.clear();
+	texCoordArr0.clear();
+	sliceAtrArr0.clear();
+
 
 	// init VBO
-	int count = 4;
-	lod1vbo = new VBO();
-	lod1vbo->setVertexCount(count);
+	int count = vertexCount;
+	lod2_vbo = new VBO();
+	lod2_vbo->setVertexCount(count);
 	// position
 	VBODataSet * dataSet = new VBODataSet(
-		PLANE_VERTEX_ARRAY2,
+		vertices,
 		3*sizeof(GLfloat),
 		GL_FLOAT, 
 		ATTRIB_NAMES::POSITION,
 		true
 	);
-	lod1vbo->addVertexAttribute( dataSet );
+	lod2_vbo->addVertexAttribute( dataSet );
 	// normal
 	dataSet = new VBODataSet(
-		PLANE_NORMAL_ARRAY2,
+		normals,
 		3*sizeof(GLfloat),
 		GL_FLOAT, 
 		ATTRIB_NAMES::NORMAL,
 		false
 	);
-	lod1vbo->addVertexAttribute( dataSet );
+	lod2_vbo->addVertexAttribute( dataSet );
 	// tangent
 	dataSet = new VBODataSet(
-		PLANE_TANGENT_ARRAY,
+		tangents,
 		3*sizeof(GLfloat),
 		GL_FLOAT, 
 		ATTRIB_NAMES::TANGENT,
 		false
 	);
-	lod1vbo->addVertexAttribute( dataSet );
+	lod2_vbo->addVertexAttribute( dataSet );
 	// texture coordinates
 	dataSet = new VBODataSet(
-		PLANE_TEX_COORD_ARRAY2,
+		texCoords,
 		2*sizeof(GLfloat),
 		GL_FLOAT, 
 		ATTRIB_NAMES::TEXCOORD0,
 		false
 	);
-	lod1vbo->addVertexAttribute( dataSet );
-
-
-
+	lod2_vbo->addVertexAttribute( dataSet );
+	// slice attributes
+	dataSet = new VBODataSet(
+		sliceAttr,
+		2*sizeof(GLfloat),
+		GL_FLOAT, 
+		"sliceDescription",
+		false
+	);
+	lod2_vbo->addVertexAttribute( dataSet );
 	// link vbo and shaders
-	lod1vbo->compileData(GL_STATIC_DRAW);
-	lod1vbo->compileWithShader(lod1shader);
+	lod2_vbo->compileData(GL_STATIC_DRAW);
+	lod2_vbo->compileWithShader(lod2_shader);
+	lod2_vbo->compileWithShader(lod2_shader_shadow);
+
+	/*	
+	*	CREATE EBO
+	*		
+	*/
+
+	unsigned int ebo_data[3*36] = {	 0, 1, 2, 3,  // A
+									 4, 5, 6, 7,  // B
+
+									 4, 5, 6, 7,  // B
+									 0, 1, 2, 3   // A									
+								};
+	int cases_count = 2;
+	int iCnt = cases_count * 4 * lod2_sliceCount * lod2_sliceSetCount; // 4 = vertexCnt of one slice
 	
-}*/
+	lod2_ebo = new EBO();
+	lod2_ebo->create(GL_UNSIGNED_INT, GL_QUADS, iCnt, ebo_data, GL_STATIC_DRAW);
+
+}
 
 void DTree::initLOD2()
 {
 	// create slices
-
+	lod2_sliceCount = 1.0;
+	lod2_sliceSetCount = 2.0;
 	// create place to store MVP matrices of slices...
 	vector<Matrix4x4*> MVPmatrices;
 	Matrix4x4 *mvp;
@@ -3478,15 +3958,11 @@ void DTree::initLOD2()
 	lod2_win_resolution = v2 (res, res);
 	
 	DTreeSliceSet * set;
-	slice_count = 1;
-	resolution_x = lod2_win_resolution.x;
-	resolution_y = lod2_win_resolution.y;
-	
 	set = new DTreeSliceSet();
 	set->rotation_y = 0.0f;	
 
 	mvp = new Matrix4x4();
-	this->createSlices(dir, right, mvp, false);
+	this->createSlices(& this->slices, lod2_sliceCount, lod2_win_resolution.x, lod2_win_resolution.y, dir, right, mvp, false);
 	MVPmatrices.push_back(mvp);
 	set->setSlices(this->slices);
 	lod2color1	= set->getSlice(0)->colormap;
@@ -3500,7 +3976,7 @@ void DTree::initLOD2()
 	set = new DTreeSliceSet();
 	set->rotation_y = 90;
 	mvp = new Matrix4x4();
-	this->createSlices(dir, right, mvp, false);
+	this->createSlices(& this->slices, lod2_sliceCount, lod2_win_resolution.x, lod2_win_resolution.y, dir, right, mvp, false);
 	MVPmatrices.push_back(mvp);
 	set->setSlices(this->slices);	
 	lod2color2	= set->getSlice(0)->colormap;	
@@ -3533,14 +4009,14 @@ void DTree::initLOD2()
 	//lod2depth1->generateMipmaps();
 	//lod2depth2->generateMipmaps();
 
-	//jColorMap->setParameterI(GL_TEXTURE_SAMPLES, GL_LINEAR_MIPMAP_LINEAR);
+	//lod1_jColorMap->setParameterI(GL_TEXTURE_SAMPLES, GL_LINEAR_MIPMAP_LINEAR);
 	
 	// init shaders
-	lod2shader = new Shader("lod2");
-	lod2shader->loadShader("shaders/test4_vs.glsl", "shaders/test4_fs.glsl");
-	lod2shader->linkTexture(g_shadowmap1);
-	lod2shader_shadow = new Shader("lod2_shadow");
-	lod2shader_shadow->loadShader("shaders/test6_shadow_vs.glsl", "shaders/test6_shadow_fs.glsl");
+	lod2_shader = new Shader("lod2");
+	lod2_shader->loadShader("shaders/test4_vs.glsl", "shaders/test4_fs.glsl");
+	lod2_shader->linkTexture(g_shadowmap1);
+	lod2_shader_shadow = new Shader("lod2_shadow");
+	lod2_shader_shadow->loadShader("shaders/test6_shadow_vs.glsl", "shaders/test6_shadow_fs.glsl");
 	
 	// link textures to shader
 	lod2color1 ->inShaderName = "color_tex_1";
@@ -3562,88 +4038,88 @@ void DTree::initLOD2()
 	lod2depth2->textureUnitNumber = 0;
 	lod2dataTexture->textureUnitNumber =0;
 
-	lod2shader_shadow->linkTexture(seasonMap);
-	lod2shader_shadow->linkTexture(leafNoiseTexture);
-	lod2shader_shadow->linkTexture(branchNoiseTexture);
-	lod2shader_shadow->linkTexture(lod2color1);
-	lod2shader_shadow->linkTexture(lod2color2);
-	lod2shader_shadow->linkTexture(lod2normal1);
-	lod2shader_shadow->linkTexture(lod2normal2);
-	lod2shader_shadow->linkTexture(lod2branch1);
-	lod2shader_shadow->linkTexture(lod2branch2);
-	lod2shader_shadow->linkTexture(lod2depth1);
-	lod2shader_shadow->linkTexture(lod2depth2);
-	lod2shader_shadow->linkTexture(lod2dataTexture);
+	lod2_shader_shadow->linkTexture(seasonMap);
+	lod2_shader_shadow->linkTexture(leafNoiseTexture);
+	lod2_shader_shadow->linkTexture(branchNoiseTexture);
+	lod2_shader_shadow->linkTexture(lod2color1);
+	lod2_shader_shadow->linkTexture(lod2color2);
+	lod2_shader_shadow->linkTexture(lod2normal1);
+	lod2_shader_shadow->linkTexture(lod2normal2);
+	lod2_shader_shadow->linkTexture(lod2branch1);
+	lod2_shader_shadow->linkTexture(lod2branch2);
+	lod2_shader_shadow->linkTexture(lod2depth1);
+	lod2_shader_shadow->linkTexture(lod2depth2);
+	lod2_shader_shadow->linkTexture(lod2dataTexture);
 
-	// lod2loc_color_tex_1	 = lod2shader->getGLLocation("color_tex_1"		);
-	// lod2loc_color_tex_2	 = lod2shader->getGLLocation("color_tex_2"		);
-	// lod2loc_normal_tex_1 = lod2shader->getGLLocation("normal_tex_1"		);
-	// lod2loc_normal_tex_2 = lod2shader->getGLLocation("normal_tex_2"		);
-	// lod2loc_branch_tex_1 = lod2shader->getGLLocation("branch_tex_1"		);
-	// lod2loc_branch_tex_2 = lod2shader->getGLLocation("branch_tex_2"		);
-
-
-	lod2shader->linkTexture(seasonMap);
-	lod2shader->linkTexture(leafNoiseTexture);
-	lod2shader->linkTexture(branchNoiseTexture);
-	lod2shader->linkTexture(lod2color1);
-	lod2shader->linkTexture(lod2color2);
-	lod2shader->linkTexture(lod2normal1);
-	lod2shader->linkTexture(lod2normal2);
-	lod2shader->linkTexture(lod2branch1);
-	lod2shader->linkTexture(lod2branch2);
-	lod2shader->linkTexture(lod2dataTexture);
+	// lod2loc_color_tex_1	 = lod2_shader->getGLLocation("color_tex_1"		);
+	// lod2loc_color_tex_2	 = lod2_shader->getGLLocation("color_tex_2"		);
+	// lod2loc_normal_tex_1 = lod2_shader->getGLLocation("normal_tex_1"		);
+	// lod2loc_normal_tex_2 = lod2_shader->getGLLocation("normal_tex_2"		);
+	// lod2loc_branch_tex_1 = lod2_shader->getGLLocation("branch_tex_1"		);
+	// lod2loc_branch_tex_2 = lod2_shader->getGLLocation("branch_tex_2"		);
 
 
+	lod2_shader->linkTexture(seasonMap);
+	lod2_shader->linkTexture(leafNoiseTexture);
+	lod2_shader->linkTexture(branchNoiseTexture);
+	lod2_shader->linkTexture(lod2color1);
+	lod2_shader->linkTexture(lod2color2);
+	lod2_shader->linkTexture(lod2normal1);
+	lod2_shader->linkTexture(lod2normal2);
+	lod2_shader->linkTexture(lod2branch1);
+	lod2_shader->linkTexture(lod2branch2);
+	lod2_shader->linkTexture(lod2dataTexture);
 
-	//lod2loc_season_tex	= lod2shader->getGLLocation("seasonMap"		);
-	//lod2loc_leaf_tex	= lod2shader->getGLLocation("leaf_noise_tex"	);
-	//lod2loc_branch_tex	= lod2shader->getGLLocation("branch_noise_tex"	);
 
 
-	lod2shader->registerUniform("time"							, UniformType::F1, & g_float_time	);
-	lod2shader->registerUniform("time_offset"					, UniformType::F1, & time_offset	);
-	lod2shader->registerUniform("season"						, UniformType::F1, & g_season		);
-	lod2shader->registerUniform("instancing"					, UniformType::I1, & isInstancingEnabled);
-	lod2shader->registerUniform("movementVectorA"				, UniformType::F2, & g_tree_movementVectorA			);
-	lod2shader->registerUniform("movementVectorB"				, UniformType::F2, & g_tree_movementVectorB			);
-	lod2shader->registerUniform("window_size"					, UniformType::F2, & lod2_win_resolution			);
-	lod2shader->registerUniform("wood_amplitudes"				, UniformType::F4, & g_tree_wood_amplitudes.data	);
-	lod2shader->registerUniform("wood_frequencies"				, UniformType::F4, & g_tree_wood_frequencies.data	);
-	lod2shader->registerUniform("leaf_amplitude"				, UniformType::F1, & g_tree_leaf_amplitude			);
-	lod2shader->registerUniform("leaf_frequency"				, UniformType::F1, & g_tree_leaf_frequency			);
-	lod2shader->registerUniform("MultiplyAmbient"				, UniformType::F1,	& g_leaves_MultiplyAmbient);
-	lod2shader->registerUniform("MultiplyDiffuse"				, UniformType::F1,	& g_leaves_MultiplyDiffuse);
-	lod2shader->registerUniform("MultiplySpecular"				, UniformType::F1,	& g_leaves_MultiplySpecular);
-	lod2shader->registerUniform("MultiplyTranslucency"			, UniformType::F1,	& g_leaves_MultiplyTranslucency);
-	lod2shader->registerUniform("ReduceTranslucencyInShadow"	, UniformType::F1,	& g_leaves_ReduceTranslucencyInShadow);
-	lod2shader->registerUniform("shadow_intensity"				, UniformType::F1,	& g_leaves_shadow_intensity);
-	lod2shader->registerUniform("LightDiffuseColor"				, UniformType::F3,	& g_leaves_LightDiffuseColor.data);
-	lod2loc_colorVariance = lod2shader->getLocation("u_colorVariance");
-	lod2shader->registerUniform("LightMVPCameraVInverseMatrix"	, UniformType::M4,	g_LightMVPCameraVInverseMatrix);
-	lod2shader->registerUniform("shadowMappingEnabled"			, UniformType::B1, & g_ShadowMappingEnabled);
-	lod2shader->registerUniform("near"							, UniformType::F1, & g_ShadowNear);
-	lod2shader->registerUniform("far"							, UniformType::F1, & g_ShadowFar);
+	//lod2loc_season_tex	= lod2_shader->getGLLocation("seasonMap"		);
+	//lod2loc_leaf_tex	= lod2_shader->getGLLocation("leaf_noise_tex"	);
+	//lod2loc_branch_tex	= lod2_shader->getGLLocation("branch_noise_tex"	);
+
+
+	lod2_shader->registerUniform("time"							, UniformType::F1, & g_float_time	);
+	lod2_shader->registerUniform("time_offset"					, UniformType::F1, & time_offset	);
+	lod2_shader->registerUniform("season"						, UniformType::F1, & g_season		);
+	lod2_shader->registerUniform("instancing"					, UniformType::I1, & isInstancingEnabled);
+	lod2_shader->registerUniform("movementVectorA"				, UniformType::F2, & g_tree_movementVectorA			);
+	lod2_shader->registerUniform("movementVectorB"				, UniformType::F2, & g_tree_movementVectorB			);
+	lod2_shader->registerUniform("window_size"					, UniformType::F2, & lod2_win_resolution			);
+	lod2_shader->registerUniform("wood_amplitudes"				, UniformType::F4, & g_tree_wood_amplitudes.data	);
+	lod2_shader->registerUniform("wood_frequencies"				, UniformType::F4, & g_tree_wood_frequencies.data	);
+	lod2_shader->registerUniform("leaf_amplitude"				, UniformType::F1, & g_tree_leaf_amplitude			);
+	lod2_shader->registerUniform("leaf_frequency"				, UniformType::F1, & g_tree_leaf_frequency			);
+	lod2_shader->registerUniform("MultiplyAmbient"				, UniformType::F1,	& g_leaves_MultiplyAmbient);
+	lod2_shader->registerUniform("MultiplyDiffuse"				, UniformType::F1,	& g_leaves_MultiplyDiffuse);
+	lod2_shader->registerUniform("MultiplySpecular"				, UniformType::F1,	& g_leaves_MultiplySpecular);
+	lod2_shader->registerUniform("MultiplyTranslucency"			, UniformType::F1,	& g_leaves_MultiplyTranslucency);
+	lod2_shader->registerUniform("ReduceTranslucencyInShadow"	, UniformType::F1,	& g_leaves_ReduceTranslucencyInShadow);
+	lod2_shader->registerUniform("shadow_intensity"				, UniformType::F1,	& g_leaves_shadow_intensity);
+	lod2_shader->registerUniform("LightDiffuseColor"				, UniformType::F3,	& g_leaves_LightDiffuseColor.data);
+	lod2loc_colorVariance = lod2_shader->getLocation("u_colorVariance");
+	lod2_shader->registerUniform("LightMVPCameraVInverseMatrix"	, UniformType::M4,	g_LightMVPCameraVInverseMatrix);
+	lod2_shader->registerUniform("shadowMappingEnabled"			, UniformType::B1, & g_ShadowMappingEnabled);
+	lod2_shader->registerUniform("near"							, UniformType::F1, & g_ShadowNear);
+	lod2_shader->registerUniform("far"							, UniformType::F1, & g_ShadowFar);
 
 	// shadow
-	lod2shader_shadow->registerUniform("time"					, UniformType::F1, & g_float_time	);
-	lod2shader_shadow->registerUniform("time_offset"			, UniformType::F1, & time_offset	);
-	lod2shader_shadow->registerUniform("season"					, UniformType::F1, & g_season		);
-	lod2shader_shadow->registerUniform("instancing"				, UniformType::I1, & isInstancingEnabled);
-	lod2shader_shadow->registerUniform("movementVectorA"		, UniformType::F2, & g_tree_movementVectorA			);
-	lod2shader_shadow->registerUniform("movementVectorB"		, UniformType::F2, & g_tree_movementVectorB			);
-	lod2shader_shadow->registerUniform("window_size"			, UniformType::F2, & lod2_win_resolution			);
-	lod2shader_shadow->registerUniform("wood_amplitudes"		, UniformType::F4, & g_tree_wood_amplitudes.data	);
-	lod2shader_shadow->registerUniform("wood_frequencies"		, UniformType::F4, & g_tree_wood_frequencies.data	);
-	lod2shader_shadow->registerUniform("leaf_amplitude"			, UniformType::F1, & g_tree_leaf_amplitude			);
-	lod2shader_shadow->registerUniform("leaf_frequency"			, UniformType::F1, & g_tree_leaf_frequency			);
-	lod2shader_shadow->registerUniform("near"					, UniformType::F1, & g_ShadowNear);
-	lod2shader_shadow->registerUniform("far"					, UniformType::F1, & g_ShadowFar);
+	lod2_shader_shadow->registerUniform("time"					, UniformType::F1, & g_float_time	);
+	lod2_shader_shadow->registerUniform("time_offset"			, UniformType::F1, & time_offset	);
+	lod2_shader_shadow->registerUniform("season"					, UniformType::F1, & g_season		);
+	lod2_shader_shadow->registerUniform("instancing"				, UniformType::I1, & isInstancingEnabled);
+	lod2_shader_shadow->registerUniform("movementVectorA"		, UniformType::F2, & g_tree_movementVectorA			);
+	lod2_shader_shadow->registerUniform("movementVectorB"		, UniformType::F2, & g_tree_movementVectorB			);
+	lod2_shader_shadow->registerUniform("window_size"			, UniformType::F2, & lod2_win_resolution			);
+	lod2_shader_shadow->registerUniform("wood_amplitudes"		, UniformType::F4, & g_tree_wood_amplitudes.data	);
+	lod2_shader_shadow->registerUniform("wood_frequencies"		, UniformType::F4, & g_tree_wood_frequencies.data	);
+	lod2_shader_shadow->registerUniform("leaf_amplitude"			, UniformType::F1, & g_tree_leaf_amplitude			);
+	lod2_shader_shadow->registerUniform("leaf_frequency"			, UniformType::F1, & g_tree_leaf_frequency			);
+	lod2_shader_shadow->registerUniform("near"					, UniformType::F1, & g_ShadowNear);
+	lod2_shader_shadow->registerUniform("far"					, UniformType::F1, & g_ShadowFar);
 
-	tm2Loc0 = lod2shader->getAttributeLocation("transformMatrix");
-	ia2Loc1 = lod2shader->getAttributeLocation("colorVariance");
-	tm2Loc0_shadow = lod2shader_shadow->getAttributeLocation("transformMatrix");
-	ia2Loc1_shadow = lod2shader_shadow->getAttributeLocation("colorVariance");
+	tm2Loc0 = lod2_shader->getAttributeLocation("transformMatrix");
+	ia2Loc1 = lod2_shader->getAttributeLocation("colorVariance");
+	tm2Loc0_shadow = lod2_shader_shadow->getAttributeLocation("transformMatrix");
+	ia2Loc1_shadow = lod2_shader_shadow->getAttributeLocation("colorVariance");
 
 	int i;
 	
@@ -3727,8 +4203,8 @@ void DTree::initLOD2()
 
 	// init VBO
 	int count = vertexCount;
-	lod2vbo = new VBO();
-	lod2vbo->setVertexCount(count);
+	lod2_vbo = new VBO();
+	lod2_vbo->setVertexCount(count);
 	// position
 	VBODataSet * dataSet = new VBODataSet(
 		vertices,
@@ -3737,7 +4213,7 @@ void DTree::initLOD2()
 		ATTRIB_NAMES::POSITION,
 		true
 	);
-	lod2vbo->addVertexAttribute( dataSet );
+	lod2_vbo->addVertexAttribute( dataSet );
 	// normal
 	dataSet = new VBODataSet(
 		normals,
@@ -3746,7 +4222,7 @@ void DTree::initLOD2()
 		ATTRIB_NAMES::NORMAL,
 		false
 	);
-	lod2vbo->addVertexAttribute( dataSet );
+	lod2_vbo->addVertexAttribute( dataSet );
 	// tangent
 	dataSet = new VBODataSet(
 		tangents,
@@ -3755,7 +4231,7 @@ void DTree::initLOD2()
 		ATTRIB_NAMES::TANGENT,
 		false
 	);
-	lod2vbo->addVertexAttribute( dataSet );
+	lod2_vbo->addVertexAttribute( dataSet );
 	// texture coordinates
 	dataSet = new VBODataSet(
 		texCoords,
@@ -3764,7 +4240,7 @@ void DTree::initLOD2()
 		ATTRIB_NAMES::TEXCOORD0,
 		false
 	);
-	lod2vbo->addVertexAttribute( dataSet );
+	lod2_vbo->addVertexAttribute( dataSet );
 	// slice attributes
 	dataSet = new VBODataSet(
 		sliceAttr,
@@ -3773,11 +4249,11 @@ void DTree::initLOD2()
 		"sliceDescription",
 		false
 	);
-	lod2vbo->addVertexAttribute( dataSet );
+	lod2_vbo->addVertexAttribute( dataSet );
 	// link vbo and shaders
-	lod2vbo->compileData(GL_STATIC_DRAW);
-	lod2vbo->compileWithShader(lod2shader);
-	lod2vbo->compileWithShader(lod2shader_shadow);
+	lod2_vbo->compileData(GL_STATIC_DRAW);
+	lod2_vbo->compileWithShader(lod2_shader);
+	lod2_vbo->compileWithShader(lod2_shader_shadow);
 
 	/*	
 	*	CREATE EBO
@@ -3790,8 +4266,8 @@ void DTree::initLOD2()
 									};
 	
 	
-	lod2ebo = new EBO();
-	lod2ebo->create(GL_UNSIGNED_INT, GL_QUADS, iCnt, ebo_data, GL_STATIC_DRAW);
+	lod2_ebo = new EBO();
+	lod2_ebo->create(GL_UNSIGNED_INT, GL_QUADS, iCnt, ebo_data, GL_STATIC_DRAW);
 
 }
 /*
@@ -3920,7 +4396,7 @@ void DTree::init(){
 
 	initLOD0();
 	initLOD1();
-	initLOD2();
+	initLOD2b();
 }
 /*
 void DTree::init(){
@@ -3954,7 +4430,7 @@ BBox * DTree::getBBox()
 	return bbox;
 }
 
-void DTree::createSlices(v3 & direction, v3 & rightVector, Matrix4x4 *mvp, bool half)
+void DTree::createSlices(vector<DTreeSlice*>* slices, int count, int resolution_x, int resolution_y, v3 & direction, v3 & rightVector, Matrix4x4 *mvp, bool half)
 {
 	// init data pre-processing shader
 	time_offset = 0.0;
@@ -3970,9 +4446,9 @@ void DTree::createSlices(v3 & direction, v3 & rightVector, Matrix4x4 *mvp, bool 
 	//bLODShader->registerUniform("cam_right", UniformType::F3, & r);
 	//lLODShader->registerUniform("cam_right", UniformType::F3, & r);
 	// dummy depth map
-	Texture * depthmap = new Texture(GL_TEXTURE_2D, GL_DEPTH_COMPONENT32F, GL_DEPTH_COMPONENT, GL_FLOAT, NULL, resolution_x, resolution_y, "dummy_depthMap");
-	depthmap->textureUnit = GL_TEXTURE7;
-	depthmap->textureUnitNumber = 7;
+	//Texture * depthmap = new Texture(GL_TEXTURE_2D, GL_DEPTH_COMPONENT32F, GL_DEPTH_COMPONENT, GL_FLOAT, NULL, resolution_x, resolution_y, "dummy_depthMap");
+	//depthmap->textureUnit = GL_TEXTURE7;
+	//depthmap->textureUnitNumber = 7;
 	// dummy color map
 
 	//Texture * colormap = new Texture(GL_TEXTURE_2D, GL_RGB, GL_RGB, GL_UNSIGNED_BYTE, NULL, resolution_x, resolution_y, "dummy_colorMap");
@@ -3985,7 +4461,7 @@ void DTree::createSlices(v3 & direction, v3 & rightVector, Matrix4x4 *mvp, bool 
 	v3 position = direction * distance;
 	float diameter = 0.7*box->getMinSize();
 	float radius = diameter*0.5f;
-	float thickness = diameter/(float(slice_count));
+	float thickness = diameter/(float(count));
 	if (half) thickness*=0.5;
 	float left = -0.5, right= 0.5, bottom= 0.0, top= 1.0, near, far;
 	float positionDist = position.length();
@@ -4026,17 +4502,17 @@ void DTree::createSlices(v3 & direction, v3 & rightVector, Matrix4x4 *mvp, bool 
 			delete slices[i];
 		}
 	*/
-	slices.clear();
+	slices->clear();
 	GLuint fbo = 0;
 
-	for ( i = 0; i< slice_count; i++){
+	for ( i = 0; i< count; i++){
 		// create FBO
 			glGenFramebuffersEXT(1, &fbo);
 			glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fbo);
 		// each slice
 			slice = new DTreeSlice();
 		// add slice
-			slices.push_back(slice);
+			slices->push_back(slice);
 		// create & setup textures
 			slice->colormap = new Texture(GL_TEXTURE_2D, GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE, NULL, resolution_x, resolution_y, "colorMap");
 			slice->colormap->textureUnit = GL_TEXTURE0;
@@ -4047,7 +4523,6 @@ void DTree::createSlices(v3 & direction, v3 & rightVector, Matrix4x4 *mvp, bool 
 			ctr++;
 			sprintf(buff, "color texture %i", ctr);
 			slice->colormap->description = buff;
-
 
 			slice->depthmap = new Texture(GL_TEXTURE_2D, GL_DEPTH_COMPONENT32F, GL_DEPTH_COMPONENT, GL_FLOAT, NULL, resolution_x, resolution_y, "depthMap");
 			slice->depthmap->textureUnit = GL_TEXTURE2;
@@ -4082,7 +4557,7 @@ void DTree::createSlices(v3 & direction, v3 & rightVector, Matrix4x4 *mvp, bool 
 			glDrawBuffersARB(3, buffers);
 			assert(glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT)==GL_FRAMEBUFFER_COMPLETE_EXT);
 			assert( glGetError() == GL_NO_ERROR );
-			printf("TREE_SLICE %i framebuffer initialized successfully\n", i);
+			//printf("TREE_SLICE %i framebuffer initialized successfully\n", i);
 			/*
 			GLenum buffers[3] = {GL_COLOR_ATTACHMENT0_EXT,GL_COLOR_ATTACHMENT1_EXT, GL_COLOR_ATTACHMENT2_EXT};
 			glDrawBuffersARB(3, buffers);
@@ -4092,7 +4567,7 @@ void DTree::createSlices(v3 & direction, v3 & rightVector, Matrix4x4 *mvp, bool 
 			near = positionDist-radius + i * thickness;
 			far = near + thickness;
 			// last interval must continue to infinity in case of half slicing
-			if (half && i==slice_count-1)
+			if (half && i==count-1)
 			{
 				far = positionDist-radius + 2*(i+1) * thickness;
 			}
@@ -4125,16 +4600,6 @@ void DTree::createSlices(v3 & direction, v3 & rightVector, Matrix4x4 *mvp, bool 
 			glPopMatrix();
 		//
 	
-
-		// generate mipmaps where needed
-			//slice->colormap->generateMipmaps();
-			//slice->colormap->setParameterI(GL_TEXTURE_MIN_LOD, 0);
-			//slice->colormap->setParameterI(GL_TEXTURE_BASE_LEVEL, 0);
-			
-			//slice->normalmap->generateMipmaps();
-			//slice->depthmap->generateMipmaps();
-
-
 		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
 
 		// prepare data texture from branch texture
@@ -4150,7 +4615,7 @@ void DTree::createSlices(v3 & direction, v3 & rightVector, Matrix4x4 *mvp, bool 
 			//glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT , GL_TEXTURE_2D, depthmap->id , 0);
 			assert(glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT)==GL_FRAMEBUFFER_COMPLETE_EXT);
 			assert( glGetError() == GL_NO_ERROR );
-			printf("TREE_SLICE %i data framebuffer initialized successfully\n", i);
+			//printf("TREE_SLICE %i data framebuffer initialized successfully\n", i);
 
 			glClearColor(1.f, 0.f, 0.f, 1.f);
 			glClear(GL_COLOR_BUFFER_BIT);
@@ -4186,11 +4651,22 @@ void DTree::createSlices(v3 & direction, v3 & rightVector, Matrix4x4 *mvp, bool 
 		SAFE_DELETE_PTR ( slice->branchmap );
 
 	} // for each slice
-	SAFE_DELETE_PTR ( depthmap );
+	//SAFE_DELETE_PTR ( depthmap );
 	SAFE_DELETE_PTR ( dataProcessShader );
 }
 
-void DTree::joinSliceSetsTextures(){
+void DTree::joinSliceSetsTextures(
+					Texture ** jColorMap,
+					Texture ** jDataMap,
+					Texture ** jDepthMap,
+					Texture ** jNormalMap,
+					vector<DTreeSliceSet*>* sliceSets,
+					int sliceset_count,
+					int slice_count,
+					int resolution_x,
+					int resolution_y
+					)
+{
 
 	Shader * joinShader = new Shader("join");
 	joinShader->loadShader(DYN_TREE::SHADER_JOIN_V, DYN_TREE::SHADER_JOIN_F);
@@ -4198,47 +4674,43 @@ void DTree::joinSliceSetsTextures(){
 	int loc_datamap		= joinShader->getGLLocation("dataMap");			
 	int loc_normalmap	= joinShader->getGLLocation("normalMap");		
 	int loc_depthmap	= joinShader->getGLLocation("depthMap");		
-	int sliceSetCnt = sliceSets2.size();
+	//int sliceSetCnt = lod1_sliceSets.size();
 	GLuint fbo = 0;
-	int jResX = slice_count * resolution_x;
-	int jResY = sliceSetCnt * resolution_y;
-
-
+	int jResX = slice_count		* resolution_x;
+	int jResY = sliceset_count  * resolution_y;
 
 	// render offscreen
 	g_window_sizes.x = jResX;
-	g_window_sizes.y = jResX;
+	g_window_sizes.y = jResY;
 	glViewport(0, 0, g_window_sizes.x, g_window_sizes.y);
+
+	(*jColorMap)	= new Texture(GL_TEXTURE_2D, GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE, NULL, jResX, jResY, "colorMap");
+	(*jColorMap)->setParameterI(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	//lod1_jColorMap->setParameterI(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	(*jColorMap)->textureUnit =  GL_TEXTURE1;
+	(*jColorMap)->textureUnitNumber =		1;
+	(*jDataMap)	= new Texture(	GL_TEXTURE_2D, 
+								eBranchmapInternalFormat,
+								eBranchmapFormat,
+								eBranchmapDataType,
+								NULL, jResX, jResY, "dataMap");
+	(*jDataMap)->textureUnit =	  GL_TEXTURE2;
+	(*jDataMap)->textureUnitNumber =		2;
+	(*jDepthMap)	= new Texture(GL_TEXTURE_2D, GL_DEPTH_COMPONENT32F, GL_DEPTH_COMPONENT, GL_FLOAT, NULL, jResX, jResY, "depthMap");
+	(*jDepthMap)->textureUnit =  GL_TEXTURE3;
+	(*jDepthMap)->textureUnitNumber =		3;
+	(*jNormalMap)	= new Texture(GL_TEXTURE_2D, GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE, NULL, jResX, jResY, "normalMap");
+	(*jNormalMap)->setParameterI(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	//lod1_jNormalMap->setParameterI(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	(*jNormalMap)->textureUnit = GL_TEXTURE4;
+	(*jNormalMap)->textureUnitNumber =     4;
 
 	glGenFramebuffersEXT(1, &fbo);
 	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fbo);
-	
-		jColorMap	= new Texture(GL_TEXTURE_2D, GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE, NULL, jResX, jResY, "colorMap");
-		jColorMap->setParameterI(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		//jColorMap->setParameterI(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		jColorMap->textureUnit =  GL_TEXTURE1;
-		jColorMap->textureUnitNumber =		1;
-		jDataMap	= new Texture(	GL_TEXTURE_2D, 
-									eBranchmapInternalFormat,
-									eBranchmapFormat,
-									eBranchmapDataType,
-									NULL, jResX, jResY, "dataMap");
-		jDataMap->textureUnit =	  GL_TEXTURE2;
-		jDataMap->textureUnitNumber =		2;
-		jDepthMap	= new Texture(GL_TEXTURE_2D, GL_DEPTH_COMPONENT32F, GL_DEPTH_COMPONENT, GL_FLOAT, NULL, jResX, jResY, "depthMap");
-		jDepthMap->textureUnit =  GL_TEXTURE3;
-		jDepthMap->textureUnitNumber =		3;
-		jNormalMap	= new Texture(GL_TEXTURE_2D, GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE, NULL, jResX, jResY, "normalMap");
-		jNormalMap->setParameterI(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		//jNormalMap->setParameterI(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		jNormalMap->textureUnit = GL_TEXTURE4;
-		jNormalMap->textureUnitNumber =     4;
-
-
-		glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_2D, jColorMap->id , 0);
-		glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT1_EXT, GL_TEXTURE_2D, jNormalMap->id , 0);
-		glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT2_EXT, GL_TEXTURE_2D, jDataMap->id , 0);
-		glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT, GL_TEXTURE_2D, jDepthMap->id , 0);
+		glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_2D,	(*jColorMap	)->id  , 0);
+		glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT1_EXT, GL_TEXTURE_2D,	(*jNormalMap)->id  , 0);
+		glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT2_EXT, GL_TEXTURE_2D,	(*jDataMap	)->id  , 0);
+		glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT , GL_TEXTURE_2D,	(*jDepthMap	)->id  , 0);
 		assert(glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT)==GL_FRAMEBUFFER_COMPLETE_EXT);
 		assert( glGetError() == GL_NO_ERROR );
 
@@ -4252,36 +4724,39 @@ void DTree::joinSliceSetsTextures(){
 
 		joinShader->use(true);
 		int x,y,width,height;
-		int j=0;
-		for (int i=0; i<slice_count; i++){
+		int i,j;
+		for (j=0; j<sliceset_count; j++){
 			// draw slice sets
-			for (j=0; j<sliceSetCnt; j++){
+			for (i=0; i<slice_count; i++){
 				// draw on proper position
-				slice	= sliceSets2[j]->getSlice(i); 
+				slice	= (*sliceSets)[j]->getSlice(i); 
 				x		= i*resolution_x;
 				y		= j*resolution_y;
 				width	= resolution_x;
 				height	= resolution_y;
+
+				//slice->colormap->	bind(slice->colormap	->textureUnit);
+				slice->datamap->	bind(slice->datamap		->textureUnit);
+				slice->normalmap->	bind(slice->normalmap	->textureUnit);
+				slice->depthmap->	bind(slice->depthmap	->textureUnit);
+
 				joinShader->setTexture(loc_colormap,	slice->colormap->	textureUnitNumber);
 				joinShader->setTexture(loc_datamap,		slice->datamap->	textureUnitNumber);
 				joinShader->setTexture(loc_normalmap,	slice->normalmap->	textureUnitNumber);
 				joinShader->setTexture(loc_depthmap,	slice->depthmap->	textureUnitNumber);
+								
+				slice->colormap->show(x, y, width, height, false);	
 
-				slice->colormap->	bind(slice->colormap->textureUnit);
-				slice->datamap->	bind(slice->datamap->textureUnit);
-				slice->normalmap->	bind(slice->normalmap->textureUnit);
-				slice->depthmap->	bind(slice->depthmap->textureUnit);
-				
-				slice->colormap->show(i*resolution_x, j*resolution_y, resolution_x, resolution_y, false);	
-
-				slice->colormap->	unbind();
+				//slice->colormap->	unbind();
 				slice->datamap->	unbind();
 				slice->normalmap->	unbind();
 				slice->depthmap->	unbind();
+				glFinish();
 			}
 		}
+		
 		joinShader->use(false);
-		glFinish();
+		
 		//glEnable(GL_DEPTH_TEST);
 	/*glMatrixMode(GL_PROJECTION);
 		glPopMatrix();

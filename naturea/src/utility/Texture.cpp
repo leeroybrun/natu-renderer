@@ -23,7 +23,8 @@ Texture::Texture(GLuint _texType, GLuint _inFormat, GLenum _dataFormat, GLenum _
 	dataFormat = _dataFormat;
 	width = _width;
 	height = _height;
-	glEnable(GL_TEXTURE_2D);
+	//glEnable(GL_TEXTURE_2D);
+	id = 0;
 	glGenTextures(1, &id);	
 	glBindTexture(GL_TEXTURE_2D, id);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP); 
@@ -37,8 +38,10 @@ Texture::Texture(GLuint _texType, GLuint _inFormat, GLenum _dataFormat, GLenum _
 
 Texture::~Texture(void)
 {
-	glDeleteTextures(1, &id);
-	printf("texture: %s deleted.\n", inShaderName.c_str());
+	if (id>0){
+		glDeleteTextures(1, &id);
+		printf("texture: %s deleted.\n", inShaderName.c_str());
+	}
 }
 
 void Texture::setParameterI(GLenum paramName, GLint paramValue )

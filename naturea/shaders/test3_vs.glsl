@@ -1,9 +1,5 @@
 #version 120
 #extension GL_EXT_draw_instanced: enable  
-uniform vec4		wood_amplitudes;
-uniform vec4		wood_frequencies;
-uniform sampler2D	branch_noise_tex;
-
 attribute vec3		normal;
 attribute vec3		tangent;
 attribute vec2		texCoords0;
@@ -23,7 +19,7 @@ varying vec3		colorVar;
 uniform float		time_offset;
 varying float		time_offset_v;
 
-varying mat3		TBN_Matrix;
+mat3				TBN_Matrix;
 uniform float		time;
 
 uniform mat4		LightMVPCameraVInverseMatrix;
@@ -32,6 +28,9 @@ varying	vec4		lightSpacePosition;
 varying float		mv_time;
 varying vec3		v_wind_dir_ts;
 uniform vec3		wind_direction;
+
+uniform float		sliceCnt;
+uniform float		sliceSetsCnt;
 
 mat3	w_matrix = mat3(
   transformMatrix[0][0], 0.0, -transformMatrix[0][2],    //first column
@@ -94,14 +93,21 @@ void main()
 
 	gl_Position		= gl_ProjectionMatrix * pos;
 	eyeDir			= pos.xyz;
+
 	sliceDesc		= sliceDescription;
 	gl_TexCoord[0]	= vec4(texCoords0, 0.0, 0.0);
-	
+	gl_TexCoord[1]  = vec4(clamp ( texCoords0 + sliceDesc , sliceDesc, sliceDesc+vec2(1.0, 1.0) ) / vec2(sliceCnt,sliceSetsCnt), 0.0, 0.0);
+
 	lightSpacePosition = (LightMVPCameraVInverseMatrix * pos);
 	lightSpacePosition = (lightSpacePosition/lightSpacePosition.w * 0.5) + vec4(0.5);
-	
-	//alpha = clamp(-3.0+5.0*abs(dot(normalize(normalDir.xz), normalize(eyeDir.xz))), 0.0, 1.0);	
-	alpha =clamp(-0.5 + 2.0*abs(dot(normalize(normalDir), normalize(eyeDir))), 0.0, gl_Color.a);
+	//alpha = clamp(-3.0+5.0*abs(dot(normalize(normalDir.xz), normalize(eyeDir.xz))), 0.0, 1.0);
+	if (sliceSetsCnt>2.0){	
+		// LOD1
+		alpha = clamp(-0.5 + 2.0*abs(dot(normalize(normalDir), normalize(eyeDir))), 0.0, gl_Color.a);
+	} else {
+		// LOD2
+		alpha = clamp(-2.0+5.0*abs(dot(normalize(normalDir.xz), normalize(eyeDir.xz))), 0.0, gl_Color.a);		
+	}
 	//alpha = clamp(abs(dot(normalize(normalDir), normalize(eyeDir))), gl_Color.a, 1.0);
 	//alpha = gl_Color.a;
 	//gl_FrontColor = vec4(normal, alpha);

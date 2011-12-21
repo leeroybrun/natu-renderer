@@ -23,7 +23,7 @@ varying float	height;
 //varying float	fogFactor;
 varying vec4	position;
 
-uniform sampler2DMS shadowMap;
+uniform sampler2DShadow shadowMap;
 varying vec4	lightSpacePosition;
 vec4 lpos;
 varying	vec4	lightProjSpacePosition;
@@ -45,12 +45,13 @@ float getDepth(vec2 coords){
 	return depth;
 }
 */
+/*
 uniform vec2	shadowmap_size;
 uniform int		samples;
 float getShadow(vec2 position, vec2 offset, float depth){
 	float shade = 0.0;
 	float lightDepth;
-	ivec2 p= (position+offset*0.001)*shadowmap_size;
+	ivec2 p = ivec2((position+offset*0.001)*shadowmap_size);
 	for (int i=0; i<samples; i++){
 		lightDepth = texelFetch(shadowMap, p, i).r;
 		if (lightDepth<depth){
@@ -59,11 +60,11 @@ float getShadow(vec2 position, vec2 offset, float depth){
 	}
 	return shade / samples;
 }
-/*
-float getShadow(vec2 position, vec2 offset, float depth){
+*/
 
+float getShadow(vec2 position, vec2 offset, float depth){
 	return shadow2D(shadowMap, vec3(position+offset*0.001,depth)).r; 
-}*/
+}
 
 float getShadowIntensity(vec4 sm_pos){
 	sm_pos -= SHADOW_TRESHOLD;
@@ -72,7 +73,7 @@ float getShadowIntensity(vec4 sm_pos){
 	res += getShadow(sm_pos.xy, vec2(-1.0, 0.0), sm_pos.z);
 	res += getShadow(sm_pos.xy, vec2(0.0, 1.0), sm_pos.z);
 	res += getShadow(sm_pos.xy, vec2(0.0, -1.0), sm_pos.z);
-	return 1.0 - res/6.0;
+	return res/6.0;
 }
 void main()
 {

@@ -27,10 +27,10 @@ uniform float		lightDirDOTviewDir;
 uniform int			sampleCount;
 ivec2				texCoord;
 
-vec4 texture2DMS(sampler2DMS sampler, ivec2 coord, int sampleCount){
+vec4 texture2DMSrtex(ivec2 coord, int sampleCount){
 	vec4  color = vec4(0.0);
 	for (int i=0; i<sampleCount; i++){
-		color += texelFetch(sampler, coord, i);
+		color += texelFetch(rtex, coord, i);
 	}
 	color /= float(sampleCount);
 	return color;
@@ -59,7 +59,7 @@ void main(void)
 	
 	//vec4  raysColor = texture2D(rtex, gl_TexCoord[0].st);
 	//float bcolor   = texture2D(btex,  gl_TexCoord[0].st).x;
-	
+	/*
 	vec4 bloom = vec4(0.0);
 	float xd,yd,l;
 	bloomDistance*= float (texSize.x);
@@ -81,7 +81,7 @@ void main(void)
 		origColor += (bloom/divideFactor);
 		
 	//}
-	
+	*/
 	
 	//====================================================================
 	// Sun position on screen - check algorithm
@@ -110,9 +110,8 @@ void main(void)
 		for(int i=0; i < NUM_SAMPLES ; i++)
 		{
 			textCoo -= deltaTextCoord;
-			vec3 tsample = texelFetch(rtex, ivec2(textCoo*texSize) , 0).rgb;
-			//vec3 tsample = texture2DMS(rtex, ivec2( textCoo*texSize ), 1).rgb;// texelFetch(rtex, ivec2(textCoo*texSize) , 0);
-			
+			//vec3 tsample = texelFetch(rtex, ivec2(textCoo*texSize) , 0).rgb;
+			vec3 tsample = texture2DMSrtex(ivec2( textCoo*texSize ), sampleCount).rgb;
 			//vec4 tsample = texture2D(rtex, textCoo );
 			//if (length(tsample.rgb)<0.5){
 				tsample *= illumDec * weight;

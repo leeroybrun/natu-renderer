@@ -133,22 +133,25 @@ public:
 	void draw_all_instances_LOD1();
 	void draw_instance_LOD2(DTreeInstanceData * instance, float alpha);
 	void draw_all_instances_LOD2();
+	void draw_instance_LOD2b(DTreeInstanceData * instance, float alpha);
+	void draw_all_instances_LOD2b();
 
 	
 	void drawForLOD();
+	/*
 	void drawLOD0();
 	void drawLOD1();
 	void drawLOD1b();
 	void drawLOD2();
 	void draw2Shadowmap();
-
+	*/
 	void init();
 	void initInstances(vector<v4> &positions_rotations);
 
 	void setInstances(v4 ** positions_rotations, int count);
 	void initLOD0();
 	void initLOD1();
-	//void initLOD1b();
+	void initLOD2b();
 	void initLOD2();
 
 	void update(double time);
@@ -160,19 +163,8 @@ public:
 
 
 	BBox * getBBox(void);
-	void createSlices(v3 & direction, v3 & right,  Matrix4x4 *mvp, bool half=true);
-	int resolution_x, resolution_y;
-	int	slice_count;
-
-
-	void joinSliceSetsTextures();
-
-	Texture*			jColorMap;
-	Texture*			jDataMap;
-	Texture*			jNormalMap;
-	Texture*			jDepthMap;
-
-
+	
+	
 	vector<DTreeSlice*>	slices;
 	v3					position;
 	v3*					viewer_position;
@@ -182,28 +174,61 @@ public:
 	vector<DTreeInstanceData*>			tree_instances_lod1;
 
 private:
+	void	joinSliceSetsTextures(
+					Texture ** jColorMap,
+					Texture ** jDataMap,
+					Texture ** jDepthMap,
+					Texture ** jNormalMap,
+					vector<DTreeSliceSet*>* sliceSets,
+					int sliceset_count,
+					int slice_count,
+					int resolution_x,
+					int resolution_y
+					);
+	void	createSlices(vector<DTreeSlice*>* slices, int count,int resX, int resY, v3 & direction, v3 & right,  Matrix4x4 *mvp, bool half=true);
+
+	void	makeTransition(float control, bool maskOld, DTreeInstanceData* instance, void (DTree::*drawLODA)(DTreeInstanceData*, float),  void (DTree::*drawLODB)(DTreeInstanceData*, float));
+	void	enqueueInRenderList(DTreeInstanceData * instance);
+	void	prepareForRender();
+	void	render();
+	int		linearizeHierarchy();
+	void	recalcCoordSystems();
+	void	fillParentDataForEachBranch();
+	void	createBranchesVBO();
+	void	createLeavesVBO();
+
+	int swapCnt;
+	/*
+	// NORMALS
+	VBO *				n_branchesVBO;
+	VBO	*				n_leavesVBO;
+	Shader *			n_branchShader;
+	Shader *			n_leafShader;
+	//void				initNormals();
+	void				drawNormals(DTreeInstanceData * instance);
+	*/
+
 	// INSTANCES
 	bool				instancesLocked;
 	//v4**				positions_rotations;
 	int					count;
+	vector<DTreeInstanceData**> instancesInRenderQueues;
+	vector<int>			countRenderQueues;
+	GLuint				i_matricesBuffID;
+	v3					wind_relative_direction;
+	int					instanceFloatCount;
 	// INSTANCES END
 
-	v3					wind_relative_direction;
-
-
-	int					instanceFloatCount;
+	
 	DTreeBranch			*trunk;
 	vector<DTreeBranch*> branches;
 	vector<DTreeLeaf*>	 leaves;
-
-
 
 	Shader *			branchShader;
 	Shader *			leafShader;
 
 	Shader *			branchShader_sh;
 	Shader *			leafShader_sh;
-
 
 	Shader*				bLODShader;
 	Shader*				lLODShader;
@@ -238,16 +263,11 @@ private:
 	GLfloat				*vbo_data[DYN_TREE::COUNT];
 	GLuint 				*ebo_data;
 
-	int linearizeHierarchy();
-	void recalcCoordSystems();
-	void fillParentDataForEachBranch();
 
-	void createBranchesVBO();
-	void createLeavesVBO();
 
 	// LOD 1
 	float					tree_time_offset;
-	Uniform*				u_time_offset;	 			
+	Uniform*				u_time_offset;
 
 	int						l_color	  ;
 	int						l_displ	  ;
@@ -255,17 +275,18 @@ private:
 	int						l_data	  ;
 	int						l_normal  ;
 	
-	v2						lod1_win_resolution;
-	v2						lod2_win_resolution;
+	
+	
 
 	Texture*				colorMap;
 	Texture*				colorMap2;
-	Texture*				lod1dataTexture;
+	Texture*				lod1_dataTexture;
+	Texture*				lod2_dataTexture;
 	Texture*				weightMap;
 	Texture*				dataMap;
 	vector<DTreeSliceSet*>	sliceSets;
 	Shader	*				lod1shader;
-	VBO		*				lod1vbo;
+	//VBO		*				lod1vbo;
 
 
 	int						ctr;
@@ -278,16 +299,22 @@ private:
 	/***************************************
 	* LOD 1 data
 	*/
-	Shader	*				lod1shader_shadow;
+	v2						lod1_win_resolution;
+	float					lod1_sliceCount;
+	float					lod1_sliceSetCount;
+	Shader	*				lod1_shader_shadow;
 	vector<float *>			lod1_instanceMatrices;
 	vector<int>				lod1_typeIndices;
-	vector<DTreeInstanceData**> instancesInRenderQueues;
-	vector<int>				countRenderQueues;
+	Texture*				lod1_jColorMap;
+	Texture*				lod1_jDataMap;
+	Texture*				lod1_jNormalMap;
+	Texture*				lod1_jDepthMap;
+	
 
-	GLuint					i_matricesBuffID;
-	GLuint					i_paramBuffID;
-	GLuint					v_ordAttribsBuffID;
-	GLuint					v_indicesBuffID;
+	
+	//GLuint					i_paramBuffID;
+	//GLuint					v_ordAttribsBuffID;
+	//GLuint					v_indicesBuffID;
 	float					time_offset;
 
 	GLint					tmLoc0;
@@ -296,43 +323,59 @@ private:
 	GLint					tmLoc0_shadow;
 	GLint					iu1Loc1;
 	GLint					iu0Loc1;
-
-	int						l2_color	;
-	int						l2_displ	;
-	int						l2_displ2	;
-	int						l2_data		;
-	int						l2_normal	;
-	int						l2_depth	;
-	int						l2_season  ;
-	vector<DTreeSliceSet*>	sliceSets2	;
-	Shader	*				lod1shader2	;
 	int						isInstancingEnabled;
-	VBO		*				lod1vbo2	;
-	EBO		*				eboLOD1	;
-	void enqueueInRenderList(DTreeInstanceData * instance);
-	void prepareForRender();
-	void render();
 
-	int swapCnt;
+	// int						l2_color	;
+	// int						l2_displ	;
+	// int						l2_displ2	;
+	// int						l2_data		;
+	// int						l2_normal	;
+	// int						l2_depth	;
+	// int						l2_season  ;
+	vector<DTreeSliceSet*>	lod1_sliceSets	;
+	Shader	*				lod1_shader	;
+	
+	VBO		*				lod1_vbo	;
+	EBO		*				lod1_ebo	;
+	
 
 
-	VBO *				n_branchesVBO;
-	VBO	*				n_leavesVBO;
-	Shader *			n_branchShader;
-	Shader *			n_leafShader;
-	//void				initNormals();
-	void				drawNormals(DTreeInstanceData * instance);
+	
 
 	/****************************************************
 	* LOD 2 data
 	*/
+	v2					lod2_win_resolution;
+	Texture*			lod2_jColorMap;
+	Texture*			lod2_jDataMap;
+	Texture*			lod2_jNormalMap;
+	Texture*			lod2_jDepthMap;
+	float				lod2_sliceCount;
+	float				lod2_sliceSetCount;
+	vector<DTreeSliceSet*> lod2_sliceSets;
+	Shader	*			lod2_shader;
+	Shader	*			lod2_shader_shadow;
 
-	vector<DTreeSliceSet*> lod2slices;
-	Shader	*			lod2shader;
-	Shader	*			lod2shader_shadow;
+	VBO		*			lod2_vbo;
+	EBO		*			lod2_ebo;
+	vector<float *>		lod2_instanceMatrices;
+	vector<int>			lod2_typeIndices;
 
-	VBO		*			lod2vbo;
-	EBO		*			lod2ebo;
+
+	GLint				lod2_tmLoc0;
+	GLint				lod2_iaLoc1;
+	GLint				lod2_iaLoc1_shadow;
+	GLint				lod2_tmLoc0_shadow;
+	GLint				lod2_iu1Loc1;
+	GLint				lod2_iu0Loc1;
+
+	GLint				tm2Loc0;
+	GLint				tm2Loc0_shadow;
+	GLint				ia2Loc1;
+	GLint				ia2Loc1_shadow;
+	GLint				iu1_2Loc1;
+	GLint				iu0_2Loc1;
+
 	Texture	*			lod2color1;
 	Texture *			lod2color2;
 	Texture	*			lod2normal1;
@@ -342,18 +385,11 @@ private:
 	Texture	*			lod2depth1;
 	Texture *			lod2depth2;
 	Texture *			lod2dataTexture;
+
 	int					lod2loc_season_tex;
 	int					lod2loc_colorVariance;
 	int					lod2loc_leaf_tex;
 	int					lod2loc_branch_tex;
-
-	
-	GLint				tm2Loc0;
-	GLint				tm2Loc0_shadow;
-	GLint				ia2Loc1;
-	GLint				ia2Loc1_shadow;
-	GLint				iu1_2Loc1;
-	GLint				iu0_2Loc1;
 
 	GLint				lod2loc_color_tex_1;
 	GLint				lod2loc_color_tex_2;
@@ -362,11 +398,5 @@ private:
 	GLint				lod2loc_branch_tex_1;
 	GLint				lod2loc_branch_tex_2;
 
-
-
-	vector<float *>		lod2_instanceMatrices;
-	vector<int>			lod2_typeIndices;
-	
-	void makeTransition(float control, bool maskOld, DTreeInstanceData* instance, void (DTree::*drawLODA)(DTreeInstanceData*, float),  void (DTree::*drawLODB)(DTreeInstanceData*, float));
 };
 
