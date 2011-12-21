@@ -136,8 +136,8 @@ bool	g_draw_dtree_lod		= true;
 bool	g_draw_lod0				= true;
 bool	g_draw_lod1				= true;
 bool	g_draw_lod2				= true;
-//v4		g_lodTresholds			= v4(15, 20, 50, 60);
-v4		g_lodTresholds			= v4(15, 20, 1000, 1000);
+v4		g_lodTresholds			= v4(15, 20, 50, 60);
+//v4		g_lodTresholds			= v4(15, 20, 1000, 1000);
 bool	g_draw_low_vegetation	= true;
 bool	g_draw_dtree			= true;
 bool	g_draw_light_direction	= false;
@@ -228,6 +228,7 @@ m4		*	g_LightMVPCameraVInverseMatrix = NULL;
 
 float		g_ShadowNear= 0.0;
 float		g_ShadowFar = 50.0;
+float		g_ShadowFarMNear;
 float		g_CameraNear= 0.0;
 float		g_CameraFar = 50.0;
 
@@ -295,7 +296,7 @@ void cbDisplay()
 		//glGetQueryObjectiv(tqid, GL_QUERY_RESULT_AVAILABLE, &result_available);
 		//printf("avail: %s\n",result_available?"yes":"no");
 	} 
-	if (true){
+	//if (multisample){
 		//glBindFramebuffer(GL_FRAMEBUFFER, multi_framebuffer);
 		//glEnable(GL_MULTISAMPLE);
 		//glEnable(GL_SAMPLE_ALPHA_TO_COVERAGE);
@@ -303,9 +304,9 @@ void cbDisplay()
 		//glDisable(GL_SAMPLE_ALPHA_TO_COVERAGE);
 		//glDisable(GL_MULTISAMPLE);
 		//glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	} else {
+	//} else {
 		p_world->draw();
-	}
+	//}
 	
 	// block CPU to measure time here
 	//glFinish();
@@ -442,6 +443,21 @@ void TW_CALL cbSetDTreeCount(const void *value, void *clientData)
 void TW_CALL cbGetDTreeCount(void *value, void *clientData)
 { 
 	*(int *)value = p_world->dtree_planter.count; // for instance
+}
+void TW_CALL cbSetDTreeMeanDistance(const void *value, void *clientData)
+{ 
+	float distance = *(const float*)value; // for instance
+	float dither = distance*0.4;
+	int count = p_world->dtree_planter.count;
+	p_world->dtree_planter.createCandidates(p_world->dtree_planter.height_min, p_world->dtree_planter.height_max, dither, distance);
+	// now is p_world->dtree_planter.count=0;
+	// use former count
+	p_world->dtree_planter.setInstanceCount(count);
+	//p_world->treeD_planter.plantVegetationCount(g_TreeDCount);
+}
+void TW_CALL cbGetDTreeMeanDistance(void *value, void *clientData)
+{ 
+	*(float *)value = p_world->dtree_planter.distance; // for instance
 }
 
 
@@ -790,6 +806,8 @@ void initGUI()
 	// TwAddVarRW(controlBar, "slice_count", TW_TYPE_INT32, & g_tree_slice_count, " group='Tree' min=0 max=10 step=1 ");
 
 	TwAddVarCB(controlBar, "Dynamic Tree count", TW_TYPE_INT32, cbSetDTreeCount, cbGetDTreeCount, NULL, " group='Vegetation' min=0 max=10000 step=1 ");
+	TwAddVarCB(controlBar, "Dynamic Tree mean_distance", TW_TYPE_FLOAT, cbSetDTreeMeanDistance, cbGetDTreeMeanDistance, NULL, " group='Vegetation' min=0 max=100 step=0.1 ");
+
 	TwAddVarCB(controlBar, "Tree 2 count", TW_TYPE_INT32, cbSetTree2Count, cbGetTree2Count, NULL, " group='Vegetation' min=0 max=10000 step=1 ");
 	TwAddVarCB(controlBar, "Tree 1 count", TW_TYPE_INT32, cbSetTree1Count, cbGetTree1Count, NULL, " group='Vegetation' min=0 max=10000 step=1 ");
 	TwAddVarCB(controlBar, "Grass count", TW_TYPE_INT32, cbSetGrassCount, cbGetGrassCount, NULL, " group='Vegetation' min=0 max=100000 step=1 ");

@@ -26,6 +26,10 @@ void DTreePlanter::createCandidates(
 				float _dither,
 				float _distance)
 {
+	// delete current candidates...
+	freeCandidates.clear();
+	count = 0;
+	occupiedCandidates.clear();
 
 	height_min	= _height_min;
 	height_max	= _height_max;
@@ -40,9 +44,9 @@ void DTreePlanter::createCandidates(
 	float x,y,xt,yt,z,r=0.0;
 	for (i=0; i<size_grid_x; i++){
 		for (j=0; j<size_grid_y; j++){
-			x = (i - centerOffsetX)*g_tree_mean_distance + randomf(-dither, dither);
-			z = (j - centerOffsetY)*g_tree_mean_distance + randomf(-dither, dither);
-			//r = randomf(-180, 180);
+			x = (i - centerOffsetX)*distance + randomf(-dither, dither);
+			z = (j - centerOffsetY)*distance + randomf(-dither, dither);
+			r = randomf(-180, 180);
 			xt = x + terrain->sz_x/2.0;
 			yt = z + terrain->sz_y/2.0;
 			y = terrain->getHeightAt(xt,yt);
@@ -51,7 +55,7 @@ void DTreePlanter::createCandidates(
 			}
 		}
 	}
-
+	
 
 }
 
@@ -84,5 +88,6 @@ void DTreePlanter::setInstanceCount(int _count){
 		}
 	}
 	this->count = occupiedCandidates.size();
+	g_wind_dirty = true;
 	tree->initInstances(occupiedCandidates);
 }

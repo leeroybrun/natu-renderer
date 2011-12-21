@@ -76,7 +76,7 @@
 
 
 
-#define SKYBOX_TEX_FILENAMES	"textures/skybox/512/sahara_%s.png"
+#define SKYBOX_TEX_FILENAMES	"textures/skybox/512/calm_%s.png"
 #define SKYBOX_SIZE				800
 
 #define WATER_DEPTH_COLOR		v4(0.1, 0.3, 0.5, 1.0)

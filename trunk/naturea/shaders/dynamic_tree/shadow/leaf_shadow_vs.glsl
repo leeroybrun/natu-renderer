@@ -42,7 +42,7 @@ varying float			time_offset_v;
 varying vec3			normal_vs 	  ;
 varying vec3			tangent_vs	  ;
 
-
+varying vec3			ws_position;
 varying float			leafSpecificNumber;			// as noise but constant for whole leaf
 
 vec4 OS2ND(in vec4 position){
@@ -325,6 +325,7 @@ void main()
 	animateBranchVertex(leafOrigin);
 	animateLeafVertex(leafOrigin, vertex, normal_vs, tangent_vs);
 	
+	ws_position = vertex;
 	vec3 bitangent = cross (normal_vs, tangent_vs);
 		
 	//vertex = leafOrigin + (vertex.x*bitangent + vertex.y*tangent_vs);
