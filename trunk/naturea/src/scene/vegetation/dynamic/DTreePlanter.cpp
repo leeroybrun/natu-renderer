@@ -19,6 +19,7 @@ void DTreePlanter::init( Terrain *_terrain,
 	terrain		= _terrain;
 	tree		= _tree; 
 	count		= 0;
+	size_factor = 1.0;
 }
 void DTreePlanter::createCandidates(
 				float _height_min,
@@ -34,19 +35,20 @@ void DTreePlanter::createCandidates(
 	height_min	= _height_min;
 	height_max	= _height_max;
 	distance	= _distance;
-	dither		= _dither;
+	//dither		= _dither;
+	dither		= 0.0;
 	// tree grid sizes
-	int size_grid_x = terrain->sz_x / distance;
-	int size_grid_y = terrain->sz_y / distance;
-	float centerOffsetX = size_grid_x/2;
-	float centerOffsetY = size_grid_y/2;
+	int size_grid_x = max(1, int (terrain->sz_x*size_factor / distance ));
+	int size_grid_y = max(1, int (terrain->sz_y*size_factor / distance ));
+	int centerOffsetX = size_grid_x/2;
+	int centerOffsetY = size_grid_y/2;
 	int i,j;
 	float x,y,xt,yt,z,r=0.0;
 	for (i=0; i<size_grid_x; i++){
 		for (j=0; j<size_grid_y; j++){
 			x = (i - centerOffsetX)*distance + randomf(-dither, dither);
 			z = (j - centerOffsetY)*distance + randomf(-dither, dither);
-			r = randomf(-180, 180);
+			//r = randomf(-180, 180);
 			xt = x + terrain->sz_x/2.0;
 			yt = z + terrain->sz_y/2.0;
 			y = terrain->getHeightAt(xt,yt);

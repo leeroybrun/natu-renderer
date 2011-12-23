@@ -17,19 +17,20 @@ public:
 
 	void windowSizeChanged(int width, int height);
 
-	GLfloat			 lightDirDOTviewDirValue;
+	GLfloat			lightDirDOTviewDirValue;
 private:
-	GLuint			 fboId;
-	GLuint			 originalColor;
-	GLint			 originalColorLocation;
-	GLuint			 originalDepth;	
-	GLuint			 forRaysColor;
-	GLint			 forRaysColorLocation;
-	GLuint			 forBloomColor;
-	GLint			 forBloomColorLocation;
-	GLint			 lightDOTviewLocation;
+	GLuint			fboId;
+	GLuint			originalColor;
+	GLint			originalColorLocation;
+	GLuint			originalDepth;	
+	GLuint			forRaysColor;
+	GLint			forRaysColorLocation;
+	GLuint			forBloomColor;
+	GLint			forBloomColorLocation;
+	GLint			lightDOTviewLocation;
 
-	GLint			 lightPosLocation;
+	GLint			lightPosLocation;
+	GLint			sizeLoc;
 	ShaderManager	*shaderManager;
 	Shader			*shader;
 	Light			*light;

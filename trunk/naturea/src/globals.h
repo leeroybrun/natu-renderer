@@ -36,28 +36,15 @@ enum LODTransitionMethod{
 struct Statistics{
 	float	fps;
 	int		primitives;
-	int		house1_lod;
-	int		house1_samples;
-	int		house2_lod;
-	int		house2_samples;
-	int		bridge_lod;
-	int		bridge_samples;
-	int		tower1_lod;
-	int		tower1_samples;
-	int		tower2_lod;
-	int		tower2_samples;
-	int		eggbox_lod;
-	int		eggbox_samples;
-	int		haywagon_lod;
-	int		haywagon_samples;
-	int		well_lod;
-	int		well_samples;
-	//int		house_lod;
-	//int		house_samples;
-
-
+	float	minFps;
+	float	cpuFps;
 };
+
 static int g_nula = 0;
+
+extern	GLuint					samples_query_id1;
+extern	GLuint					samples_query_id2;
+extern  double					samples_lod12;
 
 extern	v3						g_ShadowMapSize;
 extern	int						g_shadowMapSamples;
@@ -122,8 +109,8 @@ extern int						g_Tree1Count;
 extern int						g_Tree2Count;
 
 extern int						g_Bumpmaps	   ;
-extern int						g_Heightmaps	   ;
-extern int						g_Specularmaps  ;
+extern int						g_Heightmaps   ;
+extern int						g_Specularmaps ;
 extern int						g_Alphamaps	   ;
 
 

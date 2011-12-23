@@ -1,1 +1,1 @@
-.\bin\release\naturea.exe
+.\bin\release\naturea.exe 1

@@ -296,8 +296,6 @@ void Camera::move(v3 & dist)
 
 void Camera::rotate(v3 & axis, float angle)
 {
-	static const v3 up(0.f, 1.f, 0.f);
-	static const v3 dir(0.f, 0.f, -1.f);
 	direction.rotate(angle, axis);
 	direction.normalize();
 	//float angle2 = direction.angleTo(dir);

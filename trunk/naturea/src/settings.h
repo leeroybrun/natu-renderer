@@ -96,8 +96,13 @@
 #define HUMAN_ACTIVITY_INCR	    0.5f
 #define HUMAN_MIN_ACTIVITY	    0.5f
 #define HUMAN_MAX_ACTIVITY	    1.3f
-#define HUMAN_POSITION          v3(-10.0, 11.0, 0.0)
-#define HUMAN_DIRECTION			v3(1.0, 0.0, 0.0)
+/*
+#define HUMAN_POSITION          v3(-5.0, 10, 10)
+#define HUMAN_DIRECTION			v3(0.5, 0.0, -0.60)
+/*/
+#define HUMAN_POSITION          v3(-27.37, 15.17, 20.59)
+#define HUMAN_DIRECTION			v3(0.68, -0.38, -0.63)
+
 
 #define PHONG_VS_FILENAME		"shaders/models/phong_vs.glsl"
 #define PHONG_FS_FILENAME		"shaders/models/phong_fs.glsl"
@@ -228,7 +233,7 @@ namespace DYN_TREE
 		COUNT
 	};
 	
-	const static float	MIN_HEIGHT		= 3.f;
+	const static float	MIN_HEIGHT		= -10.f;
 	const static float	MAX_HEIGHT		= 10.f;
 
 }

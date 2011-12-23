@@ -11,13 +11,13 @@ uniform sampler2DMS otex;
 uniform vec3		tintColor;
 uniform float		tintFactor;
 
-uniform	float expo;
-uniform	float decay;
-uniform	float density;
-uniform	float weight;
-uniform	float illuminationDecay;
+uniform	float		expo;
+uniform	float		decay;
+uniform	float		density;
+uniform	float		weight;
+uniform	float		illuminationDecay;
 
-uniform float bloomDivide;
+uniform float		bloomDivide;
 
 const int			NUM_SAMPLES = 32;
 const int			BLOOM_SAMPLES = 4;
@@ -27,12 +27,21 @@ uniform float		lightDirDOTviewDir;
 uniform int			sampleCount;
 ivec2				texCoord;
 
-vec4 texture2DMSrtex(ivec2 coord, int sampleCount){
+vec4 texture2DMSrtex(ivec2 coord, int count){
 	vec4  color = vec4(0.0);
-	for (int i=0; i<sampleCount; i++){
-		color += texelFetch(rtex, coord, i);
+	for (int j=0; j<count; j++){
+		color += texelFetch(rtex, coord, j);
 	}
-	color /= float(sampleCount);
+	color /= float(count);
+	return color;
+}
+
+vec4 texture2DMSotex(ivec2 coord, int count){
+	vec4  color = vec4(0.0);
+	for (int j=0; j<count; j++){
+		color += texelFetch(otex, coord, j);
+	}
+	color /= float(count);
 	return color;
 }
 
@@ -42,23 +51,21 @@ void main(void)
 	
 	ivec2 texSize = textureSize(otex).xy;
 	texCoord = ivec2(gl_TexCoord[0].st * texSize);
-	vec4  origColor;
-	origColor = texelFetch(otex, texCoord, 0);
+	vec4  origColor = vec4(0.0);
+	origColor += texelFetch(otex, texCoord, 0);
+	
+	/*
+	// makes troubles on ATI card... loops with dynamic loop-count
+	for (int j=0; j<sampleCount; j++){
+		origColor += texelFetch(otex, texCoord, j);
+	}
+	
+	origColor /= float(sampleCount);
+	*/
+	//origColor = texture2DMSotex(texCoord, sampleCount);
 	origColor.a = 1.0;
-	//gl_FragColor = origColor;
-	//return;
-	//vec4  origColor = texture2D(otex, gl_TexCoord[0].st);
-	
-	
-	//origColor.rgb *= (tintColor*tintFactor);
 	origColor.rgb = pow(origColor.rgb,vec3(1.0/1.2));
-	
-	
-	
-	//origColor = vec4(0.1)+origColor;
-	
-	//vec4  raysColor = texture2D(rtex, gl_TexCoord[0].st);
-	//float bcolor   = texture2D(btex,  gl_TexCoord[0].st).x;
+
 	/*
 	vec4 bloom = vec4(0.0);
 	float xd,yd,l;
@@ -111,7 +118,7 @@ void main(void)
 		{
 			textCoo -= deltaTextCoord;
 			//vec3 tsample = texelFetch(rtex, ivec2(textCoo*texSize) , 0).rgb;
-			vec3 tsample = texture2DMSrtex(ivec2( textCoo*texSize ), sampleCount).rgb;
+			vec3 tsample = texelFetch(rtex, ivec2( textCoo*texSize ), 0).rgb;
 			//vec4 tsample = texture2D(rtex, textCoo );
 			//if (length(tsample.rgb)<0.5){
 				tsample *= illumDec * weight;
@@ -123,6 +130,7 @@ void main(void)
 		godColor += raysColor.rgb;
 	}
 	gl_FragColor = vec4(godColor.rgb + origColor.rgb, 1.0);
+	//gl_FragColor = vec4(origColor.rgb, 1.0);
 	
 }
 
