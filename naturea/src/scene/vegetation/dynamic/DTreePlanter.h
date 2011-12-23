@@ -29,6 +29,7 @@ public:
 	float distance;
 	float height_min;
 	float height_max;
+	float size_factor;
 
 private:
 	vector<v4> freeCandidates;	

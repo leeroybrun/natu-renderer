@@ -179,7 +179,7 @@ void	main()
 	}
 
 	float depth_tex = texture2D(depthMap, newPos).r;
-	gl_FragDepth = gl_FragCoord.z + front*(depth_tex-0.5)/(sliceCnt*(farMnear));
+	//gl_FragDepth = gl_FragCoord.z + front*(depth_tex-0.5)/(sliceCnt*(farMnear));
 	
 	gl_FragData[0] = color;
 }

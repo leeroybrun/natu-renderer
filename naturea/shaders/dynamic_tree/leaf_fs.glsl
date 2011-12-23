@@ -253,6 +253,7 @@ void colorize(out vec4 outColor, in vec3 normal, in vec3 tangent, in vec3 bitang
 	{
 		discard;
 	}
+	decal_color.a = 1.0;
 	// END ALPHA TEST
 
 

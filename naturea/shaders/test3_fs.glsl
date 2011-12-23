@@ -202,8 +202,10 @@ void	main()
 	if (branchID>(0.5)/branch_count){
 		animateBranch(position, branchID, mv_time, offset, texCol, wood_amplitudes.y, wood_frequencies.y, v_wind_dir_ts, wind_strength);
 	}
+	
 	// animate trunk
 	animateBranch(position, 0.0, mv_time, offset, texCol, wood_amplitudes.x, wood_frequencies.x, v_wind_dir_ts, wind_strength);
+	
 	if (position.y>1.0){
 		discard;
 	}
@@ -232,6 +234,7 @@ void	main()
 		if(sign(texture2D(dataMap, newPosD).r)>=0.0){
 			newPos = newPosD;
 		}
+		
 		color += texture2D(colorMap, newPos);
 		exit = exit || ( color.a<ALPHA_TRESHOLD );
 		normal = texture2D(normalMap, newPos);

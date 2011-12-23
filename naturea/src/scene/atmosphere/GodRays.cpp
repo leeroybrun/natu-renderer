@@ -17,13 +17,14 @@ GodRays::GodRays(ShaderManager *shManager, Light *_light)
 	shader->registerUniform("illuminationDecay", UniformType::F1,	&g_illuminationDecay);
 	shader->registerUniform("bloomDivide",	UniformType::F1,		&g_bloomDivide		);
 	shader->registerUniform("sampleCount",  UniformType::I1,		&g_samples			);
-
+	
 	forRaysColorLocation = shader->getLocation("rtex");
 	originalColorLocation = shader->getLocation("otex");
 	//forBloomColorLocation = shader->getLocation("btex");
-	lightPosLocation = shader->getLocation("lightPositionOnScreen");
+	lightPosLocation	 = shader->getLocation("lightPositionOnScreen");
 	lightDOTviewLocation = shader->getLocation("lightDirDOTviewDir");
-	
+	sizeLoc				 = shader->getLocation("texSize");
+
 	glGenTextures(1, &originalColor);
 		glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, originalColor);
 		//glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -136,13 +137,13 @@ void GodRays::begin()
 		//GLenum buffers[3] = {GL_COLOR_ATTACHMENT0_EXT, GL_COLOR_ATTACHMENT1_EXT, GL_COLOR_ATTACHMENT2_EXT};
 		//glDrawBuffersARB(3, buffers);
 		// now render scene...
-	    
+		glEnable(GL_MULTISAMPLE); 
 }
 
 void GodRays::end()
 {
 	// kreslit zas do standardniho zadniho bufferu
-	
+	glDisable(GL_MULTISAMPLE); 
 	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
 	glDrawBuffer(GL_BACK);
 	// viewport zpátky
@@ -176,12 +177,13 @@ void GodRays::end()
 	glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, originalColor);
 	glActiveTexture(GL_TEXTURE1);
 	glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, forRaysColor);
-	glActiveTexture(GL_TEXTURE2);
-	glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, forBloomColor);
+	//glActiveTexture(GL_TEXTURE2);
+	//glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, forBloomColor);
 	glColor4f(1.f,1.f,1.f,1.f);
 	shader->use(true);
 	shader->setUniform1i(originalColorLocation, 0);
  	shader->setUniform1i(forRaysColorLocation, 1);
+	shader->setUniform2f(sizeLoc, g_WinWidth, g_WinHeight);
 	//shader->setUniform1i(forBloomColorLocation, 1);
 	
 	shader->setUniform2f(lightPosLocation, lposScreen.x,lposScreen.y );

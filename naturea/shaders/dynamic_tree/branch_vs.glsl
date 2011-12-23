@@ -226,6 +226,7 @@ void animateBranchVertex(inout vec3 position)
 		sv3 = sv3.x * br + sv3.y * bs + sv3.z * bt;
         rv3 = rv3.x * br + rv3.y * bs + rv3.z * bt;
         tv	= cross(rv3,sv3);
+		
 		// calc wind prebend offset
 		amp3.x += dot(rv3, wind_direction) * wind_strength;
 		amp3.y += dot(sv3, wind_direction) * wind_strength;
@@ -247,6 +248,7 @@ void animateBranchVertex(inout vec3 position)
         br	= normalize(rv3 - tv*fu_deriv.x);
         bs	= normalize(sv3 - tv*fu_deriv.y);
         centerB =  center + fu.x * rv3 + fu.y * sv3 - (corr_s+corr_r);
+		
     }
 
 

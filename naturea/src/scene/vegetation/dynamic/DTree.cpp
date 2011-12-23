@@ -2537,6 +2537,10 @@ void DTree::prepareForRender(){
 		lod2_typeIndices[i] = 0;
 	}
 	int instanceCount = tree_instances.size();
+
+	if (instanceCount<=0){
+		return;
+	}
 	DTreeInstanceData * act_instance = tree_instances[0] ;
 	DTreeInstanceData * next_instance;
 	act_instance->eye_dir =  act_instance->position - *g_viewer_position;
@@ -2783,11 +2787,17 @@ void DTree::makeTransition(float control, bool maskOld, DTreeInstanceData* insta
 }
 
 void DTree::render(){
+
+
+	glBeginQuery(GL_SAMPLES_PASSED, samples_query_id1);
 	int i;
 	DTreeInstanceData* instance;
 	// render LOD2 instances
 	isInstancingEnabled = true;
 	draw_all_instances_LOD2b();
+	
+
+
 	// render LOD1-LOD2 transitioning instances
 	isInstancingEnabled = false;
 	for (i=0; i<countRenderQueues[3]; i++){
@@ -2806,6 +2816,7 @@ void DTree::render(){
 		float alpha = instance->alpha;
 		makeTransition(alpha,false, instance, &DTree::draw_instance_LOD0, &DTree::draw_instance_LOD1);
 	}
+	
 
 	// render LOD0 instances
 	isInstancingEnabled = false;
@@ -2816,7 +2827,17 @@ void DTree::render(){
 		//drawForLOD();
 		draw_instance_LOD0(instance, 1.0);	
 	}
+	glEndQuery(GL_SAMPLES_PASSED);
 
+
+	GLint avail = false;
+	glGetQueryObjectiv(samples_query_id1, GL_QUERY_RESULT_AVAILABLE, & avail );
+	while( avail != GL_TRUE){ // blocking CPU
+		glGetQueryObjectiv(samples_query_id1, GL_QUERY_RESULT_AVAILABLE, & avail );
+	}
+	GLuint64 fragments = 0;
+	glGetQueryObjectui64v(samples_query_id1, GL_QUERY_RESULT, &fragments); 
+	samples_lod12 = (double)fragments;
 	g_tree_lod0_count	= countRenderQueues[0];
 	g_tree_lod01_count	= countRenderQueues[1];	 
 	g_tree_lod1_count	= countRenderQueues[2];
