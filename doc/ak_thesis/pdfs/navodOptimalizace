@@ -1,0 +1,1 @@
+gswin32c.exe -sDEVICE=pdfwrite -dMaxSubsetPct=100 -dPDFSETTINGS=/prepress -dAutoFilterColorImages=false -dColorImageFilter=/FlateEncode -sOutputFile="outfile.pdf" -dNOPAUSE -dBATCH "infile.pdf"
