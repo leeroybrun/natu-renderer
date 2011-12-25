@@ -22,7 +22,7 @@ Pokud budeme na chvíli chápat úroveň detailu tímto způsobem, uveďme, že 
 Samozřejmě je možné navrhnout i jiné systémy, které zpřístupní uživatelům informace na ostatních úrovních detailu, ale to je již úloha z oboru vizualizace a řada postupů by byla zřejmě zcela odlišná.
 Souvislost tohoto přirozeného systému úrovní detailu s již zmíněným technickým pojetím ale existuje. Jak bude popsáno dále, v současné době není v možnostech běžného hardwaru zobrazovat jednotným postupem lesy o tisícovkách stromů i detail jednotlivých listů samostatného stromu dostatečnou rychlostí pro real-time aplikace. Přirozený systém úrovní detailu rovněž napovídá, jak uživatel vnímá určité pohledy. Při pohledu na celý rozsáhlý les stromů jsou tím nejpodrobnějším, co uživatel rozpozná, jednotlivé stromy, případně nejvýraznější větve, největší pozornost je zaměřena na celkový tvar lesa, tvar čáry horizontu, hustotu a druhovou skladbu jednotlivých rostlin. Pohled na úrovni jednotlivého stromu naproti tomu musí zobrazit i jednotlivé větve a listy, tvar lesa již není tak důležitou informací. Pokud přejdeme ještě blíž, uživatel by měl mít možnost pozorovat i detaily na listech. Z toho může vycházet technická stránka úrovně detailu (dále jen LOD).
 
-Cílem této práce je navrhnout a realizovat software, který bude realisticky zobrazovat stromovou vegetaci v reálném čase a umožní i její animaci (působením větru). Software by měl pracovat na běžně dostupném hardware. Dále bude software poskytovat podporu pro zobrazování stromů v různých obdobích roku. Půjde především o změnu barvy listí. Práce se bude pohybovat na úrovni podrobnosti běžné pro vnímání člověka. Tedy umožní zobrazit větší skupinu stromů (les) a přitom bude možné pozorovat jednotlivé listy stromů a to včetně animace.
+Cílem této práce je navrhnout a poté realizovat software, který bude realisticky zobrazovat stromovou vegetaci v reálném čase a umožní i její animaci (působením větru). Software by měl pracovat na běžně dostupném hardware. Dále bude software poskytovat podporu pro zobrazování stromů v různých obdobích roku. Půjde především o změnu barvy listí. Práce se bude pohybovat na úrovni podrobnosti běžné pro vnímání člověka. Tedy umožní zobrazit větší skupinu stromů (les) a přitom bude možné pozorovat jednotlivé listy stromů a to včetně animace. Práce se zaměří především na způsob, jakým lze stromy na těchto úrovních podrobnosti zobrazovat v pohybu.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Stávající řešení}
@@ -75,8 +75,8 @@ $\begin{array}{ccc}
 $(a)$ LOD0 100\% , LOD1 0\% \newline
 $(b)$ LOD0 50\% , LOD1 50\%, objekt se stal průhledným, ačkoliv by neměl. \newline
 $(c)$ LOD0 0\% , LOD1 100\% 
-}
 \label{fig:BUNNY_lod_trans}
+}
 \end{figure}
 Eliminací tohoto nežádoucího efektu se zabývá článek \cite{GIEGL-2007-UNP}. Jde o postup, kdy je vždy jedna úroveň detailu zobrazena plně a neprůhledně. Tím je zaručeno, že nemůže dojít k celkovému zprůhlednění. 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -131,19 +131,19 @@ Zatímco zpracování geometrických primitiv je relativně pomalý proces, upla
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Volumetrické renderování a pointcloudy}
-Existují však ještě další možnosti, jak reprezentovat a zobrazovat vegetaci. Metoda vycházející z principů volumetrického renderování (a 3D textur) je popsána v článku \cite{DN04}. Je vhodná zejména pro úroveň detailu typu les a vegetační geografie. Nicméně její přímé využití pro zobrazování na úrovni jednotlivých listů je s dnešním běžným hardware nemožné. Metoda pracuje s rovnoběžnými vrstvami textur, jejichž hustota je řízena aktuální úrovní detailu v daném místě.
+\subsection{Volumetrické zobrazování a bodové mraky}
+Existují však ještě další možnosti, jak reprezentovat a zobrazovat vegetaci. Metoda vycházející z principů volumetrického zobrazování (volume rendering) je popsána v článku \cite{DN04}. Je vhodná zejména pro úroveň detailu typu les a vegetační geografie. Nicméně její přímé využití pro zobrazování na úrovni jednotlivých listů je s dnešním běžným hardware nemožné. Metoda pracuje s rovnoběžnými vrstvami textur, jejichž hustota je řízena aktuální úrovní detailu v daném místě.
 \begin{figure}[here]
 \begin{center}
 \includegraphics[width=1.0\textwidth]{./figures/a1_slicing.png}
 \end{center}
-\caption[Volumetrické renderování využívající rovnoběžných textur]%
-{Volumetrické renderování využívající rovnoběžných textur, převzato z \cite{DN04}
+\caption[Volumetrické zobrazování využívající rovnoběžných textur]%
+{Volumetrické zobrazování využívající rovnoběžných textur, převzato z \cite{DN04}
 }
 \label{fig:VOLUME_texcells}
 \end{figure}
 
-Další možností je tzv. \emph{point-based} renderování. Základním primitivem tohoto přístupu zobrazování je prostorový bod (dále jen bod). Tato metoda je výhodná zejména pro objekty, které jsou promítnuty do malého počtu pixelů na výstupním zařízení, neboť pro jejich věrné zobrazení stačí minimálně tolik bodů, kolik pixelů na zobrazovacím zařízení zabírají. Ovšem neplatí zde, že prostorový bod je vždy promítnut do právě jednoho pixelu. Velikost a tvar, jímž je reprezentován bod, se mohou lišit. Nabízí se tedy, aby list stromu byl reprezentován právě jedním bodem. Ovšem i tehdy by byl počet zpracovávaných bodů příliš veliký při zobrazování celého lesa naivním postupem. Pokročilé techniky LOD jsou navrženy v článku \cite{GMN05}. Prostor je rozdělen do pravidelné mřížky a v rámci vzniklých buněk je určen LOD. Na nejvyšší úrovni LOD reprezentuje skutečně každý bod specifický list, ovšem s nižší úrovní LOD jsou listy slučovány a postupně reprezentovány většími body (viz obr. ~\ref{fig:PB}) . 
+Další možností je tzv. bodové (nebo-li \emph{point-based}) zobrazování. Základním primitivem tohoto přístupu je prostorový bod (dále jen bod). Tato metoda je výhodná zejména pro objekty, které jsou promítnuty do malého počtu pixelů na výstupním zařízení, neboť pro jejich věrné zobrazení stačí minimálně tolik bodů, kolik pixelů na zobrazovacím zařízení zabírají. Ovšem neplatí zde, že prostorový bod je vždy promítnut do právě jednoho pixelu. Velikost a tvar, jímž je reprezentován bod, se mohou lišit. Nabízí se tedy, aby list stromu byl reprezentován právě jedním bodem. Ovšem i tehdy by byl počet zpracovávaných bodů příliš veliký při zobrazování celého lesa naivním postupem. Pokročilé techniky LOD jsou navrženy v článku \cite{GMN05}. Prostor je rozdělen do pravidelné mřížky a v rámci vzniklých buněk je určen LOD. Na nejvyšší úrovni LOD reprezentuje skutečně každý bod specifický list, ovšem s nižší úrovní LOD jsou listy slučovány a postupně reprezentovány většími body (viz obr. ~\ref{fig:PB}) . 
 \begin{figure}[!hbt]
 \begin{center}
 \includegraphics[width=1.0\textwidth]{./figures/point-based.png}

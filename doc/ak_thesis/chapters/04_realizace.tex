@@ -1,49 +1,39 @@
 \chapter{Realizace}
 \label{chap:realizace}
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Analýza modelu a předgenerování dat}
-\label{sec-modelAnalysis}
-\begin{itemize}
- \item jak z modelu získat potřebná data pro animaci - rekonstrukce topologie stromu
- \item generování dat potřebných pro nižší LOD
- \item offscreen rendering z různýh směrů a v různých intervalech near-far plane - orthogonální projekce
-\end{itemize}
+V předchozí kapitole byly teoreticky rozebrány nejpodstatnější a nejdůležitější části práce. Ovšem i tak zbývá řada problémů, které je nutné v rámci realizace dořešit. 
+
+% obrázek finálního "renderu"
+\begin{figure}[here]
+\begin{center}
+$\begin{array}{cc}
+\includegraphics[width=0.45\textwidth]{./figures/final-leaves_H.png}&
+\includegraphics[width=0.45\textwidth]{./figures/final-trees_H.png}\\
+(a)&(b)\\
+\end{array}$
+\caption[Ukázka výsledného zobrazení]%
+{Výsledné zobrazení. Detail listů (a), kde je patrná průsvitnost i lesklost. Rozsáhlejší scéna s více stromy (b).\label{fig:resultA}
+}
+\end{center}
+\end{figure}
+V následujícím textu bude stručně popsáno, jejich řešení. Budou zmíněny technologie a knihovny, které byly pro realizaci použity, a popsána vstupní data výsledného programu, jejich zpracování a použití. Opomenuta nezůstane ani celková architektura systému a konkrétní řešení zobrazování všech úrovní detailu (LOD).
+
+\pagebreak
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Architektura LOD}
-\label{sec-LODarchitecture}
-
-\begin{itemize}
- \item skupiny instancí - instance v přechodu ošetřovat individuálně (není jich tolik), instance bez přechodu  vykreslovat po skupinách - 
-\item renderqueues
-\item instancování
-\item průhlednost
-\end{itemize}
+\input{chapters/04_frameworks}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Řízení LOD}
-\label{sec-LODcontrol}
+\input{chapters/04_vstupy_zpracovani}
 
-\begin{itemize}
-\item skrývání - řízení průhlednosti
-\item pořadí vykreslování primitiv \& instancování
-\end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Zobrazení geometrického modelu}
-\label{sec-3Ddisplay}
+\input{chapters/04_architektura}
 
-\begin{itemize}
-\item animace
-\item listy
-\end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Zobrazení nižších LOD}
-\label{sec-LODdisplay}
+\input{chapters/04_3d}
 
-\begin{itemize}
-\item skrývání - řízení průhlednosti
-\item pořadí vykreslování primitiv \& instancování
-\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{chapters/04_lod}

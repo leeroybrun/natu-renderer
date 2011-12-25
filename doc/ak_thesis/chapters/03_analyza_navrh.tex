@@ -1,8 +1,8 @@
 \chapter{Analýza a návrh řešení}
 \label{chap:analyza}
 
-Pro účely real-time renderování grafiky se běžně využívá metod přímé rasterizace. Existuje několik grafických API, které pro tyto účely využívají grafický hardware a dosahují tak pozoruhodného výkonu. Dvěmi nejběžnějšími API pro práci s 3D grafikou jsou v současnosti DirectX a OpenGL. Technologie DirectX je standardem v oblasti počítačových her a je vázaná na platformu Windows. Naproti tomu OpenGL je platformově nezávislá knihovna dosahující srovnatelných výsledků. Obě technologie pak pracují s GPU a využívají tzv. grafickou pipeline poskytovanou hardwarem.
-Z průzkumu stávajících řešení vyplývá, že realistického zobrazení na úrovni listů lze v současné době dosáhnout efektivně pouze využitím geometrické ploškové reprezentace. Pro její zpracování je optimalizován grafický hardware a takto popsané stromy lze věrně rozpohybovat. Jeví se proto jako výhodné, využít ji pro zobrazování instancí stromů s nejvyšším stupňěm detailu. Postup zpracování grafických primitiv na GPU je znázorněn na obrázku (~\ref{fig:gpupipeline}).
+Pro účely real-time renderování grafiky se běžně využívá metod přímé rasterizace\footnote{V současnosti existují i přístupy využívající technik sledování paprsku (ray tracing) pracující v real-time. Pro některé scény mohou být dokonce efektivnější, nicméně jejich implementace na GPU je obtížnější a standardem v oboru real-time počítačové grafiky je stále přímá rasterizace.}. Existuje několik grafických API, které pro tyto účely využívají grafický hardware a dosahují tak pozoruhodného výkonu. Dvěmi nejběžnějšími API pro práci s 3D grafikou jsou v současnosti DirectX a OpenGL. Technologie DirectX je standardem v oblasti počítačových her a je vázaná na platformu Windows. Naproti tomu OpenGL je platformově nezávislá knihovna dosahující srovnatelných výsledků. Obě technologie pak pracují s GPU a využívají tzv. grafickou pipeline poskytovanou hardwarem.
+Z průzkumu stávajících řešení vyplývá, že realistického real-time zobrazení na úrovni listů lze v současné době dosáhnout efektivně využitím geometrické ploškové reprezentace. Pro její zpracování je optimalizován grafický hardware a takto popsané stromy lze i věrně rozpohybovat. Jeví se proto jako výhodné, využít ji pro zobrazování instancí stromů s nejvyšším stupňěm detailu. Postup zpracování grafických primitiv na GPU je znázorněn na obrázku (~\ref{fig:gpupipeline}).
 
 \begin{figure}[!hbt]
 \begin{center}
@@ -14,9 +14,7 @@ Z průzkumu stávajících řešení vyplývá, že realistického zobrazení na
 }
 \end{figure}
 
-
 Nížší úrovně následně vytvořeného LOD-systému budou z této nejpodrobnější úrovně odvozeny a abstrahovány. Pro věrné zobrazení stromu pohybujícího se vlivem větru je třeba poznat, jak na vítr strom reaguje. Teoretické základy takové animace rozebere právě následující sekce.
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Animace geometrického 3D modelu}
@@ -88,6 +86,7 @@ Euler-Bernoulliho rovnice pro zmíněné okrajové podmínky a měnící se plo�
  - 6 (1+x(\alpha-1))^2 \log (1+x(\alpha-1))) \cdot  (3\pi(1+x(\alpha-1))^2(\alpha-1)^4)^{-1}
 \end{multline}
 
+\pagebreak
 Tento vztah je však příliš složitý pro efektivní a rychlé vyhodnocení. Důležitý je postřeh, že funkce $\dot{u}$ je lineárně závislá na velikosti síly $|\vec{F}|$. Fitováním nalezneme funkci s velmi podobným průběhem ve tvaru:
 
 \begin{equation}
@@ -232,8 +231,8 @@ x_{i,r,s} &= x - \frac{d_{r,s}(x)}{s_{r,s}(x)}\nonumber\\
 Pokud výpočet transformace polohy bodu bude probíhat od kořene hierarchie, dokud v ní není dosaženo úrovně, na které se daný vrchol nachází, pak budou postupně aplikovány všechny relevantní deformace. Na počátku je p0 původní poloha bodu v souřadném systému objektu (obdobně i tečna t0  a normála n0). V každé další iteraci (postupu o úroveň výš v hierarchii) je třeba počáteční vektory p0, t0 a n0 nastavit na výsledek z předchozí iterace. Hodnota xD,r a xD,s představuje hodnotu parametru x po provedení korekce délky.  Transformace souřadného systému v rámci jedné větve vyžaduje přepočet nového bázového vektoru t podle vzorce pro výpočet tečny a nových bázových vektorů r a s podle vzorce pro výpočet normály. 
 
 Následující tabulka shrnuje, jaká data jsou potřeba pro výpočet deformace:
-\newline
-\begin{table}
+
+\begin{table}[here]
 \centering
 \begin{tabular}{| l | l | }
   \hline                       
