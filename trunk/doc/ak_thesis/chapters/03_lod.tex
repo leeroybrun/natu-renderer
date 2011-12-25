@@ -169,10 +169,39 @@ Pro určení přibližné percepční váhy se běžně využívá vzdálenostn�
 
 Jedná se tedy o diskrétní třístupňový LOD systém. Určení vzdálenosti k jednotlivým instancím stromu lze provádět buď v prostoru (vhodné např. aplikace typu letecký simulátor), nebo pouze v horizontální rovině (aplikace s pohledem omezeným na pohled z okolí úrovně terénu). Vzdálenosti $v_1$ a $v_2$ je třeba přizpůsobit konkrétním modelům vegetace a scéně obecně, stejně jako optimalizaci z hlediska výkonu, na který mají podstatný vliv.
 
-
+\pagebreak
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Přechody mezi úrovněmi detailu}
 \label{sec-LODtransitions}
-Kvalitu metody vytvoření a řízení LOD lze posuzovat jak z hlediska optimalizace výkonu, tak i podle toho, nakolik si je pozorovatel vědomý, že k nějaké optimalizaci vůbec dochází. Bohužel, jak již bylo v předchozím textu naznačeno, diskrétní metody LOD se mohou potýkat s nežádoucím jevem zvaným LOD-popping, který prozrazuje, že se scéna mění, aniž k tomu je z hlediska pozorovatele zřejmý důvod. Nejnaivnějším způsobem jak přecházet mezi úrovněmi detailu je skokové přepnutí. Právě skoková změna na sebe poutá pozornost a tak nejde o dobré řešní. Vhodnější je jednotlivé úrovně plynule prolnout. Toho lze docílit buď technikou zvanou \emph{morphing}, která plynule převádí tvar jednoho tělesa na druhé transformací geometrie, nebo prostým prolnutím výsledných obrazu díky řízení průhlednosti. Ukazuje se však, že přístup známý jako \emph{cross-fade} může vytvářet určité nechtěné problémy. 
+Kvalitu metody vytvoření a řízení LOD lze posuzovat jak z hlediska optimalizace výkonu, tak i podle toho, nakolik si je pozorovatel vědomý, že k nějaké optimalizaci vůbec dochází. Bohužel, jak již bylo v předchozím textu naznačeno, diskrétní metody LOD se mohou potýkat s nežádoucím jevem zvaným LOD-popping, který prozrazuje, že se scéna mění, aniž k tomu je z hlediska pozorovatele zřejmý důvod. Nejnaivnějším způsobem jak přecházet mezi úrovněmi detailu je skokové přepnutí. Právě skoková změna na sebe poutá pozornost a tak nejde o dobré řešní. Vhodnější je jednotlivé úrovně plynule prolnout. Toho lze docílit buď technikou zvanou \emph{morphing}, která plynule převádí tvar jednoho tělesa na druhé transformací geometrie, nebo prostým prolnutím výsledných obrazu díky řízení průhlednosti. Ukazuje se však, že přístup známý jako \emph{cross-fade} může způsobovat určité nechtěné problémy.  Cross-fade mezi objekty $A$ a $B$ na základě proměnné $f \in \left \langle 0;1 \right \rangle$ je možné symbolicky popsat následovně:
+\begin{equation} 
+R = f \cdot A + (1-f) \cdot B 
+\end{equation}
+\begin{figure}[!h]
+\begin{center}
+\includegraphics[width=0.5\textwidth]{./figures/fade_techniques.png}
+\caption[Různé přechody mezi LOD]%
+{Různé metody přechodů mezi LOD. Odshora: cross-fade, fade in background, soft cross-fade, shifted soft cross-fade.\label{fig:lodTrans}
+}
+\end{center}
+\end{figure}
+\pagebreak
 
-
+Může se ale stát, že se objekt stane částečně průhledným, ačkoliv průhledný být nemá (viz obr. \ref{fig:BUNNY_lod_trans}). Tento jev lze eliminovat použitím pozměněné metody, kterou označíme \emph{fade in background}. Je tím zaručeno, že alespoň jedna úroveň detailu bude vždy neprůhledná a tím pádem nebude skrz objekt vidět. Řízení přechodu mezi úrovněmi $A$ a $B$ závisející na proměnné $f$ lze symbolicky vyjádřit takto:
+\begin{equation} 
+R = \min(1, 2(1-f)) \cdot A + min(1,2f) \cdot B 
+\end{equation}
+Pro další vylepšení je možné uvažovat měkčí přechody, kde nebude průhlednost (či neprůhlednost) utlumována lineárně, ale například podle následujícího předpisu:
+\begin{align}
+smooth(x)&= 
+\begin{cases} 
+1 & \text{pro } x\le0
+\\
+-1 & \text{pro } x\ge\pi
+\\
+cos(x) & \text{pro } x\in(0;\pi)
+\end{cases}\nonumber\\
+R &= \frac{1}{2} * \left [ smooth\left ( \frac{f-s}{1-s} \cdot \pi \right ) +1\right ] \cdot A + \left [ 1 - \frac{1}{2} * \left ( smooth\left ( \frac{f}{1-s} \cdot \pi \right )+1\right )  \right ]\cdot B
+\end{align}
+Proměnná $f$ ovlivňuje fázi přechodu a parametr $s$ ovlivňuje vzájemné posunutí přechodových křivek.
 

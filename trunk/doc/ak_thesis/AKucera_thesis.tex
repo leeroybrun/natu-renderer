@@ -15,6 +15,7 @@
 %=-=-=-=-=-=-=-=-=-=-=-=--=%
 % The user of this template may find useful to have an alternative to these 
 % officially suggested packages:
+\usepackage{verbatim}
 \usepackage{amsmath, amsthm, amssymb}
 \usepackage[czech, english]{babel}
 \usepackage[T1]{fontenc} % pouzije EC fonty 
@@ -84,7 +85,7 @@
 % nabidky jsou z: http://www.fel.cvut.cz/cz/education/bk/prehled.html
 
 %\newcommand\StudBranch{Výpočetní technika}   % pro program EaI bak. (dobihajici i strukt.)
-\newcommand\StudBranch{Počítačová grafika a interakce}   % pro prgoram EaI mag. (dobihajici i strukt.)
+\newcommand\StudBranch{Počítačová grafika a interakce}   % pro program OI mag. (strukt.)
 %\newcommand\StudBranch{Softwarové inženýrství}            %pro STM
 %\newcommand\StudBranch{Web a multimedia}                  % pro STM
 %\newcommand\StudBranch{Computer Engineering}              % bachelor programe
@@ -100,6 +101,8 @@
 \newcommand\FirstandFamilyName{Bc. Adam Kučera}
 \newcommand\Supervisor{Ing. Jiří Bittner, PhD.}
 
+
+\newcommand{\lineCode}[1]{\mbox{\texttt{#1}}}
 
 % Pouzijete-li pdflatex, tak je prijemne, kdyz bude mit vase prace
 % funkcni odkazy i v pdf formatu
@@ -189,13 +192,15 @@ unicode=true,
 % oficialnim zadanim vasi prace.
 {
 \pagenumbering{roman} \cleardoublepage \thispagestyle{empty}
-\chapter*{Na tomto místě bude oficiální zadání vaší práce}
-\begin{itemize}
-\item čeština funguje? ňďťěščřžýáíéúů ŇĎŤĚŠČŘŽÝÁÍÉÚŮ,
-\item musíte si ho vyzvednout na studiijním oddělení Katedry počítačů na Karlově náměstí,
-\item v jedné odevzdané práci bude originál tohoto zadání (originál zůstává po obhajobě na katedře),
-\item ve druhé bude na stejném místě neověřená kopie tohoto dokumentu (tato se vám vrátí po obhajobě).
-\end{itemize}
+\chapter*{Na tomto místě bude oficiální zadání práce}
+\begin{comment}
+	\begin{itemize}
+		\item čeština funguje? ňďťěščřžýáíéúů ŇĎŤĚŠČŘŽÝÁÍÉÚŮ,
+		\item musíte si ho vyzvednout na studiijním oddělení Katedry počítačů na Karlově náměstí,
+		\item v jedné odevzdané práci bude originál tohoto zadání (originál zůstává po obhajobě na katedře),
+		\item ve druhé bude na stejném místě neověřená kopie tohoto dokumentu (tato se vám vrátí po obhajobě).
+	\end{itemize}
+\end{comment}
 \newpage
 }
 
@@ -231,7 +236,7 @@ Translation of Czech abstract into English.
 \vskip 2.75\baselineskip
 
 \noindent
-Abstrakt práce by měl velmi stručně vystihovat její podstatu. Tedy čím se práce zabývá a co je jejím výsledkem/přínosem.
+Abstrakt v češtině
 
 \noindent
 Očekávají se cca 1 -- 2 odstavce, maximálně půl stránky.
@@ -239,16 +244,6 @@ Očekávají se cca 1 -- 2 odstavce, maximálně půl stránky.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  Obsah / Table of Contents 
 
 \tableofcontents
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  Seznam obrazku / List of Figures 
-
-\listoffigures
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  Seznam tabulek / List of Tables
-
-\listoftables
 
 
 %**************************************************************
@@ -308,6 +303,8 @@ Očekávají se cca 1 -- 2 odstavce, maximálně půl stránky.
 \item Diskuse dalšího možného pokračování práce.
 \end{itemize} 
 
+
+
 %*****************************************************************************
 % Seznam literatury je v samostatnem souboru reference.bib. Ten
 % upravte dle vlastnich potreb, potom zpracujte (a do textu
@@ -330,7 +327,7 @@ Očekávají se cca 1 -- 2 odstavce, maximálně půl stránky.
 %JZ: 11.12.2008 Kdo chce mit v techto ukazkovych odkazech take odkaz na CSTeX:
 \def\CS{$\cal C\kern-0.1667em\lower.5ex\hbox{$\cal S$}\kern-0.075em $}
 \bibliography{reference}
-}
+ }
 
 % M. Dušek radi:
 %\bibliographystyle{alpha}
@@ -338,6 +335,17 @@ Očekávají se cca 1 -- 2 odstavce, maximálně půl stránky.
 % 3.5.2009 JZ polemizuje: BibTeX neobvinujte, napiste a poskytnete nam styl (.bst) splnujici citacni normu CSN/ISO.
 
 %*****************************************************************************
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  Seznam obrazku / List of Figures 
+
+\listoffigures
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  Seznam tabulek / List of Tables
+
+\listoftables
+
+
+
 %*****************************************************************************
 \appendix
 
@@ -354,7 +362,6 @@ Očekávají se cca 1 -- 2 odstavce, maximálně půl stránky.
 \item[BRDF] Bidirectional Reflectance Distribution Function
 \item[BSSRDF] Bidirectional Surface Scattering Reflectance Distribution Function
 \end{description}
-\vdots
 
 %*****************************************************************************
 %\chapter{UML diagramy}

@@ -1,0 +1,35 @@
+\section{Zobrazení nižších LOD}
+\label{sec-LODdisplay}
+Zásadním problémem, který je nutné v rámci korektního zobrazování nižších LOD vyřešit, je správné zpracování průhlednosti. Průhlednost je podstatná z několika důvodů:
+\begin{itemize}
+\item skrývání řezů skoro rovnoběžných s pohledem
+\item přechod mezi úrovněmi
+\item lepší zobrazení samotného řezu
+\end{itemize}
+Korektní zpracování průhlednosti při přímé rasterizaci však není v rámci GPU automaticky ošetřeno. Proto je nutné věnovat zobrazování průhledné geometrie zvláštní pozornost. Nejběžnější metodou, která dokáže zobrazovat většinu možných případů prostorových uspořádání průhledných objektů správně, je tzv. \emph{malířův algoritmus}, který vykresluje objekty v pořadí od nejvzdálenějšího k nejbližšímu. Nevýhodou je, že je nutné řadit grafická primitiva (\emph{back-to-front ordering}). V poslední době s rostoucími možnostmi grafického hardware bylo představeno i několik tzv. \emph{order-independent} % citovat order-independent transparency
+ technik. Uveďme zejména \cite{order-independent}, která je však zatím vázaná na technologii DirectX 11. Další možností je \emph{multisampling} s technikou \emph{alpha-to-coverage}. Využívá vícenásobného vzorkování pixelu obrazu a průhlenost zde řídí, kolik vzorků bude pokryto právě kresleným průhledným objektem. Ačkoliv má tato metoda relativně slibný teoretický základ (výsledek je tím lepší, čím více vzorků použijeme), v praxi často hardware umožňuje vzorkování nanejvýš 16 vzorků. Rozsah běžných průhledností [0\dots255] se tím sníží na 16 hodnot.
+
+Ošetření problémů spojených s průhledností lze rozdělit do dvou skupin:
+\begin{itemize}
+\item průhlednost v rámci jedné instance
+\item průhlednost v rámci instancí mezi sebou
+\end{itemize}
+
+V rámci jedné instance je nutné díky její konstrukci trsu křížících se řezů zvolit správné pořadí jejich vykreslení. 
+% schematicky obrazek nespravne a lepsi 
+Jak je patrné z obrázku \ref{fig:lod_slice_ordering}, nelze pouhým řazením geometrických primitiv zajistit zcela korektní vykreslení. Ovšem důležité je si uvědomit skutečnost, že problémy způsobují zejména řezy skoro rovnoběžné s pohledem (dále jen \emph{rovnoběžný řez}), které jsou stejně skrývány (proto jsou vysoce průhledné). Zejména problematická je pak jejich část blíž k pozorovateli. Část dále od pozorovatele zakrývají řezy méně průhledné natočené víceméně kolmo ke směru pohledu. Stačí tedy zajistit, aby se takový rovnoběžný řez vykresloval až po ostatních.
+%
+%Pro vykreslování řezů ve 3 směrech (svírají úhel 60\degree) existují vlastně pouze 3 případy. Pro %jejich vykreslení lze s výhodou využít tzv. \emph{indexované geometrie} a pouze pomocí 
+
+
+
+
+
+
+
+
+\begin{itemize}
+\item skrývání - řízení průhlednosti
+\item pořadí vykreslování primitiv \& instancování (viz architektura LOD)
+\item stíny
+\end{itemize}

@@ -1,0 +1,21 @@
+\section{Architektura LOD}
+\label{sec-LODarchitecture}
+Realizace systému vykreslování a řízení úrovní jednotlivých stromů reflektuje možnosti současných grafických karet. Jelikož je objem dat zpracovávaný v každém snímku relativně velký a současně se z velké části nemění, lze tyto neměnná data přesunout do paměti GPU a tím i zefektivnit jejich zpracování. Ušetří se tím zbytečné přenosy po sběrnici mezi hlavní pamětí a pamětí grafické karty. Tento přístup je v dnešní době standardem a OpenGL ho samozřejmě podporuje ve formě tzv. \emph{Vertex Buffer Objects} (VBO), což je struktura obsahující data příslušná vrcholům jako jejich atributy (např.: pozice, normála, barva, atd.). Tato data mohou být umístěna jak v hlavní paměti, tak i v paměti GPU. Požadavek na umístění těchto dat lze vyjádřit při jejich zápisu do VBO příkazem \lineCode{glBufferData(\dots, const GLvoid *  data, GLenum  usage)}, kde parametr \lineCode{usage} definuje povahu dat. Např. hodnota \lineCode{GL_STATIC_DRAW} informuje OpenGL o tom, že data se nebudou měnit a je tedy vhodné přesunout je do paměti GPU . Podle konkrétní implementace OpenGL a možností grafického hardware je tedy tedy tento přesun proveden, či je umístění dat jinak optimalizováno. 
+Kromě VBO existuje ještě obdobný konstrukt pro uložení indexů indexované geometrie - tzv. \emph{Element Buffer Objects} (EBO). Indexovaná geometrie je výhodná zejména v případě, že se atributy vrcholů nemění a vrcholy jsou použity v rámci tvorby geometrie vícekrát (např. vrchol je společný pro mnoho trojúhelníků)
+
+Protože se předpokládá zobrazení více instancí téhož stromu, jeví se jako přirozené využít techniky \emph{instancování na GPU}, která vytváří jednotlivé instance dynamicky až v rámci hardwaru. Tato technika se vyplácí zejména pro zpracování a zobrazování většího počtu instancí. Jeví se tedy jako vhodné, využít ji pro zobrazování zejména instancí s nižším LOD (LOD1 a LOD2), kterých je typicky řádově více než instancí nejvyššího detailu. Myšlenka instancování na GPU je prostá. Pokud se instance vzájemně liší pouze několika globálními parametry (pozice a orientace ve scéně, příp. další atributy) není třeba každou instanci vykreslovat zvláštním příkazem. Místo toho je typicky využit příkaz \lineCode{glDrawElementsInstanced(\dots, GLsizei pocetInstanci)}, který vykreslí zadaný počet instancí připojené indexované geometrie. Jelikož je však třeba jednotlivé instance správně umístit do scény a přiřadit jim i další specifické parametry, je třeba předat konkrétní instanci příslušná data. K tomu účelu se využívá princip tzv. \emph{instančních atributů}. Narozdíl od běžných atributů, které přísluší jednotlivým vrcholům (typicky normála, tangenta, texturovací souřadnice apod.), instanční atributy jsou stejné pro všechny vrcholy dané instance, ale liší se mezi instancemi. Toto chování lze zajistit příkazem \lineCode{glVertexAttribDivisor(GLuint attribDesc, GLuint divisor)}. Parametr \lineCode{divisor} určuje, pro kolik instancí bude atribut popsaný \lineCode{attribDesc} stejný. Hodnota $0$ vrací chování zpět na standardní - tedy atributy se různí pro jednotlivé vrcholy.
+
+
+
+
+Instancování na GPU 
+(architektura zalozena na moznostech instancovani na GPU, co je k tomu treba, jak se to dela)
+
+(ruzne verze trsu - poradi vykreslovani - kvuli pruhlednosti)
+
+\begin{itemize}
+\item skupiny instancí - instance v přechodu ošetřovat individuálně (není jich tolik), instance bez přechodu  vykreslovat po skupinách - 
+\item renderqueues
+\item instancování
+\item průhlednost
+\end{itemize}
