@@ -16,6 +16,13 @@
 % The user of this template may find useful to have an alternative to these 
 % officially suggested packages:
 \usepackage{verbatim}
+\usepackage{multirow}
+\usepackage{array}
+
+\newcolumntype{T}{>{\vtop\bgroup\vspace*{-\ht\strutbox}\hbox\bgroup}c<{\egroup\egroup}}
+\newcolumntype{M}{>{$\vcenter\bgroup\hbox\bgroup}c<{\egroup\egroup$}}
+
+\usepackage{moreverb}
 \usepackage{amsmath, amsthm, amssymb}
 \usepackage[czech, english]{babel}
 \usepackage[T1]{fontenc} % pouzije EC fonty 
@@ -102,6 +109,7 @@
 \newcommand\Supervisor{Ing. Jiří Bittner, PhD.}
 
 
+\newcommand{\lineCodeNB}[1]{\hfil\penalty 100 \hfilneg \hbox{\texttt{#1}}}
 \newcommand{\lineCode}[1]{\mbox{\texttt{#1}}}
 
 % Pouzijete-li pdflatex, tak je prijemne, kdyz bude mit vase prace
@@ -113,7 +121,7 @@ bookmarks=true,
 colorlinks=true,
 breaklinks=true,
 urlcolor=black,
-citecolor= blue,
+citecolor= black,
 linkcolor= black,
 unicode=true,
 ]
@@ -271,14 +279,14 @@ Očekávají se cca 1 -- 2 odstavce, maximálně půl stránky.
 % atd...
 
 %*ÚVOD****************************************************************************
-\include{chapters/01_uvod}
+%\include{chapters/01_uvod}
 
 
 %*Popis problému, specifikace cíle****************************************************************************
-\include{chapters/02_problem_cile}
+%\include{chapters/02_problem_cile}
 
 %*Analýza a návrh řešení****************************************************************************
-\include{chapters/03_analyza_navrh}
+%\include{chapters/03_analyza_navrh}
 %Analýza a návrh implementace (včetně diskuse různých alternativ a volby implementačního prostředí).
 
 

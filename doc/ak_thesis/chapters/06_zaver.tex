@@ -1,2 +1,34 @@
 \chapter{Závěr}
 \label{chap:zaver}
+
+
+Prostudujte existující metody pro realistické zobrazování modelů vegetace v reálném čase a simulaci vybraných jevů jako je pohyb vegetace vlivem větru a změny vegetace v rámci různých ročních období. Na základě nastudovaných metod navrhněte a implementujte software umožňující realistické zobrazování vegetace v reálném čase s podporou zobrazování rozsáhlejších vegetačních celků. Výslednou implementaci otestujte z hlediska efektivity pro různé úrovně realističnosti simulace a zobrazování.
+
+\section{Možnosti vylepšení a dalšího rozvoje}
+
+\begin{itemize}
+
+\item Preciznější frustum culling
+
+\item Efektivnější řízení LOD - neurčovat LOD pro každou instanci, ale pro skupiny - využít kD-tree či BVH...
+
+\item Optimalizace počtu vykreslovaných fragmentů LOD
+
+\item Jiná forma LOD - billboard clouds
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%	Visual quality improvements...
+%
+\item Plné a detailní modely (ne ty zjednodušené)
+
+\item Order-independent průhlednost
+
+\item Předpočítané ambient occlusion koeficienty pro listy... (listy více uvnitř koruny by měly být tmavší)
+
+\item Barevné stínové mapy - stíny přebírají barvu listů, jimiž světlo prošlo...
+
+
+
+
+
+\end{itemize}

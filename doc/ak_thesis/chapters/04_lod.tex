@@ -15,16 +15,36 @@ Ošetření problémů spojených s průhledností lze rozdělit do dvou skupin:
 \item průhlednost v rámci instancí mezi sebou
 \end{itemize}
 
-V rámci jedné instance je nutné díky její konstrukci trsu křížících se řezů zvolit správné pořadí jejich vykreslení. 
-% schematicky obrazek nespravne a lepsi 
-Jak je patrné z obrázku \ref{fig:lod_slice_ordering}, nelze pouhým řazením geometrických primitiv zajistit zcela korektní vykreslení. Ovšem důležité je si uvědomit skutečnost, že problémy způsobují zejména řezy skoro rovnoběžné s pohledem (dále jen \emph{rovnoběžný řez}), které jsou stejně skrývány (proto jsou vysoce průhledné). Zejména problematická je pak jejich část blíž k pozorovateli. Část dále od pozorovatele zakrývají řezy méně průhledné natočené víceméně kolmo ke směru pohledu. Stačí tedy zajistit, aby se takový rovnoběžný řez vykresloval až po ostatních.
-%
-%Pro vykreslování řezů ve 3 směrech (svírají úhel 60\degree) existují vlastně pouze 3 případy. Pro %jejich vykreslení lze s výhodou využít tzv. \emph{indexované geometrie} a pouze pomocí 
+\begin{figure}[!hbt]
+\begin{center}
+\includegraphics[width=0.6\textwidth]{./figures/LODtransparency.png}
+\end{center}
+\caption[Průhlednost trsu řezů]%
+{Schematicky znázorněné problémy vykreslování průhledných, křížících se řezů. Tlustou plnou čarou jsou naznačeny správně vykreslené oblasti, tence čárkovaně oblasti, které nejsou vykresleny a mohou způsobit problémy.
+\label{fig:lodSliceOrdering}
+}
+\end{figure}
 
-
-
-
-
+Průhlednost mezi instancemi je ošetřena řazením v rámci zpracování instancí. Geometrická primitiva v rámci jedné instance je ovšem také třeba řadit. Jak je patrné z obrázku \ref{fig:lodSliceOrdering}, nelze pouhým řazením geometrických primitiv zajistit zcela korektní vykreslení. Ovšem důležité je si uvědomit skutečnost, že problémy způsobují zejména řezy skoro rovnoběžné s pohledem (dále jen \emph{rovnoběžný řez}), které jsou stejně skrývány (proto jsou vysoce průhledné). Zejména problematická je pak jejich část blíž k pozorovateli. Část dále od pozorovatele zakrývají řezy méně průhledné natočené víceméně kolmo ke směru pohledu. Stačí tedy zajistit, aby se takový rovnoběžný řez vykresloval až po ostatních.
+\begin{figure}[!hbt]
+\begin{center}
+\includegraphics[width=0.6\textwidth]{./figures/LODtypes.png}
+\end{center}
+\caption[Variace pořadí vykreslování trsu řezů]%
+{Různé případy pozice pozorovatele vůči trsu řezů. Všechny možnosti se redukují na 3 případy pořadí vykreslování řezů (A,B,C).
+\label{fig:LODtypes}
+}
+\end{figure}
+Jak je patrné z obr.~\ref{fig:LODtypes}, je třeba rozlišit, jaký případ nastává a podle toho určit pořadí vykreslení jednotlivých řezů. Fronty instancí se tedy rozpadají ještě podle tohoto kritéria (viz obr. \ref{fig:LODqueues}), neboť různé pořadí vykreslení jednotlivých řezů je zajištěno různým souborem indexů v EBO.
+\begin{figure}[!hbt]
+\begin{center}
+\includegraphics[width=0.4\textwidth]{./figures/renderQueuesB.png}
+\end{center}
+\caption[Pořadí vykreslování LOD1]%
+{Rozpad fronty instancí LOD1 do několika menších front podle pořadí vykreslení (A,B,C).
+\label{fig:LODqueues}
+}
+\end{figure}
 
 
 
