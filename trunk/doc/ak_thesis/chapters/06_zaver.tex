@@ -1,32 +1,40 @@
 \chapter{Závěr}
 \label{chap:zaver}
 
-
+Diskutovat splneni zadani:
 Prostudujte existující metody pro realistické zobrazování modelů vegetace v reálném čase a simulaci vybraných jevů jako je pohyb vegetace vlivem větru a změny vegetace v rámci různých ročních období. Na základě nastudovaných metod navrhněte a implementujte software umožňující realistické zobrazování vegetace v reálném čase s podporou zobrazování rozsáhlejších vegetačních celků. Výslednou implementaci otestujte z hlediska efektivity pro různé úrovně realističnosti simulace a zobrazování.
+
 
 \section{Možnosti vylepšení a dalšího rozvoje}
 
 \begin{itemize}
 
-\item Preciznější frustum culling
+\item Preciznější frustum culling - současná aplikace pouze zahazuje instance LOD1 a LOD2 za rovinou pohledu a provádí implicitní frustum culling v rámci fixních částí pipeline GPU. Toto by šlo vylepšit! + occlusion queries... - části lesa, co jsou schované za za stromy, či terénem, není třeba zobrazovat.
 
-\item Efektivnější řízení LOD - neurčovat LOD pro každou instanci, ale pro skupiny - využít kD-tree či BVH...
+\item Efektivnější řízení LOD - neurčovat LOD pro každou instanci, ale pro skupiny - využít kD-tree či BVH... Současná verze prochází každou jednotlivou instanci v každém snímku. Místo toho by šlo využít akceleračních struktur a LOD určovat pro mnoho instancí najednou... otázkou je efektivní řazení - či implementace algoritmu průhlednosti nezávislého na řazení...
 
-\item Optimalizace počtu vykreslovaných fragmentů LOD
+\item Optimalizace počtu vykreslovaných fragmentů LOD - nyní se díky back-to-front neuplatňuje žádná optimalizace díky z-testům. Všechny fragmenty jsou vykreslovány, ačkoliv velká část není stejně vidět!
 
-\item Jiná forma LOD - billboard clouds
+\item Jiná forma LOD - billboard clouds. Přechod od plné 3D reprezentace k primitivním billboardům je příliš hrubý. Lepší by bylo využít verze low-poly<>billboard cloud a na těch provádět animaci v rámci textur... (zpětné transformace)
+
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
 %	Visual quality improvements...
 %
-\item Plné a detailní modely (ne ty zjednodušené)
+\item Přechod ve stínové mapě. Nyní se řeší primitivním ditheringem. Možné by bylo využít stochastický přístup (náročnost na počet fragmentů -> nevhodné pro LOD1)
+
+\item Plné a detailní modely (ne ty zjednodušené). V současnosti jsou modely popsané jen co se týče topologie, ale v zásadě nic nebrání tomu upravit aplikaci tak, aby pracovala s obecnými modely se známou topologií.
 
 \item Order-independent průhlednost
+Průhlednost nyní způsobuje mnoho komplikací s řazením instancí i primitiv, zejména by bylo výhodné zpracování průhlednosti optimalizovat vzhledem k z-testům. ideální by byl front-to-back s early termination.
+
 
 \item Předpočítané ambient occlusion koeficienty pro listy... (listy více uvnitř koruny by měly být tmavší)
+Vizuální kvalitu zobrazovaného stromu by podstatně zvýšilo ztmavení listů uvnitř koruny. Každému listu by tak mohl příslušet koeficient (případně souřadnice do textur) ze kterého by bylo možné ztmavení vypočíst.
 
 \item Barevné stínové mapy - stíny přebírají barvu listů, jimiž světlo prošlo...
-
+Jelikož se berou již v současné aplikaci v úvahu průsvitné listy, ale vržené stíny jsou jednobarevné, bylo by možné na základě článku Stochastic Colored Shadow Maps implementovat techniku, která by brala v potaz právě průsvitnost listů a ovlivňovala by tak barvu stínů. 
 
 
 
