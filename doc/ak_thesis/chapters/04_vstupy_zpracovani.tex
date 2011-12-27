@@ -173,8 +173,8 @@ Do textur je vykreslen geometrický model v základní pozici (neovlivněný pů
 \begin{figure}[!hbt]
 \begin{center}
 $\begin{array}{cc}
-\includegraphics[width=0.45\textwidth]{./figures/dataPreExpanded.png}&
-\includegraphics[width=0.45\textwidth]{./figures/dataExpanded.png}\\
+\includegraphics[width=0.30\textwidth]{./figures/dataPreExpanded.png}&
+\includegraphics[width=0.30\textwidth]{./figures/dataExpanded.png}\\
 (a)&(b)
 \end{array}$
 \end{center}
@@ -190,7 +190,7 @@ Textury daného typu (barevné, normálové, \dots) jsou následně sloučeny do
 \begin{figure}[!hbt]
 \begin{center}
 \fbox{
-\includegraphics[width=0.45\textwidth]{./figures/joinTextures.png}
+\includegraphics[width=0.4\textwidth]{./figures/joinTextures.png}
 }
 \end{center}
 \caption[Slučování textur]%
@@ -198,7 +198,10 @@ Textury daného typu (barevné, normálové, \dots) jsou následně sloučeny do
 }
 \end{figure}
 
+\pagebreak
+
 Zásadní pro provádění animace v LOD operujícími nad trsy řezů je rovněž datová textura s informacemi o jednotlivých větvích. Tato textura obsahuje záznam pro každou větev, který obsahuje infromace o počátku větve v souřadném systému řezu, bázové vektory větve převedené rovněž do souřadného sytému řezu, projektovanou délku a pohybové vektory směru posunu v šumové textuře. Tyto informace se různí pro různé směry řezů a musí být tudíž zapsány i do textury pro každý směr zvlášť.
+
 
 Data v datové textuře jsou tedy následující:
 \begin{table}[!hbt]
@@ -223,7 +226,6 @@ $i-1$ & \multicolumn{3}{c |}{\vdots}&\vdots\\
 \caption{Minimální sada dat uložená v datové textuře.}
 \end{center}
 \end{table}
-
 \begin{figure}[!hbt]
 \begin{center}
 \includegraphics[width=0.05\textwidth]{./figures/branchDataTextureLOD1.png}
@@ -233,21 +235,19 @@ $i-1$ & \multicolumn{3}{c |}{\vdots}&\vdots\\
 }
 \end{figure}
 
-
-\begin{itemize}
-\item datová textura pro LOD
-\end{itemize}
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Dynamické parametry}
-\begin{itemize}
- \item směr větru
- \item síla větru
-\item amplituda větví (4x)
-\item frekvence větví (4x)
-\item amplituda listů
-\item frekvence listů
-\item prahy přechodů LOD
-\item sezóna
-\item směr světla
-\end{itemize}
+Aplikace nabízí možnost měnit dynamicky řadu parametrů souvisejících s animace stromů i s jejich zobrazováním. Nejpodstatnější jsou zejména tyto: \newline
+
+\begin{tabular}{l} 
+- směr větru\\
+- síla větru\\
+- amplituda větví (pro každou úroveň zvlášť)\\
+- frekvence větví (pro každou úroveň zvlášť)\\
+- amplituda listů\\
+- frekvence listů\\
+- prahy přechodů LOD\\
+- sezóna\\
+- směr světla\\
+\end{tabular}
+
