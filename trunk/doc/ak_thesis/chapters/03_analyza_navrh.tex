@@ -17,7 +17,7 @@ Z průzkumu stávajících řešení vyplývá, že realistického real-time zob
 Nížší úrovně následně vytvořeného LOD-systému budou z této nejpodrobnější úrovně odvozeny a abstrahovány. Pro věrné zobrazení stromu pohybujícího se vlivem větru je třeba poznat, jak na vítr strom reaguje. Teoretické základy takové animace rozebere právě následující sekce.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Animace geometrického 3D modelu}
+\section{Animace a vykreslování geometrického 3D modelu}
 \label{sec-animation3D}
 
 Jelikož je model tvořen množinou trojúhelníků a ty mají přímou vazbu na části stromu (list, konkrétní větev), lze tedy vhodnou změnou jejich polohy animovat celý strom. Požadavek na provádění animace v reálném čase prakticky implikuje i potřebu využití GPU pro tyto účely. Grafická primitiva tvořící model jsou zpracovávána na GPU po vrcholech (vertexech) ve vertex shaderu, který může měnit jejich pozici. 
@@ -82,6 +82,7 @@ I(x) = \frac{\pi r_{1}^4((\alpha -1)x + 1)^4}{4}
 
 Euler-Bernoulliho rovnice pro zmíněné okrajové podmínky a měnící se plošný moment setrvačnosti $I(x)$ má netriviální řešení
 \begin{multline}
+\label{eq:EulerBernoulliFunction}
 \dot{u}(x)=\frac{{E}'F}{r_{1}^4}(x(\alpha-1)(6+x(\alpha-1)(2x(\alpha-1)(3+(\alpha-3)\alpha)+3(4+(\alpha-2)\alpha)))\\
  - 6 (1+x(\alpha-1))^2 \log (1+x(\alpha-1))) \cdot  (3\pi(1+x(\alpha-1))^2(\alpha-1)^4)^{-1}
 \end{multline}
