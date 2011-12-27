@@ -219,7 +219,7 @@ Aby se při ohýbání větev nezplošťovala, je nutné provádět transformaci
 }
 \end{figure}
 
-Jak je patrné z obrázku ~\ref{fig:bendCoordSys}, při malých deformacích je chyba v podstatě zanedbatelná. Při výpočtu polohy bodu $p_i$ na středovém paprsku větve je vhodné použít následujících iterativních vztahů:
+Jak je patrné z obrázku ~\ref{fig:bendCoordSys}, při malých deformacích je chyba v podstatě zanedbatelná. Při výpočtu polohy bodu $\vec{p_i}$ na středovém paprsku větve je vhodné použít následujících iterativních vztahů:
 
 \begin{align} 
 \vec{p}_{i} &= \vec{p}_{0} - \frac{\vec{t}d_{r}(x)-\vec{r}u_{r}(x)}{s_{r}(x)}-\frac{\vec{t}d_{s}(x)-\vec{s}u_{s}(x)}{s_{s}(x)}\nonumber\\
@@ -228,7 +228,7 @@ x_{i,r,s} &= x - \frac{d_{r,s}(x)}{s_{r,s}(x)}\nonumber\\
 \vec{n}_{i} &=  \vec{n}_{0} + (u'_{r}(x_{i,r})(\vec{r} \cdot \vec{n}_{0}) + u'_{s}(x_{i,s})(\vec{s} \cdot \vec{n}_{0})\vec{t}
 \end{align}
 
-Pokud výpočet transformace polohy bodu bude probíhat od kořene hierarchie, dokud v ní není dosaženo úrovně, na které se daný vrchol nachází, pak budou postupně aplikovány všechny relevantní deformace. Na počátku je p0 původní poloha bodu v souřadném systému objektu (obdobně i tečna t0  a normála n0). V každé další iteraci (postupu o úroveň výš v hierarchii) je třeba počáteční vektory p0, t0 a n0 nastavit na výsledek z předchozí iterace. Hodnota xD,r a xD,s představuje hodnotu parametru x po provedení korekce délky.  Transformace souřadného systému v rámci jedné větve vyžaduje přepočet nového bázového vektoru t podle vzorce pro výpočet tečny a nových bázových vektorů r a s podle vzorce pro výpočet normály. 
+Pokud výpočet transformace polohy bodu bude probíhat od kořene hierarchie, dokud v ní není dosaženo úrovně, na které se daný vrchol nachází, pak budou postupně aplikovány všechny relevantní deformace. Na počátku je $\vec{p_0}$ původní poloha bodu v souřadném systému objektu (obdobně i tečna $\vec{t_0}$  a normála $\vec{n_0}$). V každé další iteraci (postupu o úroveň výš v hierarchii) je třeba počáteční vektory $\vec{p_0}$, $\vec{t_0}$ a $\vec{n_0}$ nastavit na výsledek z předchozí iterace. Hodnota $x_{D,r}$ a $x_{D,s}$ představuje hodnotu parametru $x$ po provedení korekce délky.  Transformace souřadného systému v rámci jedné větve vyžaduje přepočet nového bázového vektoru $\vec{t}$ podle vzorce pro výpočet tečny a nových bázových vektorů $\vec{r}$ a $\vec{s}$ podle vzorce pro výpočet normály. 
 
 Následující tabulka shrnuje, jaká data jsou potřeba pro výpočet deformace:
 
