@@ -94,7 +94,7 @@ i+1 & \multicolumn{10}{c |}{\vdots}\\
 i-1 & \multicolumn{10}{c |}{\vdots}\\
 \end{tabular}
 \label{table:dataTexture}
-\caption{Minimální sada dat uložená v datové textuře.}
+\caption{Minimální sada dat uložená v datové textuře pro LOD0.}
 \end{center}
 \end{table}
 
@@ -106,18 +106,36 @@ i-1 & \multicolumn{10}{c |}{\vdots}\\
 {Ukázka z datové textury pro LOD0. Číslo řádku $i$ odpovídá identifikátoru větve.\label{fig:branchDataTextureLOD0}
 }
 \end{figure}
+Velice důležitou je textura sezónních barev (viz obr. ~\ref{fig:seasonMap}). Jde o jednořádkovou texturu. Z ní je interpolována sezónní barva ve smyslu členu $c_s(s)$ ze vztahů \eqref{eq:color_def}. Parametr \lineCode{sezona} lze použít přímo jako souřadnici do této textury. 
+\begin{figure}[!hbt]
+\begin{center}
+\includegraphics[width=0.6\textwidth]{./figures/seasonTex.png}
+\end{center}
+\caption[Ukázka textury sezónních barev]%
+{Ukázka textury sezónních barev. Obrázek je zvětšený a šedá šachovnice vizualizuje průhledné pixely.\label{fig:seasonMap}
+}
+\end{figure}
 
+Zobrazování LOD1 a LOD2 vyžaduje rovněž vytvoření několika speciálních textur. Jejich vytvořením se zabývá další sekce (\ref{sec:preprocessLOD}).
 
-Zobrazování LOD1 a LOD2 vyžaduje rovněž vytvoření několika speciálních textur. Jejich vytvořením se zabývá další sekce (~\ref{sec:preprocessLOD}).
-
-
+\pagebreak
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Předzpracování pro LOD}
 \label{sec:preprocessLOD}
-Pro zobrazení a animaci LOD1 a LOD2 je třeba vytvořit během předzpracování sadu textur. Jednak je to množina textur, které jsou nezbytné i pro zobrazení statického stromu, druhak se pak přidávají i textury, jež jsou nezbytné pro provedení animace. Následující popis uvádí postup generování těchto textur pro LOD1. Pro LOD2
+Pro zobrazení a animaci LOD1 a LOD2 je třeba vytvořit během předzpracování sadu textur. Jednak je to množina textur, které jsou nezbytné i pro zobrazení statického stromu, druhak se pak přidávají i textury, jež jsou nezbytné pro provedení animace. Následující popis uvádí postup generování těchto textur pro LOD1. Pro LOD2 je postup obdobný.
 
-Ke zobrazení statického stromu pomocí trsu řezů je třeba vytvořit textury obsahující pohled na strom z daného úhlu v několika vrstvách. Tyto textury lze relativně jednoduše generovat použitím techniky \emph{offscreen-rendering} neboli vykreslování do textur. V OpenGL se toho dosáhne připojením speciálního tzv. \emph{Frame Buffer Object} (FBO) s napojenými texturami. Následující kód ukazuje, jak takovýto FBO vytvořit a použít:
-\pagebreak
+Ke zobrazení statického stromu pomocí trsu řezů je třeba vytvořit textury obsahující pohled na strom z daného úhlu v několika vrstvách. Tyto textury lze relativně jednoduše generovat použitím techniky \emph{offscreen-rendering} neboli vykreslování do textur. V OpenGL se toho dosáhne připojením speciálního tzv. \emph{Frame Buffer Object} (FBO) s napojenými texturami (viz obr.~\ref{fig:FBO}).
+\begin{figure}[!hbt]
+\begin{center}
+\includegraphics[width=0.7\textwidth]{./figures/FBO.png}
+\end{center}
+\caption[Mechanismus FBO v OpenGL]%
+{Mechanismus Frame Buffer Object v OpenGL.\label{fig:FBO}
+}
+\end{figure}
+
+
+ Následující kód ukazuje, jak takovýto FBO vytvořit:
 \begin{alltt}
 \textit{// vytvoreni FBO}
 GLuint	fboID = 0;
@@ -135,7 +153,10 @@ glBindFramebuffer(GL_FRAMEBUFFER, fboID);
    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, 
                           depthTextureID, 0);
 glBindFramebuffer(GL_FRAMEBUFFER, NULL);
-
+\end{alltt}
+\pagebreak
+Použití - tedy přesměrování vykreslování do vytvořeného FBO probíhá následovně:
+\begin{alltt}
 \textit{// pouziti FBO}
 {\bf setupCamera();}      \textit{// nastaveni kamery podle smeru a hloubky rezu}
 glBindFramebuffer(GL_FRAMEBUFFER, fboID);
@@ -166,7 +187,7 @@ Pro každý řez je vytvořena následující sada textur:
 \end{itemize}
 
 Do textur je vykreslen geometrický model v základní pozici (neovlivněný působením větru). Do barevné textury se zapíše nestínovaná barva bez sezónní složky, do textury normál se zapíše pro každý fragment normála (pouze 3 souřadnice) v souřadném systému řezu (budoucí \emph{tangent space}). Čtvrtá složka zaznamenává případně specifické číslo listu. Význam hloubkové mapy je zřejmý. Do textury větvových bodů se zaznamenávají identifikátory rodičovských větví 1. úrovně (napojené přímo na kmen). Následně je na této textuře provedena expanze dat (viz obr.~\ref{fig:dataExpansionExample}).
-
+\pagebreak
 %%%
 % obrazek pred a po expanzi dat
 %
@@ -223,7 +244,7 @@ $i+1$ & \multicolumn{3}{c |}{\vdots} & \vdots\\
 $i-1$ & \multicolumn{3}{c |}{\vdots}&\vdots\\
 \end{tabular}
 \label{table:dataTexture}
-\caption{Minimální sada dat uložená v datové textuře.}
+\caption{Minimální sada dat uložená v datové textuře pro LOD1 a LOD2.}
 \end{center}
 \end{table}
 \begin{figure}[!hbt]
