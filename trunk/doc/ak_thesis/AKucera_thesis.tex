@@ -16,6 +16,7 @@
 % The user of this template may find useful to have an alternative to these 
 % officially suggested packages:
 \usepackage{verbatim}
+\usepackage{dirtree}
 \usepackage{multirow}
 \usepackage{array}
 \usepackage{listings}
@@ -24,7 +25,7 @@
 \newcolumntype{M}{>{$\vcenter\bgroup\hbox\bgroup}c<{\egroup\egroup$}}
 
 \usepackage{moreverb}
-\usepackage{amsmath, amsthm, amssymb}
+\usepackage{amsmath, amsthm, amssymb, textcomp}
 \usepackage[czech, english]{babel}
 \usepackage[T1]{fontenc} % pouzije EC fonty 
 % pripadne pisete-li cesky, pak lze zkusit take:
@@ -221,9 +222,15 @@ unicode=true,
 
 \acknowledgements
 \noindent
-Velice rád bych touto cestou poděkoval vedoucímu práce Ing. Jiřímu Bittnerovi, PhD. za podnětné vedení práce.
-\newline I would also like to express my thanks to Ralf Habel for inspiring consultations and providing advanced leaf texture data.
+Velice rád bych touto cestou poděkoval vedoucímu práce Ing. Jiřímu Bittnerovi, PhD. za podnětné vedení práce a možnost účastnit se odborné studentské stáže na Technische Universität Wien, kde vznikaly metody animace stromů reprezentovaných plochými obrázky. Rovněž jemu a doc. Ing. Vlastimilu Havranovi, Ph.D. patří dík za možnost testovat aplikaci na výkonné školní sestavě.
+\newline
+I would also like to express my thanks to Mr. Ralf Habel for inspiring consultations and providing advanced leaf texture data.
+\newline 
+Chtěl bych také poděkovat svým rodičům za to, že mi byli vždy oporou a poskytli mi vynikající zázemí. 
+\newline 
+V neposlední řadě musím ocenit i své kamarády, kteří měli trpělivost, když na ně nezbývalo tolik času, a nepřestali mi nabízet radost z přátelství.
 
+Děkuji.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%   Prohlaseni / Declaration 
@@ -295,35 +302,11 @@ Očekávají se cca 1 -- 2 odstavce, maximálně půl stránky.
 %*****************************************************************************
 \include{chapters/05_testovani}
 
-\begin{itemize}
- \item Způsob, průběh a výsledky testování.
- \item Srovnání s existujícími řešeními, pokud jsou známy.
-\end{itemize} 
-
-
 %*****************************************************************************
 \include{chapters/06_zaver}
 
-\begin{itemize}
-\item Zhodnocení splnění cílů DP/BP a  vlastního přínosu práce (při formulaci je třeba vzít v potaz zadání práce).
-\item Diskuse dalšího možného pokračování práce.
-\end{itemize} 
-
-
-
 %*****************************************************************************
-% Seznam literatury je v samostatnem souboru reference.bib. Ten
-% upravte dle vlastnich potreb, potom zpracujte (a do textu
-% zapracujte) pomoci prikazu bibtex a nasledne pdflatex (nebo
-% latex). Druhy z nich alespon 2x, aby se poresily odkazy.
-
-% originally following specification for bibliography formating was used
-%\bibliographystyle{abbrv}
-
-% Here is an improvment by Petr Dlouhy (April 2010).
-% It is mainly for supervisors who expect Czech fomrating rules for references
-% Additional feature is live url addresses to sources from your pdf file
-% It requires the file csplainnat.bst (included in this sample zipfile).
+% Seznam literatury je v samostatnem souboru reference.bib. 
 
 \bibliographystyle{csplainnat}
 
@@ -381,9 +364,21 @@ Očekávají se cca 1 -- 2 odstavce, maximálně půl stránky.
 \textbf{\large Tato příloha velmi žádoucí zejména u softwarových implementačních prací.}
 
 %*****************************************************************************
-\chapter{Obsah přiloženého CD}
-\textbf{\large Tato příloha je povinná pro každou práci. Každá práce musí totiž obsahovat přiložené CD. Viz dále.}
+\chapter{Obsah přiloženého DVD}
 
+\dirtree{%
+.1 DVD. 
+.2 BIN\DTcomment{binární soubor pro platformu Windows, příslušná data a knihovny}. 
+.2 IMAGES\DTcomment{screenshoty z aplikace}. 
+.2 SRC\DTcomment{zdrojové kódy aplikace, příslušná data a knihovny}. 
+.2 TEXT\DTcomment{co vlastne ten adresar obsahuje}.  
+.3 PDF\DTcomment{text diplomové práce ve formátu PDF, optimalizovaný pro různé rozlišení}.  
+.3 TEX\DTcomment{zdrojové soubory a data pro sazbu textu systémem \LaTeX}.  
+.2 TOOLS\DTcomment{nástroje spojené s aplikací}. 
+.2 VIDEO\DTcomment{videa}. 
+.3 CAPTURED\DTcomment{zaznamenaný generovaný obraz aplikace}. 
+.3 REFERENCE\DTcomment{referenční videa reálných stromů}. 
+}
 %\begin{figure}[h]
 %\begin{center}
 %\includegraphics[width=14cm]{figures/seznamcd}
