@@ -147,9 +147,30 @@ void {\bf animateBranch}(inout vec2 position, in float branchID, in float time,
 Tato funkce je aplikována dvakrát, nejprve na 1. úroveň větví, poté na kmen. Tedy opačně než v případě deformace geometrického modelu. S tím souvisí problém aplikace směrové složky větru. Zatímco správně je deformován nejprve kmen a s ním i souřadné systémy napojených větví a tím pádem se průmět směru větru na větve 1. úrovně mění s deformací kmene. V LOD1 a LOD2 však je aplikována směrová složka větru na větve na neohnutém kmeni a teprve poté je ohnut kmen. Tato chyba však nezpůsobuje příliš velký problém a je skoro nepostřehnutelná.
 
 %%%%%%
+% sezoni zmeny barev + barevne variace
+%
+\section{Sezónní barvy a barevné variace}
+Vegetace (stromy nevyjímaje) podléhá změnám během ročních období. Tato sekce popisuje, jak zajistit změnu barevnosti listů, která je daná roční dobou (sezónou), a jak zajistit, aby se mírně lišila barevnost jednak listů mezi sebou, ale i celková barevnost jednotlivých stromů mezi sebou. 
+
+Jak již bylo naznačeno v předchozím textu, sezónní barva je definovaná texturou (viz obr.~\ref{fig:seasonMap}) a souřadnicí, ze které se příslušná barva získává. Sezónu definuje parametr \lineCode{season}. Pro zajištění barevných variací mezi jednotlivými listy je třeba přiřadit listu specifické číslo \lineCode{leafSpecificNumber}. Toto číslo je třeba distribuovat i do textur používaných pro zobrazení řezů. Využije se k tomu s výhodou 4. složka textury normál. Odchylku barevnosti celých stromů mezi sebou zajistíme podobným mechanismem. Ten je společný i pro zajištění odchylky ve fázi animace. Instanci tak přísluší \lineCode{instanceSpecificNumber}. Pomocí těchto proměnných lze zajistit odchylku od přímé sezónní barvy:
+\begin{alltt}
+float seasonCoord = season + 0.2*leafSpecificNumber
+                                             - 0.0001*instanceSpecificNumber;
+vec4  seasonColor = texture2D(seasonMap, vec2(0.5, seasonCoord);
+\end{alltt}
+Koeficienty váhy jednotlivých odchylek byly určeny pouze na základě výsledného vizuálního dojmu a pro různé textury sezónních barev mohou být rozdílné.
+
+Touto metodou lze velmi jednoduše zajistit i přibývání počtu listů na jaře a naopak snižování počtu listů na podzim. Stačí, když je příslušná část textury sezónní barvy průhledná. Pokud je tedy výsledná sezónní barva průhledná, je zpracovávaný fragment zahozen:
+\begin{alltt}
+  if ( seasonColor.a < 0.5 )\{
+     discard;
+  \}
+\end{alltt}
+
+%%%%%%
 %  stiny...
 %
-\subsection{Stíny}
+\section{Stíny}
 Stíny mají velký vliv na vizuální kvalitu generovaného obrazu a jejich věrnost může použitím trsů řezů velmi utrpět. Standardní technikou generující dynamicky stíny je tzv. \emph{shadow-mapping}. Je generována stínová mapa jako záznam vzdálenosti fragmentů od zdroje světla. Následně je pro daný zobrazovaný bod porovnávána vzdálenost od světla $D_L$ se záznamem na odpovídajícím místě stínové mapy $D_S$ (viz obr.~\ref{fig:shadowMapping}).
 \begin{figure}[!hbt]
 \begin{center}
@@ -183,7 +204,7 @@ $\begin{array}{cc}
 \label{fig:shadowMapping}
 }
 \end{figure}
-
+\pagebreak
 Stíny mohou vytvářet problém i při plynulém přechodu mezi úrovněmi LOD. Jde o to, že zatímco barevný obraz se plynule prolíná pomocí průhlednosti, ve stínové hloubkové mapě žádná průhlednost nefunguje. Děje se tak skoková změna v zápisu do stínové mapy a tím je ovlivněn i barevný obraz jež je skokově jinak stínován. Tento nepříjemný efekt lze částečně potlačit využitím tónování (tzv. \emph{dithering}). Tímto způsobem lze simulovat průhlednost i bez kanálu průhlednosti. Z plochy, která má být průhledná, je odebrán náhodně určitý počet pixelů (jsou plně průhledné), podle hodnoty požadované průhlednosti. Čím má být plocha průhlednější, tím víc pixelů je takto odstaněno. Pokud je touto řídící veličinou proměnná \lineCode{transition\_control}, pak lze tónování stínové mapy docílit takto:
 \begin{alltt}
 \textit{// noise\dots náhodné číslo stejného rozsahu jako transition\_control}
