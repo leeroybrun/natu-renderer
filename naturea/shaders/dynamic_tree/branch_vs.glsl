@@ -49,7 +49,7 @@ vec4 color;
 varying vec4 vPos;
 vec3					oVec=vec3(1.0, 1.0, 1.0);
 
-
+// object space to normalized device coords
 vec4 OS2ND(in vec4 position){
 	vec4 clipSpacePosition = gl_ModelViewProjectionMatrix * position;
 	float wI = 1.0/clipSpacePosition.w;

@@ -112,7 +112,7 @@ int g_slice_count			= 3;
 int	g_GrassCount			= GRASS_COUNT;
 int	g_Tree1Count			= TREE1_COUNT;
 int	g_Tree2Count			= TREE2_COUNT;
-int g_TreeDCount			= 100;
+int g_TreeDCount			= 1;
 // GLOBAL CONSTANTS____________________________________________________________
 const GLfloat VECTOR_RENDER_SCALE = 0.20f;
 // GLOBAL VARIABLES____________________________________________________________
@@ -151,6 +151,7 @@ bool	g_draw_light_direction	= false;
 /**************************
 * DYNAMIC TREE
 */
+float	g_tree_areaFactor		= 0.01;
 v3		g_tree_wind_direction	= v3(1.0, 0.0, 0.0);
 float	g_tree_wind_strength	= 0.0;
 v4		g_tree_wood_amplitudes	= v4(1.0, 0.8, 0.2, 0.1);
@@ -169,7 +170,7 @@ float	g_tree_wave_increase_factor = 1.0;
 float	g_tree_time_offset_1	= 0.0;
 float	g_tree_time_offset_2	= 0.5;		
 
-const int	g_tree_gridSize			= 2;			// = SQRT(count of the trees)
+const int	g_tree_gridSize			= 1;			// = SQRT(count of the trees)
 float		g_tree_mean_distance	= 5.0;			// = how dense is the grid
 float		g_tree_dither			= 3.0;			// = how far can be the tree placed from its' position in grid
 
@@ -426,7 +427,8 @@ void TW_CALL cbGetDTreeMeanDistance(void *value, void *clientData)
 void TW_CALL cbSetDTreeAreaFactor(const void *value, void *clientData)
 { 
 	int count = p_world->dtree_planter.count;
-	p_world->dtree_planter.size_factor = *(const float*)value; 
+	g_tree_areaFactor = *(const float *)value;
+	p_world->dtree_planter.size_factor = g_tree_areaFactor; 
 	p_world->dtree_planter.createCandidates(p_world->dtree_planter.height_min, p_world->dtree_planter.height_max, p_world->dtree_planter.dither, p_world->dtree_planter.distance);
 	// now is p_world->dtree_planter.count=0;
 	// use former count
@@ -436,7 +438,8 @@ void TW_CALL cbSetDTreeAreaFactor(const void *value, void *clientData)
 
 void TW_CALL cbGetDTreeAreaFactor(void *value, void *clientData)
 { 
-	*(float *)value = p_world->dtree_planter.size_factor; // for instance
+	*(float *)value = g_tree_areaFactor;
+	//*(float *)value = p_world->dtree_planter.size_factor; // for instance
 }
 
 void TW_CALL cbGetDTreeMin(void *value, void *clientData)
@@ -599,67 +602,15 @@ void initGUI()
 	TwBar *controlBar = TwNewBar("Controls");
 	TwDefine(" Controls position='0 0' size='250 550' refresh=0.3 \
 			 valueswidth=80 ");
-	// camera mode
-	TwEnumVal trans_mode[] = 
-	{ 
-		{ LODTransitionMethod::HARD_SWITCH				, "Hard switch"					},
-		{ LODTransitionMethod::CROSS_FADE				, "Cross fade"					},
-		{ LODTransitionMethod::FADE_IN_BACKGROUND		, "Fade in background"			},
-		{ LODTransitionMethod::SHIFTED_CROSS_FADE		, "Shifted cross fade"			},
-		{ LODTransitionMethod::SHIFTED_SOFT_FADE		, "shifted soft fade"			}
-	};
-	TwType transition_method = TwDefineEnum("LOD transition method", trans_mode, 5);
-	TwAddVarRW(controlBar, "transition method", transition_method, &g_lodTransition, " group='Visibility' ");
-	TwAddVarRW(controlBar, "shift", TW_TYPE_FLOAT, & g_transitionShift, " group='Visibility' min=0 max=0.5 step=0.01");
-	TwAddVarRW(controlBar, "gauss_shift",  TW_TYPE_FLOAT, & g_gauss_shift	, " group='Visibility' min=0 max=1.0 step=0.01");
-	TwAddVarRW(controlBar, "gauss_steep",  TW_TYPE_FLOAT, & g_gauss_steep	, " group='Visibility' min=0 max=1.5 step=0.01");
-	TwAddVarRW(controlBar, "gauss_weight", TW_TYPE_FLOAT, & g_gauss_weight, " group='Visibility' min=0 max=1.0 step=0.01");
 
 
+// Visibility
+	TwAddVarRW(controlBar, "sw_lod0", TW_TYPE_BOOLCPP, & g_draw_lod0, " group='Visibility' label='show LOD0' ");
+	TwAddVarRW(controlBar, "sw_lod1", TW_TYPE_BOOLCPP, & g_draw_lod1, " group='Visibility' label='show LOD1' ");
+	TwAddVarRW(controlBar, "sw_lod2", TW_TYPE_BOOLCPP, & g_draw_lod2, " group='Visibility' label='show LOD2' ");
+	TwAddVarRW(controlBar, "sw_veg", TW_TYPE_BOOLCPP, & g_draw_low_vegetation, " group='Visibility' label='show other vegetation'  ");
 
-
-	TwAddVarRW(controlBar, "sw_tree", TW_TYPE_BOOLCPP, & g_draw_dtree, " group='Visibility' ");
-	TwAddVarRW(controlBar, "sw_lod",  TW_TYPE_BOOLCPP, & g_draw_dtree_lod, " group='Visibility'  ");
-	TwAddVarRW(controlBar, "sw_lod0", TW_TYPE_BOOLCPP, & g_draw_lod0, " group='Visibility'  ");
-	TwAddVarRW(controlBar, "sw_lod1", TW_TYPE_BOOLCPP, & g_draw_lod1, " group='Visibility'  ");
-	TwAddVarRW(controlBar, "sw_lod2", TW_TYPE_BOOLCPP, & g_draw_lod2, " group='Visibility'  ");
-	//g_lodTresholds
-	TwAddVarRW(controlBar, "sw_lod_tresh0", TW_TYPE_FLOAT, & g_lodTresholds.x, " group='Visibility' label='LODtreshold0'  min=0 max=10000 step=0.1");
-	TwAddVarRW(controlBar, "sw_lod_tresh1", TW_TYPE_FLOAT, & g_lodTresholds.y, " group='Visibility' label='LODtreshold1'  min=0 max=10000 step=0.1");
-	TwAddVarRW(controlBar, "sw_lod_tresh2", TW_TYPE_FLOAT, & g_lodTresholds.z, " group='Visibility' label='LODtreshold2'  min=0 max=10000 step=0.1");
-	TwAddVarRW(controlBar, "sw_lod_tresh3", TW_TYPE_FLOAT, & g_lodTresholds.w, " group='Visibility' label='LODtreshold3'  min=0 max=10000 step=0.1");
-
-
-	TwAddVarRW(controlBar, "sw_veg", TW_TYPE_BOOLCPP, & g_draw_low_vegetation, " group='Visibility'  ");
-	TwAddVarRW(controlBar, "sw_light", TW_TYPE_BOOLCPP, & g_draw_light_direction, " group='Visibility'  ");
-
-	// GENERAL
-	TwAddVarRW(controlBar, "season", TW_TYPE_FLOAT, & g_season, " group='General' min=-1 max=2 step=0.01 label='season'");
-	TwAddVarRW(controlBar, "sw_orbit", TW_TYPE_BOOLCPP, & g_orbit, " group='General' label='Orbit(ON/OFF)'");
-	TwAddVarRW(controlBar, "sw_orbit_speed", TW_TYPE_FLOAT, & g_orbit_speed, " group='General' min=-100 max=100 step=0.01 label='orbit speed'");
-	TwAddVarRW(controlBar, "sw_orbit_radius", TW_TYPE_FLOAT, & g_orbit_radius, " group='General' min=-100 max=100 step=0.1 label='orbit radius'");
-	TwAddVarRW(controlBar, "sw_lod1_ab", TW_TYPE_BOOLCPP, & g_draw_lod1_method, " group='General'  ");
-
-	TwAddVarRW(controlBar, "snapshotDir", TW_TYPE_DIR3F, &g_snapshot_direction, 
-		"group='LOD'  label='slices direction' help='direction of snapshot' ");
-	TwAddVarRW(controlBar, "snapshotSlices", TW_TYPE_INT32, &g_slice_count, 
-		"group='LOD' label='count of slices'  help='count of slices to generate' ");
-	TwAddVarRW(controlBar, "wave_amplitude", TW_TYPE_FLOAT, &g_tree_wave_amplitude, "group='LOD' label='distortion amplitude' min=0 max=5 step=0.001 ");
-	TwAddVarRW(controlBar, "wave_frequency", TW_TYPE_FLOAT, &g_tree_wave_frequency, "group='LOD' label='distortion frequency' min=0 max=5 step=0.001");
-	TwAddVarRW(controlBar, "wave_y_offset", TW_TYPE_FLOAT, &g_tree_wave_y_offset, "group='LOD' label='distortion y offset' min=0 max=10 step=0.001");
-	TwAddVarRW(controlBar, "wave_increase_factor", TW_TYPE_FLOAT, &g_tree_wave_increase_factor, "group='LOD' label='distortion increase' min=0 max=5 step=0.001");
-	TwAddVarRW(controlBar, "time_offset1", TW_TYPE_FLOAT, &g_tree_time_offset_1, "group='LOD' label='distortion time offset 1' min=-10 max=10 step=0.001");
-	TwAddVarRW(controlBar, "time_offset2", TW_TYPE_FLOAT, &g_tree_time_offset_2, "group='LOD' label='distortion time offset 2' min=-10 max=10 step=0.001");
-
-	TwAddVarRW(controlBar, "MultiplyAmbient",			TW_TYPE_FLOAT,		&g_leaves_MultiplyAmbient			, "group='Leaves' label='k ambient' min=0 max=5 step=0.001 ");
-	TwAddVarRW(controlBar, "MultiplyDiffuse",			TW_TYPE_FLOAT,		&g_leaves_MultiplyDiffuse			, "group='Leaves' label='k diffuse' min=0 max=5 step=0.001");
-	TwAddVarRW(controlBar, "MultiplySpecular",			TW_TYPE_FLOAT,		&g_leaves_MultiplySpecular			, "group='Leaves' label='k specular' min=0 max=10 step=0.001");
-	TwAddVarRW(controlBar, "MultiplyTranslucency",		TW_TYPE_FLOAT,		&g_leaves_MultiplyTranslucency		, "group='Leaves' label='k translucency' min=0 max=5 step=0.001");
-	TwAddVarRW(controlBar, "ReduceTranslucencyInShadow", TW_TYPE_FLOAT,		&g_leaves_ReduceTranslucencyInShadow, "group='Leaves' label='transl in shadow' min=-10 max=10 step=0.001");
-	TwAddVarRW(controlBar, "shadow_intensity",			TW_TYPE_FLOAT,		&g_leaves_shadow_intensity			, "group='Leaves' label='shadow intensity' min=-10 max=10 step=0.001");
-	TwAddVarRW(controlBar, "LightDiffuseColor",			TW_TYPE_COLOR3F,	&g_leaves_LightDiffuseColor.data	, "group='Leaves' label='light diffuse color' ");
-
-	// camera mode
+//CAMERA
 	TwEnumVal cam_mode[] = 
 	{ 
 		{ CameraMode::FREE					, "Free"					},
@@ -680,109 +631,103 @@ void initGUI()
 	TwAddVarRW(controlBar, "direction", TW_TYPE_DIR3F, &(p_world->p_activeCamera->direction.data), " group='Camera' ");
 
 
-
-	TwAddVarRO(controlBar, "LOD12_sampleCount", TW_TYPE_DOUBLE, &(samples_lod12), " group=Statistics ");
-	
-
-
-	TwAddVarRO(controlBar, "LOD0_count", TW_TYPE_INT32, &(g_tree_lod0_count), " label='LOD0 instance count' group=Statistics ");
-	TwAddVarRO(controlBar, "LOD1_count", TW_TYPE_INT32, &(g_tree_lod1_count), " label='LOD1 instance count' group=Statistics ");
-	TwAddVarRO(controlBar, "LOD2_count", TW_TYPE_INT32, &(g_tree_lod2_count), " label='LOD2 instance count' group=Statistics ");
-	TwAddVarRO(controlBar, "LOD01_count", TW_TYPE_INT32, &(g_tree_lod01_count), " label='LOD01 instance count' group=Statistics ");
-	TwAddVarRO(controlBar, "LOD12_count", TW_TYPE_INT32, &(g_tree_lod12_count), " label='LOD12 instance count' group=Statistics ");
-	
-	TwAddVarRO(controlBar, "min GPU_fps", TW_TYPE_FLOAT, &(g_Statistics.minFps), 
-		" label='min GPU fps' group=Statistics help='frames per second (measured on GPU) - minimum' ");
-	TwAddButton(controlBar, "RESET MIN FPS", cbResetMinFPS, NULL, " group='Statistics' ");
-	
-	TwAddVarRO(controlBar, "GPU_fps", TW_TYPE_FLOAT, &(g_Statistics.fps), 
-		" label='GPU fps' group=Statistics help='frames per second (measured on GPU)' ");
+// STATISTICS
+	//TwAddVarRO(controlBar, "LOD12_sampleCount", TW_TYPE_DOUBLE, &(samples_lod12), " group=Statistics ");
+	TwAddVarRO(controlBar, "LOD0_count", TW_TYPE_INT32, &(g_tree_lod0_count), " label='# LOD0' group=Statistics ");
+	TwAddVarRO(controlBar, "LOD1_count", TW_TYPE_INT32, &(g_tree_lod1_count), " label='# LOD1' group=Statistics ");
+	TwAddVarRO(controlBar, "LOD2_count", TW_TYPE_INT32, &(g_tree_lod2_count), " label='# LOD2' group=Statistics ");
+	TwAddVarRO(controlBar, "LOD01_count", TW_TYPE_INT32, &(g_tree_lod01_count), " label='# LOD01' group=Statistics ");
+	TwAddVarRO(controlBar, "LOD12_count", TW_TYPE_INT32, &(g_tree_lod12_count), " label='# LOD12' group=Statistics ");
+	//TwAddVarRO(controlBar, "min GPU_fps", TW_TYPE_FLOAT, &(g_Statistics.minFps), 
+	//	" label='min GPU fps' group=Statistics help='frames per second (measured on GPU) - minimum' ");
+	//TwAddButton(controlBar, "RESET MIN FPS", cbResetMinFPS, NULL, " group='Statistics' ");
+	TwAddVarRO(controlBar, "GPU_fps", TW_TYPE_FLOAT, &(g_Statistics.fps), " label='fps GPU' group=Statistics help='frames per second (measured on GPU)' ");
 	TwAddVarRO(controlBar, "CPU_fps", TW_TYPE_FLOAT, &(g_Statistics.cpuFps), 
-		" label='CPU fps' group=Statistics help='frames per second (measured on GPU)' ");
-	/* TwAddVarRO(controlBar, "primitives", TW_TYPE_INT32, &(g_Statistics.primitives), 
-	" label='primitives' group=Statistics help='primitives generated' ");
-	*/   
+		" label='fps CPU' group=Statistics help='frames per second (measured on GPU)' ");  
 	
-	TwAddVarRW(controlBar, "g_bloomDivide	"	, TW_TYPE_FLOAT, &(g_bloomDivide	), " label='g_bloomDivide'	group=Light min=-1 max=100 step=0.01"); 
-	TwAddVarRW(controlBar, "g_god_expo			", TW_TYPE_FLOAT, &(g_god_expo			), " label='g_god_expo'				group=Light min=0 max=5 step=0.01");  
-	TwAddVarRW(controlBar, "g_god_decay			", TW_TYPE_FLOAT, &(g_god_decay			), " label='g_god_decay'			group=Light min=0 max=5 step=0.01");  
-	TwAddVarRW(controlBar, "g_god_density		", TW_TYPE_FLOAT, &(g_god_density		), " label='g_god_density'			group=Light min=0 max=5 step=0.01");  
-	TwAddVarRW(controlBar, "g_god_weight		", TW_TYPE_FLOAT, &(g_god_weight		), " label='g_god_weight'			group=Light min=0 max=5 step=0.01");  
-	TwAddVarRW(controlBar, "g_illuminationDecay	", TW_TYPE_FLOAT, &(g_illuminationDecay	), " label='g_illuminationDecay'	group=Light min=0 max=5 step=0.01"); 
-
-
+// LIGHT
+	TwAddVarRW(controlBar, "g_god_expo			", TW_TYPE_FLOAT, &(g_god_expo			), " label='rays exposure'			group=Light min=0 max=5 step=0.01");  
+	TwAddVarRW(controlBar, "g_god_density		", TW_TYPE_FLOAT, &(g_god_density		), " label='rays density'			group=Light min=0 max=5 step=0.01");  
 	TwAddVarRW(controlBar, "shadows", TW_TYPE_BOOLCPP, &(g_ShadowMappingEnabled), 
-		" label='Shadows enabled' group=Light help='enable/disable shadows' ");  
-	TwAddVarRW(controlBar, "g_dither			", TW_TYPE_FLOAT, &(g_dither			), " label='g_dither'				group=Light min=0 max=100 step=0.01");  
-	
-
+		" label='shadow mapping enabled' group=Light help='enable/disable shadows' ");  
 	TwAddVarRW(controlBar, "godrays", TW_TYPE_BOOLCPP, &(g_godraysEnabled), 
-		" label='God rays enabled' group=Light help='enable/disable god rays' ");  
+		" label='lightshafts enabled' group=Light help='enable/disable god rays' ");  
 	TwAddVarRW(controlBar, "light_direction", TW_TYPE_DIR3F, &(g_light_direction), 
-		" label='light direction' group=Light help='adjust direction of light' ");  
+		" label='direction' group=Light help='adjust direction of light' ");  
 	TwAddVarRW(controlBar, "light_position", TW_TYPE_DIR3F, &(g_light_position), 
-		" label='light position' group=Light help='adjust position of light' ");  
-	
+		" label='position' group=Light help='adjust position of light' ");  
 	TwAddVarRW(controlBar, "light_dir", TW_TYPE_BOOLCPP, &(g_light_showDir), 
-		" label='Show direction' group=Light help='enable/disable showing lightdir' ");  
+		" label='show light volume' group=Light help='enable/disable showing lightdir' ");  
+// LOD transition
+	TwEnumVal trans_mode[] = 
+	{ 
+		{ LODTransitionMethod::HARD_SWITCH				, "hard switch"					},
+		{ LODTransitionMethod::CROSS_FADE				, "cross fade"					},
+		{ LODTransitionMethod::FADE_IN_BACKGROUND		, "fade in background"			},
+		{ LODTransitionMethod::SHIFTED_CROSS_FADE		, "shifted cross fade"			},
+		{ LODTransitionMethod::SHIFTED_SOFT_FADE		, "shifted soft fade"			}
+	};
+	TwType transition_method = TwDefineEnum("LOD_transition_method", trans_mode, 5);
+	TwAddVarRW(controlBar, "method", transition_method, &g_lodTransition, " group='LOD_transition' ");
+	TwAddVarRW(controlBar, "shift", TW_TYPE_FLOAT, & g_transitionShift, " group='LOD_transition' min=0 max=0.5 step=0.01");
+	TwAddVarRW(controlBar, "sw_lod_tresh0", TW_TYPE_FLOAT, & g_lodTresholds.x, " group='LOD_transition' label='treshold 0'  min=0 max=10000 step=0.1");
+	TwAddVarRW(controlBar, "sw_lod_tresh1", TW_TYPE_FLOAT, & g_lodTresholds.y, " group='LOD_transition' label='treshold 1'  min=0 max=10000 step=0.1");
+	TwAddVarRW(controlBar, "sw_lod_tresh2", TW_TYPE_FLOAT, & g_lodTresholds.z, " group='LOD_transition' label='treshold 2'  min=0 max=10000 step=0.1");
+	TwAddVarRW(controlBar, "sw_lod_tresh3", TW_TYPE_FLOAT, & g_lodTresholds.w, " group='LOD_transition' label='treshold 3'  min=0 max=10000 step=0.1");
 
-	TwAddVarRW(controlBar, "fbos", TW_TYPE_BOOLCPP, &(g_showTextures), 
-		" label='Show FBOs' group=Debug help='enable/disable FBO display' "); 
+// Leaf appearance
+	TwAddVarRW(controlBar, "Season",					TW_TYPE_FLOAT,		& g_season							, " group='Leaf_appearance' min=-1 max=2 step=0.01 label='season'");
+	TwAddVarRW(controlBar, "MultiplyAmbient",			TW_TYPE_FLOAT,		&g_leaves_MultiplyAmbient			, " group='Leaf_appearance' label='ambient coef.' min=0 max=5 step=0.001 ");
+	TwAddVarRW(controlBar, "MultiplyDiffuse",			TW_TYPE_FLOAT,		&g_leaves_MultiplyDiffuse			, " group='Leaf_appearance' label='diffuse coef.' min=0 max=5 step=0.001");
+	TwAddVarRW(controlBar, "MultiplySpecular",			TW_TYPE_FLOAT,		&g_leaves_MultiplySpecular			, " group='Leaf_appearance' label='specular coef.' min=0 max=10 step=0.001");
+	TwAddVarRW(controlBar, "MultiplyTranslucency",		TW_TYPE_FLOAT,		&g_leaves_MultiplyTranslucency		, " group='Leaf_appearance' label='translucency coef.' min=0 max=5 step=0.001");
+	TwAddVarRW(controlBar, "Shadow_intensity",			TW_TYPE_FLOAT,		&g_leaves_shadow_intensity			, " group='Leaf_appearance' label='shadow intensity' min=-10 max=10 step=0.001");
+
+// Tree Dynamics	
+	TwAddVarRW(controlBar, "wind_direction",  TW_TYPE_DIR3F, & act_wind_val.data,			" label='wind direction' group='Tree_Dynamics'");
+	TwAddVarRW(controlBar, "wind_strength",   TW_TYPE_FLOAT, & g_tree_wind_strength,		" label='wind strength' group='Tree_Dynamics' min=0 max=5 step=0.01 ");
+	TwAddSeparator(controlBar, NULL , " group='Tree_Dynamics' ");
+	TwAddVarRW(controlBar, "wood0_frequency", TW_TYPE_FLOAT, & g_tree_wood_frequencies.x,	" label='frequency 0'  group='Tree_Dynamics' min=0 max=100 step=0.05 ");
+	TwAddVarRW(controlBar, "wood1_frequency", TW_TYPE_FLOAT, & g_tree_wood_frequencies.y,	" label='frequency 1' group='Tree_Dynamics' min=0 max=100 step=0.05 ");
+	TwAddVarRW(controlBar, "wood2_frequency", TW_TYPE_FLOAT, & g_tree_wood_frequencies.z,	" label='frequency 2' group='Tree_Dynamics' min=0 max=100 step=0.05 ");
+	TwAddVarRW(controlBar, "wood3_frequency", TW_TYPE_FLOAT, & g_tree_wood_frequencies.w,	" label='frequency 3' group='Tree_Dynamics' min=0 max=100 step=0.05 ");
+	TwAddVarRW(controlBar, "leaf_frequency",  TW_TYPE_FLOAT, & g_tree_leaf_frequency,		" label='frequency leaves' group='Tree_Dynamics' min=0 max=100 step=0.1 ");
+	TwAddSeparator(controlBar, NULL, " group='Tree_Dynamics' ");
+	TwAddVarRW(controlBar, "wood0_amplitude", TW_TYPE_FLOAT, & g_tree_wood_amplitudes.x,	" label='amplitude 0' group='Tree_Dynamics' min=0 max=10 step=0.01 ");
+	TwAddVarRW(controlBar, "wood1_amplitude", TW_TYPE_FLOAT, & g_tree_wood_amplitudes.y,	" label='amplitude 1' group='Tree_Dynamics' min=0 max=10 step=0.01 ");
+	TwAddVarRW(controlBar, "wood2_amplitude", TW_TYPE_FLOAT, & g_tree_wood_amplitudes.z,	" label='amplitude 2' group='Tree_Dynamics' min=0 max=10 step=0.01 ");
+	TwAddVarRW(controlBar, "wood3_amplitude", TW_TYPE_FLOAT, & g_tree_wood_amplitudes.w,	" label='amplitude 3' group='Tree_Dynamics' min=0 max=10 step=0.01 ");
+	TwAddVarRW(controlBar, "leaf_amplitude",  TW_TYPE_FLOAT, & g_tree_leaf_amplitude,		" label='amplitude leaves' group='Tree_Dynamics' min=0 max=10 step=0.01 ");
 
 
-	TwAddVarRW(controlBar, "wind_direction",  TW_TYPE_DIR3F, & act_wind_val.data, "group='Tree'");
-	TwAddVarRW(controlBar, "wind_strength",   TW_TYPE_FLOAT, & g_tree_wind_strength, " group='Tree' min=0 max=5 step=0.01 ");
-	TwAddVarRW(controlBar, "wood0_frequency", TW_TYPE_FLOAT, & g_tree_wood_frequencies.x, " group='Tree' min=0 max=100 step=0.05 ");
-	TwAddVarRW(controlBar, "wood0_amplitude", TW_TYPE_FLOAT, & g_tree_wood_amplitudes.x, " group='Tree' min=0 max=10 step=0.01 ");
-	TwAddVarRW(controlBar, "wood1_frequency", TW_TYPE_FLOAT, & g_tree_wood_frequencies.y, " group='Tree' min=0 max=100 step=0.05 ");
-	TwAddVarRW(controlBar, "wood1_amplitude", TW_TYPE_FLOAT, & g_tree_wood_amplitudes.y, " group='Tree' min=0 max=10 step=0.01 ");
-	TwAddVarRW(controlBar, "wood2_frequency", TW_TYPE_FLOAT, & g_tree_wood_frequencies.z, " group='Tree' min=0 max=100 step=0.05 ");
-	TwAddVarRW(controlBar, "wood2_amplitude", TW_TYPE_FLOAT, & g_tree_wood_amplitudes.z, " group='Tree' min=0 max=10 step=0.01 ");
-	TwAddVarRW(controlBar, "wood3_frequency", TW_TYPE_FLOAT, & g_tree_wood_frequencies.w, " group='Tree' min=0 max=100 step=0.05 ");
-	TwAddVarRW(controlBar, "wood3_amplitude", TW_TYPE_FLOAT, & g_tree_wood_amplitudes.w, " group='Tree' min=0 max=10 step=0.01 ");
-	TwAddVarRW(controlBar, "leaf_frequency", TW_TYPE_FLOAT, & g_tree_leaf_frequency, " group='Tree' min=0 max=100 step=0.1 ");
-	TwAddVarRW(controlBar, "leaf_amplitude", TW_TYPE_FLOAT, & g_tree_leaf_amplitude, " group='Tree' min=0 max=10 step=0.01 ");
+// VEGETATION 
+	TwAddVarCB(controlBar, "count", TW_TYPE_INT32, cbSetDTreeCount, cbGetDTreeCount, NULL,						 " label='d.tree count' group='Vegetation' min=0 max=10000 step=1 ");
+	TwAddVarCB(controlBar, "mean_distance", TW_TYPE_FLOAT, cbSetDTreeMeanDistance, cbGetDTreeMeanDistance, NULL, " label='d.tree distance' group='Vegetation' min=0 max=100 step=0.1 ");
+	TwAddVarCB(controlBar, "area_factor", TW_TYPE_FLOAT, cbSetDTreeAreaFactor, cbGetDTreeAreaFactor, NULL,		 " label='d.tree area factor' group='Vegetation' min=0.001 max=1.0 step=0.01 ");
+	TwAddVarCB(controlBar, "min_level", TW_TYPE_FLOAT, cbSetDTreeMin, cbGetDTreeMin, NULL,						 " label='d.tree min height' group='Vegetation' min=-100 max=100 step=0.1 ");
+	TwAddVarCB(controlBar, "max_level", TW_TYPE_FLOAT, cbSetDTreeMax, cbGetDTreeMax, NULL,						 " label='d.tree max height' group='Vegetation' min=-100 max=100 step=0.1 ");
+	TwAddSeparator(controlBar, NULL, " group='Vegetation' ");
 
-	TwAddVarCB(controlBar, "count", TW_TYPE_INT32, cbSetDTreeCount, cbGetDTreeCount, NULL, " group='Tree' min=0 max=10000 step=1 ");
-	TwAddVarCB(controlBar, "mean_distance", TW_TYPE_FLOAT, cbSetDTreeMeanDistance, cbGetDTreeMeanDistance, NULL, " group='Tree' min=0 max=100 step=0.1 ");
-	TwAddVarCB(controlBar, "area_factor", TW_TYPE_FLOAT, cbSetDTreeAreaFactor, cbGetDTreeAreaFactor, NULL, " group='Tree' min=0.001 max=1.0 step=0.01 ");
-	TwAddVarCB(controlBar, "min_level", TW_TYPE_FLOAT, cbSetDTreeMin, cbGetDTreeMin, NULL, " group='Tree' min=-100 max=100 step=0.1 ");
-	TwAddVarCB(controlBar, "max_level", TW_TYPE_FLOAT, cbSetDTreeMax, cbGetDTreeMax, NULL, " group='Tree' min=-100 max=100 step=0.1 ");
+	TwAddVarCB(controlBar, "Grass count", TW_TYPE_INT32, cbSetGrassCount, cbGetGrassCount, NULL,	" label='grass count'  group='Vegetation' min=0 max=100000 step=1 ");
+	TwAddVarCB(controlBar, "Grass MIN", TW_TYPE_FLOAT, cbSetGrassMin, cbGetGrassMin, NULL,			" label='grass min height'  group='Vegetation' min=-5 max=30 step=1 ");
+	TwAddVarCB(controlBar, "Grass MAX", TW_TYPE_FLOAT, cbSetGrassMax, cbGetGrassMax, NULL,			" label='grass max height'  group='Vegetation' min=-5 max=30 step=1 ");
 
+	TwAddVarCB(controlBar, "Tree 1 count", TW_TYPE_INT32, cbSetTree1Count, cbGetTree1Count, NULL,				" label='tree1 count' group='Vegetation' min=0 max=10000 step=1 ");
+	TwAddVarCB(controlBar, "Tree1 MIN", TW_TYPE_FLOAT, cbSetTree1Min, cbGetTree1Min, NULL, " label='tree1 min height' group='Vegetation' min=-5 max=30 step=1 ");
+	TwAddVarCB(controlBar, "Tree1 MAX", TW_TYPE_FLOAT, cbSetTree1Max, cbGetTree1Max, NULL, " label='tree1 max height' group='Vegetation' min=-5 max=30 step=1 ");
 
+	
+	TwAddVarCB(controlBar, "Tree 2 count", TW_TYPE_INT32, cbSetTree2Count, cbGetTree2Count, NULL,				" label='tree 2 count' group='Vegetation' min=0 max=10000 step=1 ");
+	TwAddVarCB(controlBar, "Tree2 MIN", TW_TYPE_FLOAT, cbSetTree2Min, cbGetTree2Min, NULL, " label='tree2 min height' group='Vegetation' min=-5 max=30 step=1 ");
+	TwAddVarCB(controlBar, "Tree2 MAX", TW_TYPE_FLOAT, cbSetTree2Max, cbGetTree2Max, NULL, " label='tree2 max height' group='Vegetation' min=-5 max=30 step=1 ");
 
-	TwAddVarCB(controlBar, "Tree 2 count", TW_TYPE_INT32, cbSetTree2Count, cbGetTree2Count, NULL, " group='Vegetation' min=0 max=10000 step=1 ");
-	TwAddVarCB(controlBar, "Tree 1 count", TW_TYPE_INT32, cbSetTree1Count, cbGetTree1Count, NULL, " group='Vegetation' min=0 max=10000 step=1 ");
-	TwAddVarCB(controlBar, "Grass count", TW_TYPE_INT32, cbSetGrassCount, cbGetGrassCount, NULL, " group='Vegetation' min=0 max=100000 step=1 ");
-
-	TwAddVarRW(controlBar, "Change1", TW_TYPE_FLOAT, &g_terrain_border_values.x, " group='Surfaces' label='Snow height' min=-5 max=30 step=0.5 help='Snow height' ");
-	TwAddVarRW(controlBar, "Change1a", TW_TYPE_FLOAT, &g_terrain_border_widths.x, " group='Surfaces' label='Snow-rock transition' min=0 max=5 step=0.5 help='Transition 1' ");
-
-	TwAddVarRW(controlBar, "Change2", TW_TYPE_FLOAT, &g_terrain_border_values.y, " group='Surfaces' label='Rock height' min=-5 max=30 step=0.5 help='Rock height' ");
-	TwAddVarRW(controlBar, "Change2a", TW_TYPE_FLOAT, &g_terrain_border_widths.y, " group='Surfaces' label='Rock-grass transition' min=0 max=5 step=0.5 help='Transition 2' ");
-
-	TwAddVarRW(controlBar, "Change3", TW_TYPE_FLOAT, &g_terrain_border_values.z, " group='Surfaces' label='Grass height' min=-5 max=30 step=0.5 help='Grass height' ");
-	TwAddVarRW(controlBar, "Change3a", TW_TYPE_FLOAT, &g_terrain_border_widths.z, " group='Surfaces' label='Grass-clay transition' min=0 max=5 step=0.5 help='Transition 3' ");
-
-	TwAddVarRW(controlBar, "Change4", TW_TYPE_FLOAT, &g_terrain_border_values.w, " group='Surfaces' label='Clay height' min=-5 max=30 step=0.5 help='Clay height' ");
-	TwAddVarRW(controlBar, "Change4a", TW_TYPE_FLOAT, &g_terrain_border_widths.w, " group='Surfaces' label='Clay-ground transition' min=0 max=5 step=0.5 help='Transition 4' ");
-
-	TwAddVarCB(controlBar, "Tree2 MIN", TW_TYPE_FLOAT, cbSetTree2Min, cbGetTree2Min, NULL, " group='Levels' min=-5 max=30 step=1 ");
-	TwAddVarCB(controlBar, "Tree2 MAX", TW_TYPE_FLOAT, cbSetTree2Max, cbGetTree2Max, NULL, " group='Levels' min=-5 max=30 step=1 ");
-
-	TwAddVarCB(controlBar, "Tree1 MIN", TW_TYPE_FLOAT, cbSetTree1Min, cbGetTree1Min, NULL, " group='Levels' min=-5 max=30 step=1 ");
-	TwAddVarCB(controlBar, "Tree1 MAX", TW_TYPE_FLOAT, cbSetTree1Max, cbGetTree1Max, NULL, " group='Levels' min=-5 max=30 step=1 ");
-
-	TwAddVarCB(controlBar, "Grass MIN", TW_TYPE_FLOAT, cbSetGrassMin, cbGetGrassMin, NULL, " group='Levels' min=-5 max=30 step=1 ");
-	TwAddVarCB(controlBar, "Grass MAX", TW_TYPE_FLOAT, cbSetGrassMax, cbGetGrassMax, NULL, " group='Levels' min=-5 max=30 step=1 ");
-
+	TwDefine(" Controls/Statistics opened=false ");
 	TwDefine(" Controls/Vegetation opened=false ");
-	TwDefine(" Controls/Levels opened=false ");
-	TwDefine(" Controls/Surfaces opened=false ");
-	TwDefine(" Controls/Surfaces opened=false ");
-	TwDefine(" Controls/Debug opened=false ");
-	TwDefine(" Controls/Leaves opened=false ");
-	TwDefine(" Controls/LOD opened=false ");
+	TwDefine(" Controls/Light opened=false ");
+	TwDefine(" Controls/Camera opened=false ");
+	TwDefine(" Controls/Leaf_appearance opened=false ");
+	TwDefine(" Controls/LOD_transition opened=false ");
+	TwDefine(" Controls/Tree_Dynamics opened=false ");
 
 #endif
 }
@@ -922,6 +867,9 @@ void cbMousePositionChanged(int x, int y)
 //-----------------------------------------------------------------------------
 int main(int argc, char* argv[]) 
 {
+	printf(" _        _______ _________          _______  _______  _______ \n( (    /|(  ___  )\\__   __/|\\     /|(  ____ )(  ____ \\(  ___  )\n|  \\  ( || (   ) |   ) (   | )   ( || (    )|| (    \\/| (   ) |\n|   \\ | || (___) |   | |   | |   | || (____)|| (__    | (___) |\n| (\\ \\) ||  ___  |   | |   | |   | ||     __)|  __)   |  ___  |\n| | \\   || (   ) |   | |   | |   | || (\\ (   | (      | (   ) |\n| )  \\  || )   ( |   | |   | (___) || ) \\ \\__| (____/\\| )   ( |\n|/    )_)|/     \\|   )_(   (_______)|/   \\__/(_______/|/     \\|\n");
+	printf("                                              Adam Kucera, 2011\n");
+	printf("===============================================================\n");
 	if (argc>1){
 		g_samples = atoi(argv[1]); // samples requested 
 	} else {

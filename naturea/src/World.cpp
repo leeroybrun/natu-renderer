@@ -404,7 +404,7 @@ void World::init()
 						500,
 						500 );
 	count = grass_planter.plantVegetationCount(g_GrassCount);
-	printf("count: %i\n", count);
+	printf("\tcount: %i\n", count);
 
 	// plant trees
 	printf("Planting trees1...\n");
@@ -420,7 +420,7 @@ void World::init()
 						100,
 						100 );
  	count = tree1_planter.plantVegetationCount(g_Tree1Count);
-	printf("count: %i\n", count);
+	printf("\tcount: %i\n", count);
 
 	// plant trees
 	printf("Planting trees2...\n");
@@ -436,12 +436,12 @@ void World::init()
 						100,
 						100 );
  	count = tree2_planter.plantVegetationCount(g_Tree2Count);
-	printf("count: %i\n", count);
+	printf("\tcount: %i\n", count);
 
 //===============================================================================
 // TREE INIT
 //===============================================================================
-	printf("---- DYNAMIC TREE INIT BEGIN");
+	printf("---- DYNAMIC TREE INIT BEGIN ----\n");
 	p_dtree = new DTree(&textureManager, &shaderManager);
 		p_dtree->loadOBJT( DYN_TREE::OBJT_FILENAME );
 		//p_dtree->init();
@@ -450,11 +450,12 @@ void World::init()
 
 	// positions
 		dtree_planter.init(p_terrain, p_dtree);
+		dtree_planter.size_factor = g_tree_areaFactor;
 		dtree_planter.createCandidates(g_dtreemin, g_dtreemax, g_tree_dither, g_tree_mean_distance);
-		dtree_planter.setInstanceCount(10);
-	
+		dtree_planter.setInstanceCount(g_TreeDCount);
+		
 	p_dtree->init(); 
-	printf("----- END DYNAMIC TREE INIT ");
+	printf("----- END DYNAMIC TREE INIT ----\n");
 //===============================================================================
 // END TREE INIT 
 //===============================================================================

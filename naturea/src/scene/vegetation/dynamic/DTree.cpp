@@ -157,7 +157,7 @@ DTree::~DTree(void)
 
 bool DTree::loadOBJT(string filename)
 {
-	printf(" DYN_TREE load %s\n", filename.c_str());
+	printf(" DYNAMIC_TREE load %s\n", filename.c_str());
 	OBJTfile file;
 	file.loadFromFile(filename.c_str());
 
@@ -323,7 +323,7 @@ bool DTree::loadOBJT(string filename)
 		leaves.push_back(leaf);
 	}
 
-	printf("DYN_TREE load successfull (branches: %d, leaves: %d)\n", branchCount, leafCnt);
+	printf("DYNAMIC_TREE load successfull (branches: %d, leaves: %d)\n", branchCount, leafCnt);
 	return true;
 }
 
@@ -766,7 +766,7 @@ Texture* DTree::createLODdataTexture(vector<Matrix4x4*> &MVPs)
 	for (int si=0; si<sliceCount; si++){
 		// get MVP
 		mvp = MVPs[si];
-		mvp->printOut();
+		//mvp->printOut();
 		v4 origin = ((*mvp) * v4(0.0, 0.0, 0.0, 1.0)).ndcoord2texcoord();
 		//printf("slice %i mvp: \n", si);
 		//mvp->printOut();
@@ -2601,54 +2601,24 @@ void DTree::makeTransition(float control, bool maskOld, DTreeInstanceData* insta
 	switch (g_lodTransition){
 			case LODTransitionMethod::HARD_SWITCH:
 				if (control<0.5){
-					(this->*drawLODA)(instance, 1.0);
+					a2 = 1.0;
+					a1 = 0.0;
 				} else {
-					(this->*drawLODB)(instance, 1.0);
+					a2 = 0.0;
+					a1 = 1.0;
 				}
 				break;
 			case LODTransitionMethod::CROSS_FADE:
-				if (control<0.5){
-					// show LOD 1 
-					glDepthMask(GL_FALSE);
-
-					(this->*drawLODB)(instance, control);
-					glDepthMask(GL_TRUE);
-
-					// show LOD 0
-					(this->*drawLODA)(instance, 1.0-control);			
-				} else {			
-					// show LOD 0
-					glDepthMask(GL_FALSE);
-					//instance->alpha = 1.0-control;
-					(this->*drawLODA)(instance, 1.0-control);
-					glDepthMask(GL_TRUE);
-
-					// show LOD 1 
-					//instance->alpha = control;
-					(this->*drawLODB)(instance, control);			
-				}
+				a1 = control;
+				a2 = 1.0-control;			
 				break;
 			case LODTransitionMethod::FADE_IN_BACKGROUND:
 				if (control<0.5){
-					// show LOD 1 
-					glDepthMask(GL_FALSE);
-					//instance->alpha = 2*control;
-					(this->*drawLODB)(instance, 2*control);
-					glDepthMask(GL_TRUE);
-
-					// show LOD 0
-					//instance->alpha = 1.0;
-					(this->*drawLODA)(instance,1.0);			
+					a1 = 2*control;
+					a2 = 1.0;			
 				} else {			
-					// show LOD 0
-					glDepthMask(GL_FALSE);
-					//instance->alpha = 2.0*(1.0-control);
-					(this->*drawLODA)(instance, 2.0*(1.0-control));
-					glDepthMask(GL_TRUE);
-
-					// show LOD 1 
-					//instance->alpha = 1.0;
-					(this->*drawLODB)(instance, 1.0);			
+					a2 = 2.0*(1.0-control);
+					a1 = 1.0;			
 				}
 				break;
 			case LODTransitionMethod::SHIFTED_CROSS_FADE:
@@ -2656,147 +2626,61 @@ void DTree::makeTransition(float control, bool maskOld, DTreeInstanceData* insta
 				c = 1.0f/(1.f - shift);
 				a1 = min(1.f, max(0.f , control*c));
 				a2 = min(1.f, max(0.f, 1.f-(control-shift)*c));
-				if (control<0.5){
-					if (maskOld){
-						// show LOD 0
-						glDepthMask(GL_FALSE);
-						//instance->alpha = a2;
-						(this->*drawLODA)(instance, a2);	
-						glDepthMask(GL_TRUE);
-
-						// show LOD 1 
-						//instance->alpha = a1;
-						(this->*drawLODB)(instance, a1);
-					} else {
-						// show LOD 0						
-						//instance->alpha = a2;
-						(this->*drawLODA)(instance, a2);	
-						
-						// show LOD 1 
-						glDepthMask(GL_FALSE);
-						//instance->alpha = a1;
-						(this->*drawLODB)(instance, a1);
-						glDepthMask(GL_TRUE);
-					}
-
-				} else {			
-					if (maskOld){
-						// show LOD 1 
-						glDepthMask(GL_FALSE);
-						//instance->alpha = a1;
-						(this->*drawLODB)(instance, a1);	
-						glDepthMask(GL_TRUE);
-
-						// show LOD 0
-						//instance->alpha = a2;
-						(this->*drawLODA)(instance, a2);
-					} else {
-						// show LOD 1 
-						
-						//instance->alpha = a1;
-						(this->*drawLODB)(instance, a1);	
-						
-
-						// show LOD 0
-						glDepthMask(GL_FALSE);
-						//instance->alpha = a2;
-						(this->*drawLODA)(instance, a2);
-						glDepthMask(GL_TRUE);
-					}
-					
-				}
 				break;
 			case LODTransitionMethod::SHIFTED_SOFT_FADE:
 				shift = g_transitionShift;
 				c = 1.0f/(1.f - shift);
 				a1 = 1.f - (smoothTransitionCos(c*(control)*PI)*0.5f + 0.5f);
 				a2 = smoothTransitionCos(c*(control-shift)*PI)*0.5f + 0.5f;
-
-				//printf("LODA: %f, LODB: %f\n", a2, a1);
-				if (maskOld){
-					if (maskOld){
-						// show LOD 0
-						glDepthMask(GL_FALSE);
-						//instance->alpha = a2;
-						(this->*drawLODA)(instance, a2);	
-						glDepthMask(GL_TRUE);
-
-						// show LOD 1 
-						//instance->alpha = a1;
-						(this->*drawLODB)(instance, a1);
-					} else {
-						// show LOD 0						
-						//instance->alpha = a2;
-						(this->*drawLODA)(instance, a2);	
-						
-						// show LOD 1 
-						glDepthMask(GL_FALSE);
-						//instance->alpha = a1;
-						(this->*drawLODB)(instance, a1);
-						glDepthMask(GL_TRUE);
-					}
-				} else {
-					// LOD 01
-					if (g_Draw2Shadowmap){
-						//glDepthMask(GL_FALSE);
-						// show LOD 1 
-						//instance->alpha = a1;						
-						(this->*drawLODB)(instance, a1);
-						//glDepthMask(GL_TRUE);
-						
-						// show LOD 0	
-						//instance->alpha = a2;
-						(this->*drawLODA)(instance, a2);
-					} else {
-						glDepthMask(GL_FALSE);
-						// show LOD 1 
-						//instance->alpha = a1;						
-						(this->*drawLODB)(instance, a1);
-						glDepthMask(GL_TRUE);
-
-						// show LOD 0	
-						//instance->alpha = a2;
-						(this->*drawLODA)(instance, a2);
-					}
-					/*
-					if (control<0.5){
-						//glDepthMask(GL_FALSE);
-						// show LOD 1 
-						//instance->alpha = a1;						
-						(this->*drawLODB)(instance, a1);
-						//glDepthMask(GL_TRUE);
-						
-						// show LOD 0	
-						//instance->alpha = a2;
-						(this->*drawLODA)(instance, a2);
-					} else {
-						//glDepthMask(GL_FALSE);
-						// show LOD 1 
-						//instance->alpha = a1;						
-						(this->*drawLODB)(instance, a1);
-						//glDepthMask(GL_TRUE);
-
-						// show LOD 0	
-						//instance->alpha = a2;
-						(this->*drawLODA)(instance, a2);
-					}
-					*/
-				}
 				break;
 		}
+
+		if (maskOld){
+			// swap drawing commands
+			//void (DTree::*drawLODempty)(DTreeInstanceData*, float) = drawLODA;
+			//drawLODA = drawLODB;
+			//drawLODB = drawLODempty;
+		}
+
+
+		if (control<0.5){
+			// show LOD B 
+			if (!g_Draw2Shadowmap){
+				glDepthMask(GL_FALSE);
+				(this->*drawLODB)(instance, a1);
+				glDepthMask(GL_TRUE);
+			} else {
+				(this->*drawLODB)(instance, a1);
+			}
+
+			// show LOD A						
+			(this->*drawLODA)(instance, a2);				
+			
+		} else {		
+			// show LOD B			
+			(this->*drawLODB)(instance, a1);
+			// show LOD A
+			if (!g_Draw2Shadowmap){
+				glDepthMask(GL_FALSE);
+				(this->*drawLODA)(instance, a2);
+				glDepthMask(GL_TRUE);
+			} else {
+				(this->*drawLODA)(instance, a2);
+			}
+			
+		}
+
+
 }
 
 void DTree::render(){
-
-
 	glBeginQuery(GL_SAMPLES_PASSED, samples_query_id1);
 	int i;
 	DTreeInstanceData* instance;
+
 	// render LOD2 instances
 	isInstancingEnabled = true;
 	draw_all_instances_LOD2b();
-	
-
 
 	// render LOD1-LOD2 transitioning instances
 	isInstancingEnabled = false;
@@ -2817,7 +2701,6 @@ void DTree::render(){
 		makeTransition(alpha,false, instance, &DTree::draw_instance_LOD0, &DTree::draw_instance_LOD1);
 	}
 	
-
 	// render LOD0 instances
 	isInstancingEnabled = false;
 	for (i=0; i<countRenderQueues[0]; i++){
@@ -3299,10 +3182,10 @@ void DTree::initLOD1()
 
 	// init shaders
 	lod1_shader = new Shader("lod1");
-	lod1_shader->loadShader("shaders/test3_vs.glsl", "shaders/test3_fs.glsl");
+	lod1_shader->loadShader(DYN_TREE::SHADER_LOD_V, DYN_TREE::SHADER_LOD_F);
 	
 	lod1_shader_shadow = new Shader("lod1_shadow");
-	lod1_shader_shadow->loadShader("shaders/test5_shadow_vs.glsl", "shaders/test5_shadow_fs.glsl");
+	lod1_shader_shadow->loadShader(DYN_TREE::SHADER_SHADOW_LOD_V, DYN_TREE::SHADER_SHADOW_LOD_F);
 	
 	lod1_jColorMap			 ->textureUnitNumber = 0;
 	lod1_jNormalMap			 ->textureUnitNumber = 0;
@@ -3369,9 +3252,7 @@ void DTree::initLOD1()
 	lod1_shader->registerUniform("MultiplyDiffuse",				UniformType::F1,	& g_leaves_MultiplyDiffuse);
 	lod1_shader->registerUniform("MultiplySpecular",			UniformType::F1,	& g_leaves_MultiplySpecular);
 	lod1_shader->registerUniform("MultiplyTranslucency",		UniformType::F1,	& g_leaves_MultiplyTranslucency);
-	lod1_shader->registerUniform("ReduceTranslucencyInShadow",	UniformType::F1,	& g_leaves_ReduceTranslucencyInShadow);
 	lod1_shader->registerUniform("shadow_intensity",			UniformType::F1,	& g_leaves_shadow_intensity);
-	lod1_shader->registerUniform("LightDiffuseColor",			UniformType::F3,	& g_leaves_LightDiffuseColor.data);
 	lod1_shader->registerUniform("branch_count",				UniformType::F1,	& this->branchCountF);
 	lod1_shader->registerUniform("sliceCnt",					UniformType::F1,	& this->lod1_sliceCount);
 	lod1_shader->registerUniform("sliceSetsCnt",				UniformType::F1,	& this->lod1_sliceSetCount);
@@ -3700,10 +3581,10 @@ void DTree::initLOD2b()
 
 	// init shaders
 	lod2_shader = new Shader("lod2");
-	lod2_shader->loadShader("shaders/test3_vs.glsl", "shaders/test3_fs.glsl");
+	lod2_shader->loadShader(DYN_TREE::SHADER_LOD_V, DYN_TREE::SHADER_LOD_F);
 	
 	lod2_shader_shadow = new Shader("lod2_shadow");
-	lod2_shader_shadow->loadShader("shaders/test5_shadow_vs.glsl", "shaders/test5_shadow_fs.glsl");
+	lod2_shader_shadow->loadShader(DYN_TREE::SHADER_SHADOW_LOD_V, DYN_TREE::SHADER_SHADOW_LOD_F);
 	
 	lod2_jColorMap			->textureUnitNumber = 0;
 	lod2_jNormalMap			->textureUnitNumber = 0;
@@ -3755,9 +3636,7 @@ void DTree::initLOD2b()
 	lod2_shader->registerUniform("MultiplyDiffuse"			, UniformType::F1,	& g_leaves_MultiplyDiffuse		);
 	lod2_shader->registerUniform("MultiplySpecular"			, UniformType::F1,	& g_leaves_MultiplySpecular		);
 	lod2_shader->registerUniform("MultiplyTranslucency"		, UniformType::F1,	& g_leaves_MultiplyTranslucency	);
-	lod2_shader->registerUniform("ReduceTranslucencyInShadow", UniformType::F1,	& g_leaves_ReduceTranslucencyInShadow);
 	lod2_shader->registerUniform("shadow_intensity"			, UniformType::F1,	& g_leaves_shadow_intensity		);
-	lod2_shader->registerUniform("LightDiffuseColor"		, UniformType::F3,	& g_leaves_LightDiffuseColor.data);
 	lod2_shader->registerUniform("branch_count"				, UniformType::F1,	& this->branchCountF			);
 	lod2_shader->registerUniform("sliceCnt"					, UniformType::F1,	& this->lod2_sliceCount			);
 	lod2_shader->registerUniform("sliceSetsCnt"				, UniformType::F1,	& this->lod2_sliceSetCount		);
@@ -4008,7 +3887,7 @@ void DTree::initLOD2()
 
 	// create data texture for slices...
 	SAFE_DELETE_PTR(lod2dataTexture);
-	printf("LOD2 datatexture: ");
+	//printf("LOD2 datatexture: ");
 	lod2dataTexture = createLODdataTexture(MVPmatrices);
 	// clear matrices
 	for (int t=0; t<2; t++){
@@ -4625,7 +4504,6 @@ void DTree::createSlices(vector<DTreeSlice*>* slices, int count, int resolution_
 
 		// prepare data texture from branch texture
 		glDeleteFramebuffersEXT(1, &fbo);
-		
 		glGenFramebuffersEXT(1, &fbo);
 		glDisable(GL_DEPTH_TEST);
 			glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fbo);
@@ -4657,8 +4535,6 @@ void DTree::createSlices(vector<DTreeSlice*>* slices, int count, int resolution_
 			glEnable(GL_DEPTH_TEST);
 		// return to normal screen rendering	
 		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
-		// branchmap not useful anymore, delete it
-		SAFE_DELETE_PTR(slice->branchmap);
 		
 		glDeleteFramebuffersEXT(1, &fbo);
 		//*/

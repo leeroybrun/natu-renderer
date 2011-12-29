@@ -38,7 +38,7 @@ attribute vec4			x_vals;
 attribute float			branch_index;
 attribute vec2			texCoords0;
 
-varying float			time_offset_v;
+varying float			instanceSpecificNumber;
 varying vec3			normal_vs 	  ;
 varying vec3			tangent_vs	  ;
 
@@ -319,7 +319,7 @@ void main()
     //vec3 tang	= tangent;
     //float bi	= branch_index;
     //vec4 x		= x_vals;
-	time_offset_v = time_offset;
+	instanceSpecificNumber = time_offset;
 	vec3 leafOrigin = vec3(0.0, 0.0, 0.0);
 	
 	animateBranchVertex(leafOrigin);
