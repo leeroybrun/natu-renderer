@@ -50,7 +50,7 @@ varying vec3			o_normal;
 varying vec3			ts_viewDir_v;
 varying vec3			ts_lightDir_v;
 
-varying float			time_offset_v;
+varying float			instanceSpecificNumber;
 varying float			leafSpecificNumber;
 								  
 vec3			ts_viewDir		= normalize(ts_viewDir_v);
@@ -233,11 +233,9 @@ void colorize(out vec4 outColor, in vec3 normal, in vec3 tangent, in vec3 bitang
 	}
 	
 	// SEASON COLOR
-	vec2 seasonCoord = vec2(0.5, season + 0.2*leafSpecificNumber - 0.0001*time_offset_v);
+	vec2 seasonCoord = vec2(0.5, season + 0.2*leafSpecificNumber - 0.0001*instanceSpecificNumber);
 	
 	vec4 seasonColor =  texture2D(seasonMap, seasonCoord);
-	
-		
 	if (seasonColor.a<0.5){
 		discard;
 	}
@@ -258,10 +256,9 @@ void colorize(out vec4 outColor, in vec3 normal, in vec3 tangent, in vec3 bitang
 
 
 	// SHADOW MAPPING //
-	float shadow_intensity = 1.0;
-	vec3 shadow_color = vec3(0.2, 0.2, 0.2);
+	float shadow = 1.0;
 	if (shadowMappingEnabled>0){		
-		shadow_intensity = getShadowIntensity(lightSpacePosition);
+		shadow = (1.0 - (1.0 - getShadowIntensity(lightSpacePosition))*(shadow_intensity));
 	}
 	// END SHADOW MAPPING //
 
@@ -307,18 +304,18 @@ void colorize(out vec4 outColor, in vec3 normal, in vec3 tangent, in vec3 bitang
 
 	// Calculate diffuse lighting.
 	diffuse_term = max(0.0, dot(ts_lightDir, ts_normal));
-	diffuse_term = min(diffuse_term, shadow_intensity);
+	diffuse_term = min(diffuse_term, shadow);
 
 	// Calculate lighting terms.
 	
 	vec3 translucency_in_light = translucency * other_cpvcolor.rgb * gl_LightSource[0].diffuse.rgb ;
 
-	vec3 final_translucency = translucency_color.rgb * translucency_in_light * MultiplyTranslucency * (shadow_intensity );
+	vec3 final_translucency = translucency_color.rgb * translucency_in_light * MultiplyTranslucency * (shadow);
 	
 	vec4 final_ambient = cpvcolor * gl_LightSource[0].ambient  * MultiplyAmbient;
 	vec4 final_diffuse = diffuse_term * gl_FrontLightProduct[0].diffuse * MultiplyDiffuse;
 	
-	vec4 final_specular = specularity * shadow_intensity * gl_FrontLightProduct[0].diffuse * MultiplySpecular;
+	vec4 final_specular = specularity * shadow * gl_FrontLightProduct[0].diffuse * MultiplySpecular;
 	//outColor = vec4(vec3(translucency),1.0);// * final_ambient.rgb + 0.0001*(final_diffuse.rgb + final_specular.rgb + final_translucency);	
 	outColor.rgb = (decal_color.rgb * (final_ambient.rgb + final_diffuse.rgb) + final_specular.rgb + final_translucency); //
 	//outColor.rgb = final_specular.rgb; 
@@ -357,7 +354,7 @@ void main()
 	*/
 	gl_FragData[0] = color;
 	//gl_FragData[0] = color;
-	gl_FragData[1] = color * vec4(0.1, 0.1, 0.1, 1.0);
+	gl_FragData[1] = color * vec4(0.3, 0.3, 0.3, 1.0);
 	//gl_FragData[1] =vec4(0.0, 0.0, 0.0, 1.0);
 	
 }

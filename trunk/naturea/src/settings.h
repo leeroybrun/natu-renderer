@@ -185,7 +185,7 @@ namespace DYN_TREE
 	const static char * SHADER_LEAF_GN			= "shaders/dynamic_tree/n_leaf_gs.glsl";
 	
 	
-	// LOD
+	// prepare LOD
 	const static char * SHADER_BRANCH_LOD_V		= "shaders/dynamic_tree/lod_branch_vs.glsl";
 	const static char * SHADER_BRANCH_LOD_F		= "shaders/dynamic_tree/lod_branch_fs.glsl";
 	const static char * SHADER_LEAF_LOD_V		= "shaders/dynamic_tree/lod_leaf_vs.glsl";
@@ -197,12 +197,20 @@ namespace DYN_TREE
 	const static char * SHADER_JOIN_V			= "shaders/dynamic_tree/join_vs.glsl";
 	const static char * SHADER_JOIN_F			= "shaders/dynamic_tree/join_fs.glsl";
 
+	// LOD
+	const static char * SHADER_LOD_V		= "shaders/dynamic_tree/lod_vs.glsl";
+	const static char * SHADER_LOD_F		= "shaders/dynamic_tree/lod_fs.glsl";
+	const static char * SHADER_SHADOW_LOD_V	= "shaders/dynamic_tree/lod_shadow_vs.glsl";
+	const static char * SHADER_SHADOW_LOD_F	= "shaders/dynamic_tree/lod_shadow_fs.glsl";
+
+
+
 	const static int	MAX_HIERARCHY_DEPTH		= 4;
 	const static float	LEAF_SIZE				= 0.04;
-	const static char	*TEX_LEAF1				= "textures/dynamic_tree/leaf2r.png";
+	//const static char	*TEX_LEAF1				= "textures/dynamic_tree/leaf2r.png";
 	const static char	*TEX_WOOD1				= "textures/dynamic_tree/bark2_decal.png";
-	const static char	*BRANCH_NOISE_TEXTURE	= "textures/dynamic_tree/habel/Noise_20.png";
-	const static char	*LEAF_NOISE_TEXTURE		= "textures/dynamic_tree/habel/Noise_53.png";
+	const static char	*BRANCH_NOISE_TEXTURE	= "textures/dynamic_tree/Noise_20.png";
+	const static char	*LEAF_NOISE_TEXTURE		= "textures/dynamic_tree/Noise_53.png";
 
 	//const static char	*TEX_FDM				= "textures/dynamic_tree/leaf2.png";
 	//const static char	*TEX_FNM				= "textures/dynamic_tree/leaf2normal.png";

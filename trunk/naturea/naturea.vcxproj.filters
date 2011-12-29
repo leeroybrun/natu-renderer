@@ -270,12 +270,6 @@
     <Filter Include="DATA\textures">
       <UniqueIdentifier>{5a99edea-6264-4a11-8306-a7bee9c1dbab}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Shaders\testing">
-      <UniqueIdentifier>{92ca7892-38f4-4a1a-aa84-bfae51e5bf49}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Shaders\dynaTree\LOD">
-      <UniqueIdentifier>{f01fc0ef-1520-4605-9d56-5b46956d6a5f}</UniqueIdentifier>
-    </Filter>
     <Filter Include="_binaries">
       <UniqueIdentifier>{391f5d9e-345b-4731-b8cf-cffe27ca35f0}</UniqueIdentifier>
     </Filter>
@@ -308,6 +302,12 @@
     </Filter>
     <Filter Include="Shaders\msTexture">
       <UniqueIdentifier>{2b351b1b-78fe-4991-8be4-e38883ff7f21}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders\dynaTree\prepareLOD">
+      <UniqueIdentifier>{f01fc0ef-1520-4605-9d56-5b46956d6a5f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders\dynaTree\LOD">
+      <UniqueIdentifier>{2740d746-3ddc-414b-83e9-15bd2ae4d8f9}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -687,18 +687,6 @@
     <None Include="textures\dynamic_tree\habel\sky_sun.png">
       <Filter>DATA\textures</Filter>
     </None>
-    <None Include="shaders\test_vs.glsl">
-      <Filter>Shaders\testing</Filter>
-    </None>
-    <None Include="shaders\test_fs.glsl">
-      <Filter>Shaders\testing</Filter>
-    </None>
-    <None Include="shaders\test2_fs.glsl">
-      <Filter>Shaders\testing</Filter>
-    </None>
-    <None Include="shaders\test2_vs.glsl">
-      <Filter>Shaders\testing</Filter>
-    </None>
     <None Include="shaders\dynamic_tree\preprocess_fs.glsl">
       <Filter>Shaders\dynaTree</Filter>
     </None>
@@ -709,16 +697,16 @@
       <Filter>Shaders\dynaTree</Filter>
     </None>
     <None Include="shaders\dynamic_tree\lod_branch_fs.glsl">
-      <Filter>Shaders\dynaTree\LOD</Filter>
+      <Filter>Shaders\dynaTree\prepareLOD</Filter>
     </None>
     <None Include="shaders\dynamic_tree\lod_branch_vs.glsl">
-      <Filter>Shaders\dynaTree\LOD</Filter>
+      <Filter>Shaders\dynaTree\prepareLOD</Filter>
     </None>
     <None Include="shaders\dynamic_tree\lod_leaf_fs.glsl">
-      <Filter>Shaders\dynaTree\LOD</Filter>
+      <Filter>Shaders\dynaTree\prepareLOD</Filter>
     </None>
     <None Include="shaders\dynamic_tree\lod_leaf_vs.glsl">
-      <Filter>Shaders\dynaTree\LOD</Filter>
+      <Filter>Shaders\dynaTree\prepareLOD</Filter>
     </None>
     <None Include="run.bat">
       <Filter>_binaries</Filter>
@@ -743,21 +731,6 @@
     </None>
     <None Include="shaders\dynamic_tree\join_vs.glsl">
       <Filter>Shaders\dynaTree</Filter>
-    </None>
-    <None Include="shaders\test3_fs.glsl">
-      <Filter>Shaders\testing</Filter>
-    </None>
-    <None Include="shaders\test3_vs.glsl">
-      <Filter>Shaders\testing</Filter>
-    </None>
-    <None Include="shaders\test_instancing_fs.glsl">
-      <Filter>Shaders\testing</Filter>
-    </None>
-    <None Include="shaders\test_instancing_vs.glsl">
-      <Filter>Shaders\testing</Filter>
-    </None>
-    <None Include="shaders\test3_vs_instanced.glsl">
-      <Filter>Shaders\testing</Filter>
     </None>
     <None Include="shaders\dynamic_tree\n_branch_gs.glsl">
       <Filter>Shaders\dynaTree\debug</Filter>
@@ -819,20 +792,8 @@
     <None Include="textures\dynamic_tree\seasonMap2.png">
       <Filter>DATA\textures</Filter>
     </None>
-    <None Include="shaders\test4_fs.glsl">
-      <Filter>Shaders\testing</Filter>
-    </None>
-    <None Include="shaders\test4_vs.glsl">
-      <Filter>Shaders\testing</Filter>
-    </None>
     <None Include="media\background.mp3">
       <Filter>DATA\sounds</Filter>
-    </None>
-    <None Include="shaders\test5_shadow_fs.glsl">
-      <Filter>Shaders\testing</Filter>
-    </None>
-    <None Include="shaders\test5_shadow_vs.glsl">
-      <Filter>Shaders\testing</Filter>
     </None>
     <None Include="shaders\dynamic_tree\shadow\branch_shadow_fs.glsl">
       <Filter>Shaders\dynaTree\forShadow</Filter>
@@ -851,12 +812,6 @@
     </None>
     <None Include="shaders\sun_vs.glsl">
       <Filter>Shaders</Filter>
-    </None>
-    <None Include="shaders\test6_shadow_fs.glsl">
-      <Filter>Shaders\testing</Filter>
-    </None>
-    <None Include="shaders\test6_shadow_vs.glsl">
-      <Filter>Shaders\testing</Filter>
     </None>
     <None Include="bin\release\fmodex.dll">
       <Filter>_binaries</Filter>
@@ -884,6 +839,18 @@
     </None>
     <None Include="shaders\MStexture\ms_vs.glsl">
       <Filter>Shaders\msTexture</Filter>
+    </None>
+    <None Include="shaders\dynamic_tree\lod_fs.glsl">
+      <Filter>Shaders\dynaTree\LOD</Filter>
+    </None>
+    <None Include="shaders\dynamic_tree\lod_vs.glsl">
+      <Filter>Shaders\dynaTree\LOD</Filter>
+    </None>
+    <None Include="shaders\dynamic_tree\lod_shadow_fs.glsl">
+      <Filter>Shaders\dynaTree\LOD</Filter>
+    </None>
+    <None Include="shaders\dynamic_tree\lod_shadow_vs.glsl">
+      <Filter>Shaders\dynaTree\LOD</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

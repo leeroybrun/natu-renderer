@@ -329,9 +329,11 @@ void Shader::destroy()
 int		Shader::getGLLocation(string var_name)
 {
 	int out = glGetUniformLocation(programID, var_name.c_str());
+	/*
 	if (out<0){
 		printf("shader [%s]: uniform '%s' not found\n", this->name.c_str(), var_name.c_str() );
 	}
+	*/
 	return out;
 }
 

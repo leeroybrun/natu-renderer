@@ -107,6 +107,7 @@ extern	v4						g_terrain_border_widths;
 extern int						g_GrassCount;
 extern int						g_Tree1Count;
 extern int						g_Tree2Count;
+extern int						g_TreeDCount;
 
 extern int						g_Bumpmaps	   ;
 extern int						g_Heightmaps   ;
@@ -124,6 +125,7 @@ extern float					g_timeDiff		;
 /**********************************************
 * DYNAMIC TREE
 */
+extern float	g_tree_areaFactor;
 extern v3		g_tree_wind_direction;
 extern float	g_tree_wind_strength;
 extern v4		g_tree_wood_amplitudes;
